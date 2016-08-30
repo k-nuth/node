@@ -1,0 +1,312 @@
+cmake_policy(VERSION 3.4)
+
+# libbitcoin-node
+#==============================================================================
+project(libbitcoin-node
+  VERSION 3.0.0
+  LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.4)
+
+# Check for baseline language coverage in the compiler for the C++11 standard.
+#------------------------------------------------------------------------------
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Process options.
+#==============================================================================
+# Implement --with-tests and declare WITH_TESTS.
+#------------------------------------------------------------------------------
+option(WITH_TESTS "Compile with unit tests." ON)
+
+# Implement --with-console and declare WITH_CONSOLE.
+#------------------------------------------------------------------------------
+option(WITH_CONSOLE "Compile console application." ON)
+
+# Inherit --enable-shared and define BOOST_TEST_DYN_LINK.
+#------------------------------------------------------------------------------
+option(ENABLE_SHARED "" OFF)
+
+# Check dependencies.
+#==============================================================================
+# Require Boost of at least version 1.56.0 and output ${boost_CPPFLAGS/LDFLAGS}.
+#------------------------------------------------------------------------------
+if (NOT ENABLE_SHARED)
+  set(Boost_USE_STATIC_LIBS ON)
+endif()
+find_package(
+  Boost 1.56.0 REQUIRED
+  COMPONENTS unit_test_framework)
+
+# Require bitcoin-blockchain of at least version 3.0.0 and output ${bitcoin_node_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+if (NOT TARGET libbitcoin-blockchain)
+  find_package(libbitcoin-blockchain 3.0.0 REQUIRED)
+endif()
+
+# Require bitcoin-network of at least version 3.0.0 and output ${bitcoin_network_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+if (NOT TARGET libbitcoin-network)
+  find_package(libbitcoin-network 3.0.0 REQUIRED)
+endif()
+
+# Set flags.
+#==============================================================================
+include(CheckCXXCompilerFlag)
+
+function(_add_c_compile_flag _Flag _Var)
+  check_cxx_compiler_flag(${_Flag} ${_Var})
+  if (${_Var})
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_Flag}" )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_Flag}" )
+  endif()
+endfunction()
+
+function(_add_cxx_compile_flag _Flag _Var)
+  check_cxx_compiler_flag(${_Flag} ${_Var})
+  if (${_Var})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_Flag}" )
+  endif()
+endfunction()
+
+function(_add_link_flag _Flag _Var)
+  check_cxx_compiler_flag(${_Flag} ${_Var})
+  if (${_Var})
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${_Flag}" )
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${_Flag}" )
+  endif()
+endfunction()
+
+# Warn on all stuff.
+#------------------------------------------------------------------------------
+if (NOT MSVC)
+  _add_c_compile_flag(-Wall _has_all_warning_flag)
+else()
+  _add_c_compile_flag(-W4 _has_all_warning_flag)
+  add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+endif()
+
+# Warn on extra stuff.
+#------------------------------------------------------------------------------
+if (NOT MSVC)
+  _add_c_compile_flag(-Wextra _has_extra_warning_flag)
+endif()
+
+# Be really annoying.
+#------------------------------------------------------------------------------
+_add_c_compile_flag(-Wpedantic _has_pedantic_warning_flag)
+if (_has_pedantic_warning_flag)
+  _add_c_compile_flag(-pedantic _has_pedantic_flag)
+endif()
+
+# Conform to style.
+#------------------------------------------------------------------------------
+_add_cxx_compile_flag(-Wno-missing-braces _has_no_missing_braces_warning_flag)
+
+# Conflict in stdlib under clang. Enabled in clang only.
+#------------------------------------------------------------------------------
+_add_cxx_compile_flag(-Wno-mismatched-tags _has_no_mismatched_tags_warning_flag)
+
+# Clean up boost 1.55 headers. Enabled in gcc only.
+#------------------------------------------------------------------------------
+_add_c_compile_flag(-Wno-deprecated-declarations _has_no_deprecated_declarations_warning_flag)
+
+# Protect stack.
+#------------------------------------------------------------------------------
+_add_link_flag(-fstack-protector _has_stack_protector_flag)
+
+# Protect stack comprehensively.
+#------------------------------------------------------------------------------
+_add_link_flag(-fstack-protector-all _has_stack_protector_all_flag)
+
+# Hide internal functions from external libs. Enabled in gcc only.
+#------------------------------------------------------------------------------
+_add_cxx_compile_flag(-fvisibility-hidden _has_visibility_hidden_flag)
+
+# Hide inlines from external libs. Enabled in gcc only.
+#------------------------------------------------------------------------------
+_add_cxx_compile_flag(-fvisibility-inlines-hidden _has_visibility_inlines_hidden_flag)
+
+# Build
+#==============================================================================
+# src/libbitcoin-node.la => ${libdir}
+#------------------------------------------------------------------------------
+set(MODE STATIC)
+if (ENABLE_SHARED)
+  set(MODE SHARED)
+endif()
+
+add_library(libbitcoin-node ${MODE}
+  src/configuration.cpp
+  src/p2p_node.cpp
+  src/parser.cpp
+  src/settings.cpp
+  src/protocols/protocol_block_in.cpp
+  src/protocols/protocol_block_out.cpp
+  src/protocols/protocol_block_sync.cpp
+  src/protocols/protocol_header_sync.cpp
+  src/protocols/protocol_transaction_in.cpp
+  src/protocols/protocol_transaction_out.cpp
+  src/protocols/protocol_version_quiet.cpp
+  src/sessions/session_block_sync.cpp
+  src/sessions/session_header_sync.cpp
+  src/sessions/session_inbound.cpp
+  src/sessions/session_manual.cpp
+  src/sessions/session_outbound.cpp
+  src/utility/header_queue.cpp
+  src/utility/performance.cpp
+  src/utility/reservation.cpp
+  src/utility/reservations.cpp)
+target_include_directories(libbitcoin-node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+target_compile_definitions(libbitcoin-node PUBLIC -DBCN_STATIC)
+if (NOT MSVC)
+  target_compile_definitions(libbitcoin-node PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
+endif()
+
+target_link_libraries(libbitcoin-node libbitcoin-blockchain libbitcoin-network)
+
+# Group sources
+file(GLOB_RECURSE headers
+  RELATIVE ${CMAKE_CURRENT_LIST_DIR}
+  include/*.h include/*.hpp)
+target_sources(libbitcoin-node PRIVATE "${headers}")
+
+get_target_property(sources libbitcoin-node SOURCES)
+foreach (source ${sources})
+  get_filename_component(group ${source} DIRECTORY)
+  if (MSVC)
+    string(REPLACE "/" "\\" group ${group})
+  endif()
+  source_group("${group}" FILES ${source})
+endforeach()
+
+# local: test/libbitcoin_node_test
+#------------------------------------------------------------------------------
+if (WITH_TESTS)
+  add_executable(libbitcoin_node_test
+    test/configuration.cpp
+    test/header_queue.cpp
+    test/main.cpp
+    test/node.cpp
+    test/performance.cpp
+    test/reservation.cpp
+    test/reservations.cpp
+    test/settings.cpp
+    test/utility.cpp
+    test/utility.hpp)
+  if (ENABLE_SHARED)
+    target_compile_definitions(libbitcoin_node_test PRIVATE -DBOOST_TEST_DYN_LINK)
+  endif()
+  target_link_libraries(libbitcoin_node_test libbitcoin-node)
+
+  target_include_directories(libbitcoin_node_test SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
+  target_link_libraries(libbitcoin_node_test
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+  enable_testing()
+  set(_libbitcoin_tests configuration_tests node_tests header_queue_tests performance_tests reservation_tests reservations_tests settings_tests)
+  foreach (_test_name ${_libbitcoin_tests})
+    add_test(
+      NAME test.${_test_name}
+      COMMAND libbitcoin_node_test
+        --run_test=${_test_name}
+        --show_progress=no
+        --detect_memory_leak=0
+        --report_level=no
+        --build_info=yes)
+  endforeach()
+endif()
+
+# console/bn => ${bindir}
+#------------------------------------------------------------------------------
+if (WITH_CONSOLE)
+  add_executable(console.bn
+    console/executor.cpp
+    console/executor.hpp
+    console/main.cpp)
+  target_link_libraries(console.bn libbitcoin-node)
+
+  set_target_properties(
+    console.bn PROPERTIES
+    OUTPUT_NAME bn)
+endif()
+
+# Install
+#==============================================================================
+install(TARGETS libbitcoin-node
+  EXPORT libbitcoin-node
+  ARCHIVE DESTINATION lib)
+
+if (WITH_CONSOLE)
+  install(TARGETS console.bn
+    RUNTIME DESTINATION bin)
+endif()
+
+set(_libbitcoin_headers
+  # include_bitcoin_HEADERS =
+  bitcoin/node.hpp
+  # include_bitcoin_node_HEADERS =
+  bitcoin/node/configuration.hpp
+  bitcoin/node/define.hpp
+  bitcoin/node/p2p_node.hpp
+  bitcoin/node/parser.hpp
+  bitcoin/node/settings.hpp
+  bitcoin/node/version.hpp
+  # include_bitcoin_node_protocols_HEADERS =
+  bitcoin/node/protocols/protocol_block_in.hpp
+  bitcoin/node/protocols/protocol_block_out.hpp
+  bitcoin/node/protocols/protocol_block_sync.hpp
+  bitcoin/node/protocols/protocol_header_sync.hpp
+  bitcoin/node/protocols/protocol_transaction_in.hpp
+  bitcoin/node/protocols/protocol_transaction_out.hpp
+  bitcoin/node/protocols/protocol_version_quiet.hpp
+  # include_bitcoin_node_sessions_HEADERS =
+  bitcoin/node/sessions/session_block_sync.hpp
+  bitcoin/node/sessions/session_header_sync.hpp
+  bitcoin/node/sessions/session_inbound.hpp
+  bitcoin/node/sessions/session_manual.hpp
+  bitcoin/node/sessions/session_outbound.hpp
+  # include_bitcoin_node_utility_HEADERS =
+  bitcoin/node/utility/header_queue.hpp
+  bitcoin/node/utility/performance.hpp
+  bitcoin/node/utility/reservation.hpp
+  bitcoin/node/utility/reservations.hpp)
+foreach (_header ${_libbitcoin_headers})
+  get_filename_component(_directory "${_header}" DIRECTORY)
+  install(FILES "include/${_header}" DESTINATION "include/${_directory}")
+endforeach()
+
+# Export
+#==============================================================================
+include(CMakePackageConfigHelpers)
+
+export(EXPORT libbitcoin-node
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/libbitcoin-nodeTargets.cmake")
+export(PACKAGE libbitcoin-node)
+
+if (UNIX)
+  set(_config_package_location "lib/cmake")
+elseif (WIN32)
+  set(_config_package_location "cmake")
+endif()
+
+install(EXPORT libbitcoin-node
+  FILE libbitcoin-nodeTargets.cmake
+  DESTINATION ${_config_package_location})
+
+configure_file(libbitcoin-nodeConfig.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/libbitcoin-nodeConfig.cmake"
+  @ONLY)
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/libbitcoin-nodeConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/libbitcoin-nodeConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/libbitcoin-nodeConfigVersion.cmake"
+  DESTINATION ${_config_package_location})

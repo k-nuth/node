@@ -26,3 +26,5 @@ obj
 /libtool
 .dirstamp
 node_test/
+
+/build
