@@ -146,7 +146,6 @@ add_library(bitprim-node ${MODE}
   src/protocols/protocol_header_sync.cpp
   src/protocols/protocol_transaction_in.cpp
   src/protocols/protocol_transaction_out.cpp
-  src/protocols/protocol_version_quiet.cpp
   src/sessions/session_block_sync.cpp
   src/sessions/session_header_sync.cpp
   src/sessions/session_inbound.cpp
@@ -261,7 +260,6 @@ set(_bitprim_headers
   bitcoin/node/protocols/protocol_header_sync.hpp
   bitcoin/node/protocols/protocol_transaction_in.hpp
   bitcoin/node/protocols/protocol_transaction_out.hpp
-  bitcoin/node/protocols/protocol_version_quiet.hpp
   # include_bitcoin_node_sessions_HEADERS =
   bitcoin/node/sessions/session_block_sync.hpp
   bitcoin/node/sessions/session_header_sync.hpp
