@@ -35,7 +35,7 @@ using namespace std::placeholders;
 
 session_manual::session_manual(p2p& network, block_chain& blockchain,
     transaction_pool& pool)
-  : network::session_manual(network),
+  : network::session_manual(network, true),
     blockchain_(blockchain),
     pool_(pool)
 {
@@ -45,12 +45,16 @@ session_manual::session_manual(p2p& network, block_chain& blockchain,
 
 void session_manual::attach_protocols(channel::ptr channel)
 {
-    attach<protocol_ping>(channel)->start();
-    attach<protocol_address>(channel)->start();
+    if (channel->negotiated_version() >= message::version::level::bip31)
+        attach<protocol_ping_60001>(channel)->start();
+    else
+        attach<protocol_ping_31402>(channel)->start();
+
+    attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_in>(channel, blockchain_)->start();
-    attach<protocol_block_out>(channel, blockchain_)->start();
-    attach<protocol_transaction_in>(channel, blockchain_, pool_)->start();
-    attach<protocol_transaction_out>(channel, blockchain_, pool_)->start();
+    ////attach<protocol_block_out>(channel, blockchain_)->start();
+    ////attach<protocol_transaction_in>(channel, blockchain_, pool_)->start();
+    ////attach<protocol_transaction_out>(channel, blockchain_, pool_)->start();
 }
 
 } // namespace node

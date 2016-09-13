@@ -25,7 +25,6 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/protocols/protocol_block_sync.hpp>
-#include <bitcoin/node/protocols/protocol_version_quiet.hpp>
 #include <bitcoin/node/settings.hpp>
 #include <bitcoin/node/utility/header_queue.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
@@ -46,9 +45,8 @@ static const asio::seconds regulator_interval(5);
 
 session_block_sync::session_block_sync(p2p& network, header_queue& hashes,
     simple_chain& chain, const settings& settings)
-  : session_batch(network, false),
+  : network::session_outbound(network, false),
     blockchain_(chain),
-    settings_(settings),
     reservations_(hashes, chain, settings),
     CONSTRUCT_TRACK(session_block_sync)
 {
@@ -140,7 +138,20 @@ void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
 void session_block_sync::attach_handshake_protocols(channel::ptr channel,
     result_handler handle_started)
 {
-    attach<protocol_version_quiet>(channel)->start(handle_started);
+    // Don't use configured services or relay for block sync.
+    const auto relay = false;
+    const auto own_version = settings_.protocol_maximum;
+    const auto own_services = message::version::service::none;
+    const auto minimum_version = settings_.protocol_minimum;
+    const auto minimum_services = message::version::service::node_network;
+
+    // The negotiated_version is initialized to the configured maximum.
+    if (channel->negotiated_version() >= message::version::level::bip61)
+        attach<protocol_version_70002>(channel, own_version, own_services,
+            minimum_version, minimum_services, relay)->start(handle_started);
+    else
+        attach<protocol_version_31402>(channel, own_version, own_services,
+            minimum_version, minimum_services)->start(handle_started);
 }
 
 void session_block_sync::handle_channel_start(const code& ec,
@@ -160,8 +171,12 @@ void session_block_sync::handle_channel_start(const code& ec,
 void session_block_sync::attach_protocols(channel::ptr channel,
     connector::ptr connect, reservation::ptr row, result_handler handler)
 {
-    attach<protocol_ping>(channel)->start();
-    attach<protocol_address>(channel)->start();
+    if (channel->negotiated_version() >= message::version::level::bip31)
+        attach<protocol_ping_60001>(channel)->start();
+    else
+        attach<protocol_ping_31402>(channel)->start();
+
+    attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_sync>(channel, row)->start(
         BIND4(handle_complete, _1, connect, row, handler));
 }

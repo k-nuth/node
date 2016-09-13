@@ -43,6 +43,7 @@ p2p_node::p2p_node(const configuration& configuration)
   : p2p(configuration.network),
     hashes_(configuration.chain.checkpoints),
     blockchain_(thread_pool(), configuration.chain, configuration.database),
+    protocol_maximum_(configuration.network.protocol_maximum),
     settings_(configuration.node)
 {
 }
@@ -86,6 +87,16 @@ void p2p_node::run(result_handler handler)
         handler(error::service_stopped);
         return;
     }
+
+    // TODO: make this safe by requiring sync if gaps found.
+    ////// By setting no download connections checkpoints can be used without sync.
+    ////// This also allows the maximum protocol version to be set below headers.
+    ////if (settings_.download_connections == 0)
+    ////{
+    ////    // This will spawn a new thread before returning.
+    ////    handle_running(error::success, handler);
+    ////    return;
+    ////}
 
     // The instance is retained by the stop handler (i.e. until shutdown).
     const auto header_sync = attach_header_sync_session();
@@ -227,7 +238,18 @@ session_block_sync::ptr p2p_node::attach_block_sync_session()
 bool p2p_node::stop()
 {
     // Suspend new work last so we can use work to clear subscribers.
-    return blockchain_.stop() && p2p::stop();
+    const auto p2p_stop = p2p::stop();
+    const auto chain_stop = blockchain_.stop();
+
+    if (!p2p_stop)
+        log::error(LOG_NODE)
+            << "Failed to stop network.";
+
+    if (!chain_stop)
+        log::error(LOG_NODE)
+            << "Failed to stop database.";
+
+    return p2p_stop && chain_stop;
 }
 
 // This must be called from the thread that constructed this class (see join).
@@ -237,8 +259,18 @@ bool p2p_node::close()
     if (!p2p_node::stop())
         return false;
 
-    // Join threads first so that there is no activity on the chain at close.
-    return p2p::close() && blockchain_.close();
+    const auto p2p_close = p2p::close();
+    const auto chain_close = blockchain_.close();
+
+    if (!p2p_close)
+        log::error(LOG_NODE)
+            << "Failed to close network.";
+
+    if (!chain_close)
+        log::error(LOG_NODE)
+            << "Failed to close database.";
+
+    return p2p_close && chain_close;
 }
 
 // Properties.
@@ -272,5 +304,5 @@ void p2p_node::subscribe_transaction_pool(transaction_handler handler)
     pool().subscribe_transaction(handler);
 }
 
-} // namspace node
+} // namespace node
 } //namespace libbitcoin
