@@ -1,11 +1,10 @@
-cmake_policy(VERSION 3.4)
+cmake_minimum_required(VERSION 3.4)
 
 # bitprim-node
 #==============================================================================
 project(bitprim-node
   VERSION 3.0.0
   LANGUAGES CXX C)
-cmake_minimum_required(VERSION 3.4)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
 #------------------------------------------------------------------------------
