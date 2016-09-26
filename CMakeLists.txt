@@ -191,6 +191,29 @@ _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
 # Tests
 #==============================================================================
+function(_add_tests target)
+  if (ENABLE_SHARED)
+    target_compile_definitions(${target} PRIVATE -DBOOST_TEST_DYN_LINK)
+  endif()
+  target_include_directories(${target} SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
+  target_link_libraries(${target} PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+  foreach (_test_name ${ARGN})
+    add_test(
+      NAME test.node.${_test_name}
+      COMMAND ${target}
+        --run_test=${_test_name}
+        --show_progress=no
+        --detect_memory_leak=0
+        --report_level=no
+        --build_info=yes)
+  endforeach()
+endfunction()
+
+if (WITH_TESTS)
+  enable_testing()
+endif()
+
 # local: test/bitprim_node_test
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
@@ -205,29 +228,17 @@ if (WITH_TESTS)
     test/settings.cpp
     test/utility.cpp
     test/utility.hpp)
-  if (ENABLE_SHARED)
-    target_compile_definitions(bitprim_node_test PRIVATE -DBOOST_TEST_DYN_LINK)
-  endif()
-  target_link_libraries(bitprim_node_test bitprim-node)
-
-  target_include_directories(bitprim_node_test SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
-  target_link_libraries(bitprim_node_test
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-
+  target_link_libraries(bitprim_node_test PUBLIC bitprim-node)
   _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
-  enable_testing()
-  set(_bitprim_tests configuration_tests node_tests header_queue_tests performance_tests reservation_tests reservations_tests settings_tests)
-  foreach (_test_name ${_bitprim_tests})
-    add_test(
-      NAME test.${_test_name}
-      COMMAND bitprim_node_test
-        --run_test=${_test_name}
-        --show_progress=no
-        --detect_memory_leak=0
-        --report_level=no
-        --build_info=yes)
-  endforeach()
+  _add_tests(bitprim_node_test
+    configuration_tests
+    node_tests
+    header_queue_tests
+    performance_tests
+    reservation_tests
+    reservations_tests
+    settings_tests)
 endif()
 
 # console/bn => ${bindir}
