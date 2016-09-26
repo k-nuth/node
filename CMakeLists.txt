@@ -128,6 +128,27 @@ _add_cxx_compile_flag(-fvisibility-inlines-hidden _has_visibility_inlines_hidden
 
 # Build
 #==============================================================================
+function(_group_sources target sources_dir)
+  file(GLOB_RECURSE _headers
+    ${sources_dir}/include/*.h ${sources_dir}/include/*.hpp)
+  target_sources(${target} PRIVATE ${_headers})
+
+  get_target_property(sources ${target} SOURCES)
+  foreach (source ${sources})
+    get_filename_component(group ${source} ABSOLUTE)
+    get_filename_component(group ${group} DIRECTORY)
+    file(RELATIVE_PATH group "${sources_dir}" "${group}")
+    if (group)
+      if (MSVC)
+        string(REPLACE "/" "\\" group "${group}")
+      endif()
+      source_group("${group}" FILES "${source}")
+    endif()
+  endforeach()
+
+  set_target_properties(${target} PROPERTIES FOLDER "node")
+endfunction()
+
 # src/bitprim-node.la => ${libdir}
 #------------------------------------------------------------------------------
 set(MODE STATIC)
@@ -166,22 +187,7 @@ endif()
 
 target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 
-set_target_properties(bitprim-node PROPERTIES FOLDER "node")
-
-# Group sources
-file(GLOB_RECURSE headers
-  RELATIVE ${CMAKE_CURRENT_LIST_DIR}
-  include/*.h include/*.hpp)
-target_sources(bitprim-node PRIVATE "${headers}")
-
-get_target_property(sources bitprim-node SOURCES)
-foreach (source ${sources})
-  get_filename_component(group ${source} DIRECTORY)
-  if (MSVC)
-    string(REPLACE "/" "\\" group ${group})
-  endif()
-  source_group("${group}" FILES ${source})
-endforeach()
+_group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
 # Tests
 #==============================================================================
@@ -208,7 +214,7 @@ if (WITH_TESTS)
   target_link_libraries(bitprim_node_test
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
-  set_target_properties(bitprim_node_test PROPERTIES FOLDER "node")
+  _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
   enable_testing()
   set(_bitprim_tests configuration_tests node_tests header_queue_tests performance_tests reservation_tests reservations_tests settings_tests)
