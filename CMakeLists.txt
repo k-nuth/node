@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.4)
 project(bitprim-node
   VERSION 3.0.0
   LANGUAGES CXX C)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
 #------------------------------------------------------------------------------
@@ -165,6 +166,8 @@ endif()
 
 target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 
+set_target_properties(bitprim-node PROPERTIES FOLDER "node")
+
 # Group sources
 file(GLOB_RECURSE headers
   RELATIVE ${CMAKE_CURRENT_LIST_DIR}
@@ -180,6 +183,8 @@ foreach (source ${sources})
   source_group("${group}" FILES ${source})
 endforeach()
 
+# Tests
+#==============================================================================
 # local: test/bitprim_node_test
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
@@ -202,6 +207,8 @@ if (WITH_TESTS)
   target_include_directories(bitprim_node_test SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
   target_link_libraries(bitprim_node_test
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+  set_target_properties(bitprim_node_test PROPERTIES FOLDER "node")
 
   enable_testing()
   set(_bitprim_tests configuration_tests node_tests header_queue_tests performance_tests reservation_tests reservations_tests settings_tests)
@@ -228,6 +235,7 @@ if (WITH_CONSOLE)
 
   set_target_properties(
     console.bn PROPERTIES
+    FOLDER "node"
     OUTPUT_NAME bn)
 endif()
 
