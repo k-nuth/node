@@ -1,11 +1,11 @@
-cmake_policy(VERSION 3.4)
+cmake_minimum_required(VERSION 3.4)
 
 # bitprim-node
 #==============================================================================
 project(bitprim-node
   VERSION 3.0.0
   LANGUAGES CXX C)
-cmake_minimum_required(VERSION 3.4)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
 #------------------------------------------------------------------------------
@@ -128,6 +128,27 @@ _add_cxx_compile_flag(-fvisibility-inlines-hidden _has_visibility_inlines_hidden
 
 # Build
 #==============================================================================
+function(_group_sources target sources_dir)
+  file(GLOB_RECURSE _headers
+    ${sources_dir}/include/*.h ${sources_dir}/include/*.hpp)
+  target_sources(${target} PRIVATE ${_headers})
+
+  get_target_property(sources ${target} SOURCES)
+  foreach (source ${sources})
+    get_filename_component(group ${source} ABSOLUTE)
+    get_filename_component(group ${group} DIRECTORY)
+    file(RELATIVE_PATH group "${sources_dir}" "${group}")
+    if (group)
+      if (MSVC)
+        string(REPLACE "/" "\\" group "${group}")
+      endif()
+      source_group("${group}" FILES "${source}")
+    endif()
+  endforeach()
+
+  set_target_properties(${target} PROPERTIES FOLDER "node")
+endfunction()
+
 # src/bitprim-node.la => ${libdir}
 #------------------------------------------------------------------------------
 set(MODE STATIC)
@@ -166,20 +187,32 @@ endif()
 
 target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 
-# Group sources
-file(GLOB_RECURSE headers
-  RELATIVE ${CMAKE_CURRENT_LIST_DIR}
-  include/*.h include/*.hpp)
-target_sources(bitprim-node PRIVATE "${headers}")
+_group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
-get_target_property(sources bitprim-node SOURCES)
-foreach (source ${sources})
-  get_filename_component(group ${source} DIRECTORY)
-  if (MSVC)
-    string(REPLACE "/" "\\" group ${group})
+# Tests
+#==============================================================================
+function(_add_tests target)
+  if (ENABLE_SHARED)
+    target_compile_definitions(${target} PRIVATE -DBOOST_TEST_DYN_LINK)
   endif()
-  source_group("${group}" FILES ${source})
-endforeach()
+  target_include_directories(${target} SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
+  target_link_libraries(${target} PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+  foreach (_test_name ${ARGN})
+    add_test(
+      NAME test.node.${_test_name}
+      COMMAND ${target}
+        --run_test=${_test_name}
+        --show_progress=no
+        --detect_memory_leak=0
+        --report_level=no
+        --build_info=yes)
+  endforeach()
+endfunction()
+
+if (WITH_TESTS)
+  enable_testing()
+endif()
 
 # local: test/bitprim_node_test
 #------------------------------------------------------------------------------
@@ -195,27 +228,17 @@ if (WITH_TESTS)
     test/settings.cpp
     test/utility.cpp
     test/utility.hpp)
-  if (ENABLE_SHARED)
-    target_compile_definitions(bitprim_node_test PRIVATE -DBOOST_TEST_DYN_LINK)
-  endif()
-  target_link_libraries(bitprim_node_test bitprim-node)
+  target_link_libraries(bitprim_node_test PUBLIC bitprim-node)
+  _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
-  target_include_directories(bitprim_node_test SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
-  target_link_libraries(bitprim_node_test
-    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-
-  enable_testing()
-  set(_bitprim_tests configuration_tests node_tests header_queue_tests performance_tests reservation_tests reservations_tests settings_tests)
-  foreach (_test_name ${_bitprim_tests})
-    add_test(
-      NAME test.${_test_name}
-      COMMAND bitprim_node_test
-        --run_test=${_test_name}
-        --show_progress=no
-        --detect_memory_leak=0
-        --report_level=no
-        --build_info=yes)
-  endforeach()
+  _add_tests(bitprim_node_test
+    configuration_tests
+    node_tests
+    header_queue_tests
+    performance_tests
+    reservation_tests
+    reservations_tests
+    settings_tests)
 endif()
 
 # console/bn => ${bindir}
@@ -229,6 +252,7 @@ if (WITH_CONSOLE)
 
   set_target_properties(
     console.bn PROPERTIES
+    FOLDER "node"
     OUTPUT_NAME bn)
 endif()
 

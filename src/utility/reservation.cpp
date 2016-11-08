@@ -146,18 +146,19 @@ bool reservation::expired() const
     const auto below_average = deviation < 0;
     const auto expired = below_average && outlier;
 
-    ////log::debug(LOG_NODE)
-    ////    << "Statistics for slot (" << slot() << ")"
-    ////    << " adj:" << (normal_rate * micro_per_second)
-    ////    << " avg:" << (statistics.arithmentic_mean * micro_per_second)
-    ////    << " dev:" << (deviation * micro_per_second)
-    ////    << " sdv:" << (statistics.standard_deviation * micro_per_second)
-    ////    << " cnt:" << (statistics.active_count)
-    ////    << " neg:" << (below_average ? "T" : "F")
-    ////    << " out:" << (outlier ? "T" : "F")
-    ////    << " exp:" << (expired ? "T" : "F");
+    log::debug(LOG_NODE)
+       << "Statistics for slot (" << slot() << ")"
+       << " adj:" << (normal_rate * micro_per_second)
+       << " avg:" << (statistics.arithmentic_mean * micro_per_second)
+       << " dev:" << (deviation * micro_per_second)
+       << " sdv:" << (statistics.standard_deviation * micro_per_second)
+       << " cnt:" << (statistics.active_count)
+       << " neg:" << (below_average ? "T" : "F")
+       << " out:" << (outlier ? "T" : "F")
+       << " exp:" << (expired ? "T" : "F");
 
-    return expired;
+    // return expired;
+    return false;
 }
 
 void reservation::clear_history()
