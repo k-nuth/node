@@ -156,26 +156,50 @@ if (ENABLE_SHARED)
   set(MODE SHARED)
 endif()
 
+#add_library(bitprim-node ${MODE}
+#  src/configuration.cpp
+#  src/p2p_node.cpp
+#  src/parser.cpp
+#  src/settings.cpp
+#  src/protocols/protocol_block_in.cpp
+#  src/protocols/protocol_block_out.cpp
+#  src/protocols/protocol_block_sync.cpp
+#  src/protocols/protocol_header_sync.cpp
+#  src/protocols/protocol_transaction_in.cpp
+#  src/protocols/protocol_transaction_out.cpp
+#  src/sessions/session_block_sync.cpp
+#  src/sessions/session_header_sync.cpp
+#  src/sessions/session_inbound.cpp
+#  src/sessions/session_manual.cpp
+#  src/sessions/session_outbound.cpp
+#  src/utility/header_queue.cpp
+#  src/utility/performance.cpp
+#  src/utility/reservation.cpp
+#  src/utility/reservations.cpp)
+
 add_library(bitprim-node ${MODE}
-  src/configuration.cpp
-  src/p2p_node.cpp
-  src/parser.cpp
-  src/settings.cpp
-  src/protocols/protocol_block_in.cpp
-  src/protocols/protocol_block_out.cpp
-  src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_header_sync.cpp
-  src/protocols/protocol_transaction_in.cpp
-  src/protocols/protocol_transaction_out.cpp
-  src/sessions/session_block_sync.cpp
-  src/sessions/session_header_sync.cpp
-  src/sessions/session_inbound.cpp
-  src/sessions/session_manual.cpp
-  src/sessions/session_outbound.cpp
-  src/utility/header_queue.cpp
-  src/utility/performance.cpp
-  src/utility/reservation.cpp
-  src/utility/reservations.cpp)
+    src/configuration.cpp
+    src/full_node.cpp
+    src/parser.cpp
+    src/protocols/protocol_block_in.cpp
+    src/protocols/protocol_block_out.cpp
+    src/protocols/protocol_block_sync.cpp
+    src/protocols/protocol_header_sync.cpp
+    src/protocols/protocol_transaction_in.cpp
+    src/protocols/protocol_transaction_out.cpp
+    src/sessions/session_block_sync.cpp
+    src/sessions/session_header_sync.cpp
+    src/sessions/session_inbound.cpp
+    src/sessions/session_manual.cpp
+    src/sessions/session_outbound.cpp
+    src/settings.cpp
+    src/utility/check_list.cpp
+    src/utility/header_list.cpp
+    src/utility/performance.cpp
+    src/utility/reservation.cpp
+    src/utility/reservations.cpp)
+
+
 target_include_directories(bitprim-node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -217,17 +241,32 @@ endif()
 # local: test/bitprim_node_test
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
+
+#  add_executable(bitprim_node_test
+#    test/configuration.cpp
+#    test/header_queue.cpp
+#    test/main.cpp
+#    test/node.cpp
+#    test/performance.cpp
+#    test/reservation.cpp
+#    test/reservations.cpp
+#    test/settings.cpp
+#    test/utility.cpp
+#    test/utility.hpp)
+
   add_executable(bitprim_node_test
-    test/configuration.cpp
-    test/header_queue.cpp
-    test/main.cpp
-    test/node.cpp
-    test/performance.cpp
-    test/reservation.cpp
-    test/reservations.cpp
-    test/settings.cpp
-    test/utility.cpp
-    test/utility.hpp)
+          test/check_list.cpp
+          test/configuration.cpp
+          test/header_list.cpp
+          test/main.cpp
+          test/node.cpp
+          test/performance.cpp
+          test/reservation.cpp
+          test/reservations.cpp
+          test/settings.cpp
+          test/utility.cpp
+          test/utility.hpp)
+
   target_link_libraries(bitprim_node_test PUBLIC bitprim-node)
   _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
@@ -267,34 +306,61 @@ if (WITH_CONSOLE)
     RUNTIME DESTINATION bin)
 endif()
 
+#set(_bitprim_headers
+#  # include_bitcoin_HEADERS =
+#  bitcoin/node.hpp
+#  # include_bitcoin_node_HEADERS =
+#  bitcoin/node/configuration.hpp
+#  bitcoin/node/define.hpp
+#  bitcoin/node/p2p_node.hpp
+#  bitcoin/node/parser.hpp
+#  bitcoin/node/settings.hpp
+#  bitcoin/node/version.hpp
+#  # include_bitcoin_node_protocols_HEADERS =
+#  bitcoin/node/protocols/protocol_block_in.hpp
+#  bitcoin/node/protocols/protocol_block_out.hpp
+#  bitcoin/node/protocols/protocol_block_sync.hpp
+#  bitcoin/node/protocols/protocol_header_sync.hpp
+#  bitcoin/node/protocols/protocol_transaction_in.hpp
+#  bitcoin/node/protocols/protocol_transaction_out.hpp
+#  # include_bitcoin_node_sessions_HEADERS =
+#  bitcoin/node/sessions/session_block_sync.hpp
+#  bitcoin/node/sessions/session_header_sync.hpp
+#  bitcoin/node/sessions/session_inbound.hpp
+#  bitcoin/node/sessions/session_manual.hpp
+#  bitcoin/node/sessions/session_outbound.hpp
+#  # include_bitcoin_node_utility_HEADERS =
+#  bitcoin/node/utility/header_queue.hpp
+#  bitcoin/node/utility/performance.hpp
+#  bitcoin/node/utility/reservation.hpp
+#  bitcoin/node/utility/reservations.hpp)
+
 set(_bitprim_headers
-  # include_bitcoin_HEADERS =
-  bitcoin/node.hpp
-  # include_bitcoin_node_HEADERS =
-  bitcoin/node/configuration.hpp
-  bitcoin/node/define.hpp
-  bitcoin/node/p2p_node.hpp
-  bitcoin/node/parser.hpp
-  bitcoin/node/settings.hpp
-  bitcoin/node/version.hpp
-  # include_bitcoin_node_protocols_HEADERS =
-  bitcoin/node/protocols/protocol_block_in.hpp
-  bitcoin/node/protocols/protocol_block_out.hpp
-  bitcoin/node/protocols/protocol_block_sync.hpp
-  bitcoin/node/protocols/protocol_header_sync.hpp
-  bitcoin/node/protocols/protocol_transaction_in.hpp
-  bitcoin/node/protocols/protocol_transaction_out.hpp
-  # include_bitcoin_node_sessions_HEADERS =
-  bitcoin/node/sessions/session_block_sync.hpp
-  bitcoin/node/sessions/session_header_sync.hpp
-  bitcoin/node/sessions/session_inbound.hpp
-  bitcoin/node/sessions/session_manual.hpp
-  bitcoin/node/sessions/session_outbound.hpp
-  # include_bitcoin_node_utility_HEADERS =
-  bitcoin/node/utility/header_queue.hpp
-  bitcoin/node/utility/performance.hpp
-  bitcoin/node/utility/reservation.hpp
-  bitcoin/node/utility/reservations.hpp)
+    bitcoin/node/configuration.hpp
+    bitcoin/node/define.hpp
+    bitcoin/node/full_node.hpp
+    bitcoin/node/parser.hpp
+    bitcoin/node/protocols/protocol_block_in.hpp
+    bitcoin/node/protocols/protocol_block_out.hpp
+    bitcoin/node/protocols/protocol_block_sync.hpp
+    bitcoin/node/protocols/protocol_header_sync.hpp
+    bitcoin/node/protocols/protocol_transaction_in.hpp
+    bitcoin/node/protocols/protocol_transaction_out.hpp
+    bitcoin/node/sessions/session.hpp
+    bitcoin/node/sessions/session_block_sync.hpp
+    bitcoin/node/sessions/session_header_sync.hpp
+    bitcoin/node/sessions/session_inbound.hpp
+    bitcoin/node/sessions/session_manual.hpp
+    bitcoin/node/sessions/session_outbound.hpp
+    bitcoin/node/settings.hpp
+    bitcoin/node/utility/check_list.hpp
+    bitcoin/node/utility/header_list.hpp
+    bitcoin/node/utility/performance.hpp
+    bitcoin/node/utility/reservation.hpp
+    bitcoin/node/utility/reservations.hpp
+    bitcoin/node/version.hpp
+    bitcoin/node.hpp)
+
 foreach (_header ${_bitprim_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")
