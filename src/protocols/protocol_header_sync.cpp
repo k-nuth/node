@@ -23,8 +23,9 @@
 #include <cstddef>
 #include <functional>
 #include <bitcoin/network.hpp>
-#include <bitcoin/node/p2p_node.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/define.hpp>
+#include <bitcoin/node/full_node.hpp>
+#include <bitcoin/node/utility/header_list.hpp>
 
 namespace libbitcoin {
 namespace node {
@@ -44,31 +45,20 @@ static constexpr size_t max_header_response = 2000;
 static const asio::seconds expiry_interval(5);
 
 // This class requires protocol version 31800.
-protocol_header_sync::protocol_header_sync(p2p& network,
-    channel::ptr channel, header_queue& hashes, uint32_t minimum_rate,
-    const checkpoint& last)
+protocol_header_sync::protocol_header_sync(full_node& network,
+    channel::ptr channel, header_list::ptr headers, uint32_t minimum_rate)
   : protocol_timer(network, channel, true, NAME),
-    hashes_(hashes),
+    headers_(headers),
+
+    // TODO: replace rate backoff with peer competition.
+    //=========================================================================
     current_second_(0),
     minimum_rate_(minimum_rate),
-    start_size_(hashes.size()),
-    last_(last),
+    start_size_(headers->previous_height() - headers->first_height()),
+    //=========================================================================
+
     CONSTRUCT_TRACK(protocol_header_sync)
 {
-}
-
-// Utilities
-// ----------------------------------------------------------------------------
-
-size_t protocol_header_sync::next_height() const
-{
-    return hashes_.last_height() + 1;
-}
-
-size_t protocol_header_sync::sync_rate() const
-{
-    // We can never roll back prior to start size since it's min final height.
-    return (hashes_.size() - start_size_) / current_second_;
 }
 
 // Start sequence.
@@ -79,7 +69,7 @@ void protocol_header_sync::start(event_handler handler)
     auto complete = synchronize(BIND2(headers_complete, _1, handler), 1, NAME);
     protocol_timer::start(expiry_interval, BIND2(handle_event, _1, complete));
 
-    SUBSCRIBE3(headers, handle_receive, _1, _2, complete);
+    SUBSCRIBE3(headers, handle_receive_headers, _1, _2, complete);
 
     // This is the end of the start sequence.
     send_get_headers(complete);
@@ -95,8 +85,8 @@ void protocol_header_sync::send_get_headers(event_handler complete)
 
     const get_headers request
     {
-        { hashes_.last_hash() },
-        last_.hash()
+        { headers_->previous_hash() },
+        headers_->stop_hash()
     };
 
     SEND2(request, handle_send, _1, complete);
@@ -109,52 +99,53 @@ void protocol_header_sync::handle_send(const code& ec, event_handler complete)
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        LOG_DEBUG(LOG_NODE)
             << "Failure sending get headers to sync [" << authority() << "] "
             << ec.message();
         complete(ec);
     }
 }
 
-bool protocol_header_sync::handle_receive(const code& ec, headers_ptr message,
-    event_handler complete)
+bool protocol_header_sync::handle_receive_headers(const code& ec,
+    headers_const_ptr message, event_handler complete)
 {
     if (stopped())
         return false;
 
     if (ec)
     {
-        log::debug(LOG_NODE)
+        LOG_DEBUG(LOG_NODE)
             << "Failure receiving headers from sync ["
             << authority() << "] " << ec.message();
         complete(ec);
         return false;
     }
 
-    // A merge failure includes automatic rollback to last trust point.
-    if (!hashes_.enqueue(message))
+    const auto start = headers_->previous_height() + 1;
+
+    // A merge failure resets the headers list.
+    if (!headers_->merge(message))
     {
-        log::warning(LOG_NODE)
+        LOG_WARNING(LOG_NODE)
             << "Failure merging headers from [" << authority() << "]";
-        complete(error::previous_block_invalid);
+        complete(error::invalid_previous_block);
         return false;
     }
 
-    const auto next = next_height();
+    const auto end = headers_->previous_height();
 
-    log::info(LOG_NODE)
-        << "Synced headers " << next - message->elements.size()
-        << "-" << (next - 1) << " from [" << authority() << "]";
+    LOG_INFO(LOG_NODE)
+        << "Synced headers " << start << "-" << end << " from ["
+        << authority() << "]";
 
-    // If we completed the last height the sync is complete/success.
-    if (next > last_.height())
+    if (headers_->complete())
     {
         complete(error::success);
         return false;
     }
 
     // If we received fewer than 2000 the peer is exhausted, try another.
-    if (message->elements.size() < max_header_response)
+    if (message->elements().size() < max_header_response)
     {
         complete(error::operation_failed);
         return false;
@@ -176,21 +167,25 @@ void protocol_header_sync::handle_event(const code& ec, event_handler complete)
 
     if (ec && ec != error::channel_timeout)
     {
-        log::warning(LOG_NODE)
+        LOG_WARNING(LOG_NODE)
             << "Failure in header sync timer for [" << authority() << "] "
             << ec.message();
         complete(ec);
         return;
     }
 
-    // It was a timeout, so ten more seconds have passed.
-    current_second_ += expiry_interval.count();
+    // TODO: replace rate backoff with peer competition.
+    //=========================================================================
+    // It was a timeout so another expiry period has passed (overflow ok here).
+    current_second_ += static_cast<size_t>(expiry_interval.count());
+    auto rate = (headers_->previous_height() - start_size_) / current_second_;
+    //=========================================================================
 
     // Drop the channel if it falls below the min sync rate averaged over all.
-    if (sync_rate() < minimum_rate_)
+    if (rate < minimum_rate_)
     {
-        log::debug(LOG_NODE)
-            << "Header sync rate (" << sync_rate() << "/sec) from ["
+        LOG_DEBUG(LOG_NODE)
+            << "Header sync rate (" << rate << "/sec) from ["
             << authority() << "]";
         complete(error::channel_timeout);
         return;

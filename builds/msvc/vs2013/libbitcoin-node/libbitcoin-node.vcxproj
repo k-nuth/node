@@ -72,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\configuration.cpp" />
-    <ClCompile Include="..\..\..\..\src\p2p_node.cpp" />
+    <ClCompile Include="..\..\..\..\src\full_node.cpp" />
     <ClCompile Include="..\..\..\..\src\parser.cpp" />
     <ClCompile Include="..\..\..\..\src\protocols\protocol_block_in.cpp" />
     <ClCompile Include="..\..\..\..\src\protocols\protocol_block_out.cpp" />
@@ -86,7 +86,8 @@
     <ClCompile Include="..\..\..\..\src\sessions\session_manual.cpp" />
     <ClCompile Include="..\..\..\..\src\sessions\session_outbound.cpp" />
     <ClCompile Include="..\..\..\..\src\settings.cpp" />
-    <ClCompile Include="..\..\..\..\src\utility\header_queue.cpp" />
+    <ClCompile Include="..\..\..\..\src\utility\check_list.cpp" />
+    <ClCompile Include="..\..\..\..\src\utility\header_list.cpp" />
     <ClCompile Include="..\..\..\..\src\utility\performance.cpp" />
     <ClCompile Include="..\..\..\..\src\utility\reservation.cpp" />
     <ClCompile Include="..\..\..\..\src\utility\reservations.cpp" />
@@ -95,7 +96,7 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\node.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\configuration.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\define.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\node\p2p_node.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\node\full_node.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\parser.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\protocols\protocol_block_in.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\protocols\protocol_block_out.hpp" />
@@ -103,13 +104,15 @@
     <ClInclude Include="..\..\..\..\include\bitcoin\node\protocols\protocol_header_sync.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\protocols\protocol_transaction_in.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\protocols\protocol_transaction_out.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session_block_sync.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session_header_sync.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session_inbound.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session_manual.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\sessions\session_outbound.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\settings.hpp" />
-    <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\header_queue.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\check_list.hpp" />
+    <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\header_list.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\performance.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\reservation.hpp" />
     <ClInclude Include="..\..\..\..\include\bitcoin\node\utility\reservations.hpp" />
@@ -118,30 +121,32 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_chrono-vc120.1.56.0.0\build\native\boost_chrono-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_chrono-vc120.1.56.0.0\build\native\boost_chrono-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_date_time-vc120.1.56.0.0\build\native\boost_date_time-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_date_time-vc120.1.56.0.0\build\native\boost_date_time-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.56.0.0\build\native\boost_filesystem-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.56.0.0\build\native\boost_filesystem-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_locale-vc120.1.56.0.0\build\native\boost_locale-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_locale-vc120.1.56.0.0\build\native\boost_locale-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_program_options-vc120.1.56.0.0\build\native\boost_program_options-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_program_options-vc120.1.56.0.0\build\native\boost_program_options-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" />
-    <Import Project="..\..\..\..\..\..\nuget\boost_thread-vc120.1.56.0.0\build\native\boost_thread-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_thread-vc120.1.56.0.0\build\native\boost_thread-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost.1.57.0.0\build\native\boost.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost.1.57.0.0\build\native\boost.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_chrono-vc120.1.57.0.0\build\native\boost_chrono-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_chrono-vc120.1.57.0.0\build\native\boost_chrono-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_date_time-vc120.1.57.0.0\build\native\boost_date_time-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_date_time-vc120.1.57.0.0\build\native\boost_date_time-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.57.0.0\build\native\boost_filesystem-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.57.0.0\build\native\boost_filesystem-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_locale-vc120.1.57.0.0\build\native\boost_locale-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_locale-vc120.1.57.0.0\build\native\boost_locale-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_log-vc120.1.57.0.0\build\native\boost_log-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_log-vc120.1.57.0.0\build\native\boost_log-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_program_options-vc120.1.57.0.0\build\native\boost_program_options-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_program_options-vc120.1.57.0.0\build\native\boost_program_options-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_regex-vc120.1.57.0.0\build\native\boost_regex-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.57.0.0\build\native\boost_regex-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_system-vc120.1.57.0.0\build\native\boost_system-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.57.0.0\build\native\boost_system-vc120.targets')" />
+    <Import Project="..\..\..\..\..\..\nuget\boost_thread-vc120.1.57.0.0\build\native\boost_thread-vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\boost_thread-vc120.1.57.0.0\build\native\boost_thread-vc120.targets')" />
     <Import Project="..\..\..\..\..\..\nuget\secp256k1_vc120.0.1.0.13\build\native\secp256k1_vc120.targets" Condition="Exists('..\..\..\..\..\..\nuget\secp256k1_vc120.0.1.0.13\build\native\secp256k1_vc120.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost.1.56.0.0\build\native\boost.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_chrono-vc120.1.56.0.0\build\native\boost_chrono-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_chrono-vc120.1.56.0.0\build\native\boost_chrono-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_date_time-vc120.1.56.0.0\build\native\boost_date_time-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_date_time-vc120.1.56.0.0\build\native\boost_date_time-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.56.0.0\build\native\boost_filesystem-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.56.0.0\build\native\boost_filesystem-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_locale-vc120.1.56.0.0\build\native\boost_locale-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_locale-vc120.1.56.0.0\build\native\boost_locale-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_program_options-vc120.1.56.0.0\build\native\boost_program_options-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_program_options-vc120.1.56.0.0\build\native\boost_program_options-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_regex-vc120.1.56.0.0\build\native\boost_regex-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_system-vc120.1.56.0.0\build\native\boost_system-vc120.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_thread-vc120.1.56.0.0\build\native\boost_thread-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_thread-vc120.1.56.0.0\build\native\boost_thread-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost.1.57.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost.1.57.0.0\build\native\boost.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_chrono-vc120.1.57.0.0\build\native\boost_chrono-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_chrono-vc120.1.57.0.0\build\native\boost_chrono-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_date_time-vc120.1.57.0.0\build\native\boost_date_time-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_date_time-vc120.1.57.0.0\build\native\boost_date_time-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.57.0.0\build\native\boost_filesystem-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_filesystem-vc120.1.57.0.0\build\native\boost_filesystem-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_locale-vc120.1.57.0.0\build\native\boost_locale-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_locale-vc120.1.57.0.0\build\native\boost_locale-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_log-vc120.1.57.0.0\build\native\boost_log-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_log-vc120.1.57.0.0\build\native\boost_log-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_program_options-vc120.1.57.0.0\build\native\boost_program_options-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_program_options-vc120.1.57.0.0\build\native\boost_program_options-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_regex-vc120.1.57.0.0\build\native\boost_regex-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_regex-vc120.1.57.0.0\build\native\boost_regex-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_system-vc120.1.57.0.0\build\native\boost_system-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_system-vc120.1.57.0.0\build\native\boost_system-vc120.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\nuget\boost_thread-vc120.1.57.0.0\build\native\boost_thread-vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\boost_thread-vc120.1.57.0.0\build\native\boost_thread-vc120.targets'))" />
     <Error Condition="!Exists('..\..\..\..\..\..\nuget\secp256k1_vc120.0.1.0.13\build\native\secp256k1_vc120.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\nuget\secp256k1_vc120.0.1.0.13\build\native\secp256k1_vc120.targets'))" />
   </Target>
 </Project>

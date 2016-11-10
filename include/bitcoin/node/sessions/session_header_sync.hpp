@@ -23,24 +23,29 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <vector>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
+#include <bitcoin/node/sessions/session.hpp>
 #include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
+#include <bitcoin/node/utility/header_list.hpp>
 
 namespace libbitcoin {
 namespace node {
-    
+
+class full_node;
+
 /// Class to manage initial header download connection, thread safe.
 class BCN_API session_header_sync
-  : public network::session_outbound, track<session_header_sync>
+  : public session<network::session_outbound>, track<session_header_sync>
 {
 public:
     typedef std::shared_ptr<session_header_sync> ptr;
 
-    session_header_sync(network::p2p& network, header_queue& hashes,
-        blockchain::simple_chain& blockchain,
+    session_header_sync(full_node& network, check_list& hashes,
+        blockchain::fast_chain& blockchain,
         const config::checkpoint::list& checkpoints);
 
     virtual void start(result_handler handler) override;
@@ -52,31 +57,42 @@ protected:
 
     /// Override to attach and start specialized protocols after handshake.
     virtual void attach_protocols(network::channel::ptr channel,
-        network::connector::ptr connect, result_handler handler);
+        network::connector::ptr connect, header_list::ptr headers,
+        result_handler handler);
 
 private:
-    bool initialize(result_handler handler);
+    typedef std::vector<header_list::ptr> headers_table;
+
+    bool initialize();
+
     void handle_started(const code& ec, result_handler handler);
+
     void new_connection(network::connector::ptr connect,
-        result_handler handler);
+        header_list::ptr row, result_handler handler);
+
     void start_syncing(const code& ec, const config::authority& host,
         network::connector::ptr connect, result_handler handler);
+
     void handle_connect(const code& ec, network::channel::ptr channel,
-        network::connector::ptr connect, result_handler handler);
-    void handle_complete(const code& ec, network::connector::ptr connect,
+        network::connector::ptr connect, header_list::ptr row,
         result_handler handler);
+
+    void handle_complete(const code& ec, network::connector::ptr connect,
+        header_list::ptr row, result_handler handler);
+
     void handle_channel_start(const code& ec, network::connector::ptr connect,
-        network::channel::ptr channel, result_handler handler);
-    void handle_channel_stop(const code& ec);
-    code get_range(config::checkpoint& out_seed, config::checkpoint& out_stop);
+        network::channel::ptr channel, header_list::ptr row,
+        result_handler handler);
+
+    void handle_channel_stop(const code& ec, header_list::ptr row);
 
     // Thread safe.
-    header_queue& hashes_;
+    check_list& hashes_;
 
     // These do not require guard because they are not used concurrently.
+    headers_table headers_;
     uint32_t minimum_rate_;
-    config::checkpoint last_;
-    blockchain::simple_chain& blockchain_;
+    blockchain::fast_chain& chain_;
     const config::checkpoint::list checkpoints_;
 };
 

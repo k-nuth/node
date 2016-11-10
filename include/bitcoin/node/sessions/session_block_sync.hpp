@@ -26,23 +26,26 @@
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
+#include <bitcoin/node/sessions/session.hpp>
 #include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 #include <bitcoin/node/utility/reservations.hpp>
 
 namespace libbitcoin {
 namespace node {
 
+class full_node;
+
 /// Class to manage initial block download connections, thread safe.
 class BCN_API session_block_sync
-  : public network::session_outbound, track<session_block_sync>
+  : public session<network::session_outbound>, track<session_block_sync>
 {
 public:
     typedef std::shared_ptr<session_block_sync> ptr;
 
-    session_block_sync(network::p2p& network, header_queue& hashes,
-        blockchain::simple_chain& chain, const settings& settings);
+    session_block_sync(full_node& network, check_list& hashes,
+        blockchain::fast_chain& chain, const settings& settings);
 
     void start(result_handler handler) override;
 
@@ -60,21 +63,26 @@ private:
     void handle_started(const code& ec, result_handler handler);
     void new_connection(network::connector::ptr connect,
         reservation::ptr row, result_handler handler);
-    void handle_complete(const code& ec, network::connector::ptr connect,
-        reservation::ptr row, result_handler handler);
+
+    // Sequence.
     void handle_connect(const code& ec, network::channel::ptr channel,
         network::connector::ptr connect, reservation::ptr row,
         result_handler handler);
     void handle_channel_start(const code& ec, network::channel::ptr channel,
         network::connector::ptr connect, reservation::ptr row,
         result_handler handler);
+    void handle_channel_complete(const code& ec,
+        network::connector::ptr connect, reservation::ptr row,
+        result_handler handler);
     void handle_channel_stop(const code& ec, reservation::ptr row);
+    void handle_complete(const code& ec, result_handler handler);
 
+    // Timers.
     void reset_timer(network::connector::ptr connect);
     void handle_timer(const code& ec, network::connector::ptr connect);
 
     // These are thread safe.
-    blockchain::simple_chain& blockchain_;
+    blockchain::fast_chain& chain_;
     reservations reservations_;
     deadline::ptr timer_;
 };

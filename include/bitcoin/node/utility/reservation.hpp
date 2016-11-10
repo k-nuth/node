@@ -77,20 +77,17 @@ public:
     performance rate() const;
 
     /// The current cached average block import rate excluding import time.
-    void set_rate(const performance& rate);
+    void set_rate(performance&& rate);
 
     /// The block data request message for the outstanding block hashes.
     /// Set new if the preceding request was unsuccessful or discarded.
     message::get_data request(bool new_channel);
 
     /// Add the block hash to the reservation.
-    void insert(const config::checkpoint& checkpoint);
-
-    /// Add the block hash to the reservation.
-    void insert(const hash_digest& hash, size_t height);
+    void insert(hash_digest&& hash, size_t height);
 
     /// Add to the blockchain, with height determined by the reservation.
-    void import(chain::block::ptr block);
+    void import(block_const_ptr block);
 
     /// Determine if the reservation was partitioned and reset partition flag.
     bool toggle_partitioned();
@@ -127,19 +124,16 @@ private:
     // A bidirection map is used for efficient hash and height retrieval.
     typedef boost::bimaps::bimap<
         boost::bimaps::unordered_set_of<hash_digest>,
-        boost::bimaps::set_of<uint32_t>> hash_heights;
+        boost::bimaps::set_of<size_t>> hash_heights;
 
     // Return rate history to startup state.
     void clear_history();
 
     // Get the height of the block hash, remove and return true if it is found.
-    bool find_height_and_erase(const hash_digest& hash, uint32_t& out_height);
+    bool find_height_and_erase(const hash_digest& hash, size_t& out_height);
 
     // Update rate history to reflect an additional block of the given size.
     void update_rate(size_t events, const std::chrono::microseconds& database);
-
-    // Thread safe.
-    reservations& reservations_;
 
     // Protected by rate mutex.
     performance rate_;
@@ -159,6 +153,8 @@ private:
     hash_heights heights_;
     mutable upgrade_mutex hash_mutex_;
 
+    // Thread safe.
+    reservations& reservations_;
     const size_t slot_;
     const std::chrono::microseconds rate_window_;
 };

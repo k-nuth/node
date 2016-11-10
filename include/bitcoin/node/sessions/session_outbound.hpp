@@ -24,28 +24,28 @@
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
+#include <bitcoin/node/sessions/session.hpp>
 
 namespace libbitcoin {
 namespace node {
 
+class full_node;
+
 /// Outbound connections session, thread safe.
 class BCN_API session_outbound
-  : public network::session_outbound
+  : public session<network::session_outbound>, track<session_outbound>
 {
 public:
     typedef std::shared_ptr<session_outbound> ptr;
 
     /// Construct an instance.
-    session_outbound(network::p2p& network,
-        blockchain::block_chain& blockchain,
-        blockchain::transaction_pool& pool);
+    session_outbound(full_node& network, blockchain::safe_chain& chain);
 
 protected:
     /// Overridden to attach blockchain protocols.
     void attach_protocols(network::channel::ptr channel) override;
 
-    blockchain::block_chain& blockchain_;
-    blockchain::transaction_pool& pool_;
+    blockchain::safe_chain& chain_;
 };
 
 } // namespace node

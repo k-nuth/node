@@ -58,11 +58,11 @@ message::headers::ptr message_factory(size_t count,
 {
     auto previous_hash = previous;
     const auto headers = std::make_shared<message::headers>();
-    auto& elements = headers->elements;
+    auto& elements = headers->elements();
 
     for (size_t height = 0; height < count; ++height)
     {
-        const header current_header{ 0, previous_hash, {}, 0, 0, 0, 0 };
+        const header current_header{ 0, previous_hash, {}, 0, 0, 0 };
         elements.push_back(current_header);
         previous_hash = current_header.hash();
     }
@@ -112,14 +112,14 @@ blockchain_fixture::blockchain_fixture(bool import_result, size_t gap_trigger,
 {
 }
 
-bool blockchain_fixture::get_gap_range(uint64_t& out_first,
-    uint64_t& out_last) const
+bool blockchain_fixture::get_gap_range(size_t& out_first,
+    size_t& out_last) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_next_gap(uint64_t& out_height,
-    uint64_t start_height) const
+bool blockchain_fixture::get_next_gap(size_t& out_height,
+    size_t start_height) const
 {
     if (start_height == gap_trigger_)
     {
@@ -130,59 +130,102 @@ bool blockchain_fixture::get_next_gap(uint64_t& out_height,
     return false;
 }
 
-bool blockchain_fixture::get_difficulty(hash_number& out_difficulty,
-    uint64_t height) const
+bool blockchain_fixture::get_block_exists(const hash_digest& block_hash) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_header(header& out_header, uint64_t height) const
+bool blockchain_fixture::get_fork_difficulty(hash_number& out_difficulty,
+    size_t height) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_height(uint64_t& out_height,
+bool blockchain_fixture::get_header(header& out_header, size_t height) const
+{
+    return false;
+}
+
+bool blockchain_fixture::get_height(size_t& out_height,
     const hash_digest& block_hash) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_last_height(uint64_t& out_height) const
+bool blockchain_fixture::get_bits(uint32_t& out_bits,
+    const size_t& height) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_outpoint_transaction(hash_digest& out_transaction,
+bool blockchain_fixture::get_timestamp(uint32_t& out_timestamp,
+    const size_t& height) const
+{
+    return false;
+}
+
+bool blockchain_fixture::get_version(uint32_t& out_version,
+    const size_t& height) const
+{
+    return false;
+}
+
+bool blockchain_fixture::get_last_height(size_t& out_height) const
+{
+    return false;
+}
+
+bool blockchain_fixture::get_output(chain::output& out_output, 
+    size_t& out_height, size_t& out_position,
+    const chain::output_point& outpoint) const
+{
+    return false;
+}
+
+bool blockchain_fixture::get_spender_hash(hash_digest& out_hash,
     const output_point& outpoint) const
 {
     return false;
 }
 
-bool blockchain_fixture::get_transaction(transaction& out_transaction,
-    uint64_t& out_block_height, const hash_digest& transaction_hash) const
-{
-    return false;
-}
-
-bool blockchain_fixture::get_transaction_height(uint64_t& out_block_height,
+bool blockchain_fixture::get_is_unspent_transaction(
     const hash_digest& transaction_hash) const
 {
     return false;
 }
 
-bool blockchain_fixture::import(block::ptr block, uint64_t height)
+bool blockchain_fixture::get_transaction_height(size_t& out_block_height,
+    const hash_digest& transaction_hash) const
+{
+    return false;
+}
+
+transaction_ptr blockchain_fixture::get_transaction(size_t& out_block_height,
+    const hash_digest& transaction_hash) const
+{
+    return nullptr;
+}
+
+bool blockchain_fixture::stub(header_const_ptr header, size_t height)
+{
+    return false;
+}
+
+bool blockchain_fixture::fill(block_const_ptr block, size_t height)
 {
     // This prevents a zero import cost, which is useful in testing timeout.
     std::this_thread::sleep_for(std::chrono::microseconds(1));
     return import_result_;
 }
-bool blockchain_fixture::push(block_detail::ptr block)
+
+bool blockchain_fixture::push(const block_const_ptr_list& blocks,
+    size_t height)
 {
     return false;
 }
 
-bool blockchain_fixture::pop_from(block_detail::list& out_blocks,
-    uint64_t height)
+bool blockchain_fixture::pop(block_const_ptr_list& blocks,
+    const hash_digest& fork_hash)
 {
     return false;
 }

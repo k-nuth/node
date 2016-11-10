@@ -26,13 +26,13 @@ namespace node {
 
 settings::settings()
   : block_timeout_seconds(5),
-    download_connections(8),
+    initial_connections(8),
     transaction_pool_refresh(true)
 {
 }
 
 // There are no current distinctions spanning chain contexts.
-settings::settings(bc::settings context)
+settings::settings(config::settings context)
   : settings()
 {
 }

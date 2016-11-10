@@ -26,6 +26,7 @@
 #include <utility>
 #include <boost/format.hpp>
 #include <bitcoin/bitcoin.hpp>
+#include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/performance.hpp>
 #include <bitcoin/node/utility/reservations.hpp>
 
@@ -113,16 +114,17 @@ bool reservation::idle() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void reservation::set_rate(const performance& rate)
+void reservation::set_rate(performance&& rate)
 {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     unique_lock lock(rate_mutex_);
 
-    rate_ = rate;
+    rate_ = std::move(rate);
     ///////////////////////////////////////////////////////////////////////////
 }
 
+// Get a copy of the current rate.
 performance reservation::rate() const
 {
     // Critical Section
@@ -146,19 +148,18 @@ bool reservation::expired() const
     const auto below_average = deviation < 0;
     const auto expired = below_average && outlier;
 
-    log::debug(LOG_NODE)
-       << "Statistics for slot (" << slot() << ")"
-       << " adj:" << (normal_rate * micro_per_second)
-       << " avg:" << (statistics.arithmentic_mean * micro_per_second)
-       << " dev:" << (deviation * micro_per_second)
-       << " sdv:" << (statistics.standard_deviation * micro_per_second)
-       << " cnt:" << (statistics.active_count)
-       << " neg:" << (below_average ? "T" : "F")
-       << " out:" << (outlier ? "T" : "F")
-       << " exp:" << (expired ? "T" : "F");
+    ////LOG_DEBUG(LOG_NODE)
+    ////    << "Statistics for slot (" << slot() << ")"
+    ////    << " adj:" << (normal_rate * micro_per_second)
+    ////    << " avg:" << (statistics.arithmentic_mean * micro_per_second)
+    ////    << " dev:" << (deviation * micro_per_second)
+    ////    << " sdv:" << (statistics.standard_deviation * micro_per_second)
+    ////    << " cnt:" << (statistics.active_count)
+    ////    << " neg:" << (below_average ? "T" : "F")
+    ////    << " out:" << (outlier ? "T" : "F")
+    ////    << " exp:" << (expired ? "T" : "F");
 
-    // return expired;
-    return false;
+    return expired;
 }
 
 void reservation::clear_history()
@@ -218,15 +219,15 @@ void reservation::update_rate(size_t events, const microseconds& database)
     history_mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-    // Update the rate cache.
-    set_rate(rate);
-
-    ////log::debug(LOG_NODE)
+    ////LOG_DEBUG(LOG_NODE)
     ////    << "Records (" << slot() << ") "
     ////    << " size: " << rate.events
     ////    << " time: " << divide<double>(rate.window, micro_per_second)
     ////    << " cost: " << divide<double>(rate.database, micro_per_second)
     ////    << " full: " << (full ? "true" : "false");
+
+    // Update the rate cache.
+    set_rate(std::move(rate));
 }
 
 // Hash methods.
@@ -287,8 +288,7 @@ message::get_data reservation::request(bool new_channel)
         ++height)
     {
         static const auto id = message::inventory::type_id::block;
-        const message::inventory_vector inventory{ id, height->second };
-        packet.inventories.emplace_back(inventory);
+        packet.inventories().emplace_back(id, height->second);
     }
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -300,34 +300,26 @@ message::get_data reservation::request(bool new_channel)
     return packet;
 }
 
-void reservation::insert(const config::checkpoint& checkpoint)
+void reservation::insert(hash_digest&& hash, size_t height)
 {
-    insert(checkpoint.hash(), checkpoint.height());
-}
-
-void reservation::insert(const hash_digest& hash, size_t height)
-{
-    BITCOIN_ASSERT(height <= max_uint32);
-    const auto height32 = static_cast<uint32_t>(height);
-
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     unique_lock lock(hash_mutex_);
 
     pending_ = true;
-    heights_.insert({ hash, height32 });
+    heights_.insert({ std::move(hash), height });
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void reservation::import(block::ptr block)
+void reservation::import(block_const_ptr block)
 {
-    uint32_t height;
-    const auto hash = block->header.hash();
+    size_t height;
+    const auto hash = block->header().hash();
     const auto encoded = encode_hash(hash);
 
     if (!find_height_and_erase(hash, height))
     {
-        log::debug(LOG_NODE)
+        LOG_DEBUG(LOG_NODE)
             << "Ignoring unsolicited block (" << slot() << ") ["
             << encoded << "]";
         return;
@@ -350,13 +342,16 @@ void reservation::import(block::ptr block)
         static const auto formatter =
             "Imported block #%06i (%02i) [%s] %06.2f %05.2f%%";
 
-        log::info(LOG_NODE)
+        LOG_INFO(LOG_NODE)
             << boost::format(formatter) % height % slot() % encoded %
             (record.total() * micro_per_second) % (record.ratio() * 100);
     }
     else
     {
-        log::debug(LOG_NODE)
+        // This could also result from a block import failure resulting from
+        // inserting at a height that is already populated, but that should be
+        // precluded by the implementation. This is the only other failure.
+        LOG_DEBUG(LOG_NODE)
             << "Stopped before importing block (" << slot() << ") ["
             << encoded << "]";
     }
@@ -418,10 +413,9 @@ bool reservation::partition(reservation::ptr minimal)
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();
 
+    // This addition is safe.
     // Take half of the maximal reservation, rounding up to get last entry.
-    const auto own_size = heights_.size();
-    BITCOIN_ASSERT(own_size < max_size_t && (own_size + 1) / 2 <= max_uint32);
-    const auto offset = static_cast<uint32_t>(own_size + 1) / 2;
+    const auto offset = (heights_.size() + 1u) / 2u;
     auto it = heights_.right.begin();
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -453,7 +447,7 @@ bool reservation::partition(reservation::ptr minimal)
     ///////////////////////////////////////////////////////////////////////////
 
     if (populated)
-        log::debug(LOG_NODE)
+        LOG_DEBUG(LOG_NODE)
             << "Moved [" << minimal->size() << "] blocks from slot (" << slot()
             << ") to (" << minimal->slot() << ") leaving [" << size() << "].";
 
@@ -461,7 +455,7 @@ bool reservation::partition(reservation::ptr minimal)
 }
 
 bool reservation::find_height_and_erase(const hash_digest& hash,
-    uint32_t& out_height)
+    size_t& out_height)
 {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////

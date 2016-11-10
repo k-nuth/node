@@ -17,35 +17,43 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NODE_SESSION_INBOUND_HPP
-#define LIBBITCOIN_NODE_SESSION_INBOUND_HPP
+#ifndef LIBBITCOIN_NODE_SESSION_HPP
+#define LIBBITCOIN_NODE_SESSION_HPP
 
-#include <memory>
-#include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session.hpp>
 
 namespace libbitcoin {
 namespace node {
 
 class full_node;
 
-/// Inbound connections session, thread safe.
-class BCN_API session_inbound
-  : public session<network::session_inbound>, track<session_inbound>
+/// Intermediate session base class template.
+/// This avoids having to make network::session into a template.
+template <class Session>
+class BCN_API session
+  : public Session
 {
-public:
-    typedef std::shared_ptr<session_inbound> ptr;
-
-    /// Construct an instance.
-    session_inbound(full_node& network, blockchain::safe_chain& chain);
-
 protected:
-    /// Overridden to attach blockchain protocols.
-    void attach_protocols(network::channel::ptr channel) override;
+    /// Construct an instance.
+    session(full_node& node, bool notify_on_connect)
+      : Session(node, notify_on_connect), node_(node)
+    {
+    }
 
-    blockchain::safe_chain& chain_;
+    /// Attach a protocol to a channel, caller must start the channel.
+    template <class Protocol, typename... Args>
+    typename Protocol::ptr attach(network::channel::ptr channel,
+        Args&&... args)
+    {
+        return std::make_shared<Protocol>(node_, channel,
+            std::forward<Args>(args)...);
+    }
+
+private:
+
+    // This is thread safe.
+    full_node& node_;
 };
 
 } // namespace node

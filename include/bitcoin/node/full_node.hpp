@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef LIBBITCOIN_NODE_P2P_NODE_HPP
-#define LIBBITCOIN_NODE_P2P_NODE_HPP
+#ifndef LIBBITCOIN_NODE_FULL_NODE_HPP
+#define LIBBITCOIN_NODE_FULL_NODE_HPP
 
 #include <cstdint>
 #include <memory>
@@ -28,26 +28,25 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/sessions/session_block_sync.hpp>
 #include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
 
 namespace libbitcoin {
 namespace node {
 
 /// A full node on the Bitcoin P2P network.
-class BCN_API p2p_node
+class BCN_API full_node
   : public network::p2p
 {
 public:
-    typedef std::shared_ptr<p2p_node> ptr;
-    typedef blockchain::organizer::reorganize_handler reorganize_handler;
-    typedef blockchain::transaction_pool::transaction_handler
-        transaction_handler;
+    typedef std::shared_ptr<full_node> ptr;
+    typedef blockchain::block_chain::reorganize_handler reorganize_handler;
+    typedef blockchain::block_chain::transaction_handler transaction_handler;
 
     /// Construct the full node.
-    p2p_node(const configuration& configuration);
+    full_node(const configuration& configuration);
 
     /// Ensure all threads are coalesced.
-    virtual ~p2p_node();
+    virtual ~full_node();
 
     // Start/Run sequences.
     // ------------------------------------------------------------------------
@@ -78,10 +77,7 @@ public:
     virtual const settings& node_settings() const;
 
     /// Blockchain query interface.
-    virtual blockchain::block_chain& chain();
-
-    /// Transaction pool interface.
-    virtual blockchain::transaction_pool& pool();
+    virtual blockchain::safe_chain& chain();
 
     // Subscriptions.
     // ------------------------------------------------------------------------
@@ -90,9 +86,16 @@ public:
     virtual void subscribe_blockchain(reorganize_handler handler);
 
     /// Subscribe to transaction pool acceptance and stop events.
-    virtual void subscribe_transaction_pool(transaction_handler handler);
+    virtual void subscribe_transaction(transaction_handler handler);
 
 protected:
+    /// Attach a node::session to the network, caller must start the session.
+    template <class Session, typename... Args>
+    typename Session::ptr attach(Args&&... args)
+    {
+        return std::make_shared<Session>(*this, std::forward<Args>(args)...);
+    }
+
     /// Override to attach specialized p2p sessions.
     ////network::session_seed::ptr attach_seed_session() override;
     network::session_manual::ptr attach_manual_session() override;
@@ -106,8 +109,9 @@ protected:
 private:
     typedef message::block_message::ptr_list block_ptr_list;
 
-    bool handle_reorganized(const code& ec, size_t fork_point,
-        const block_ptr_list& incoming, const block_ptr_list& outgoing);
+    bool handle_reorganized(const code& ec, size_t fork_height,
+        const block_const_ptr_list& incoming,
+        const block_const_ptr_list& outgoing);
 
     void handle_headers_synchronized(const code& ec, result_handler handler);
     void handle_network_stopped(const code& ec, result_handler handler);
@@ -116,13 +120,13 @@ private:
     void handle_running(const code& ec, result_handler handler);
 
     // These are thread safe.
-    header_queue hashes_;
-    blockchain::block_chain_impl blockchain_;
+    check_list hashes_;
+    blockchain::block_chain chain_;
     const uint32_t protocol_maximum_;
     const settings& settings_;
 };
 
 } // namespace node
-} //namespace libbitcoin
+} // namespace libbitcoin
 
 #endif

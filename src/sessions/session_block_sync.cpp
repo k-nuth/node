@@ -25,8 +25,9 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/protocols/protocol_block_sync.hpp>
+#include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 
 namespace libbitcoin {
@@ -35,18 +36,19 @@ namespace node {
 #define CLASS session_block_sync
 #define NAME "session_block_sync"
 
-using namespace blockchain;
-using namespace config;
-using namespace network;
+using namespace bc::blockchain;
+using namespace bc::config;
+using namespace bc::message;
+using namespace bc::network;
 using namespace std::placeholders;
 
 // The interval in which all-channel block download performance is tested.
 static const asio::seconds regulator_interval(5);
 
-session_block_sync::session_block_sync(p2p& network, header_queue& hashes,
-    simple_chain& chain, const settings& settings)
-  : network::session_outbound(network, false),
-    blockchain_(chain),
+session_block_sync::session_block_sync(full_node& network, check_list& hashes,
+    fast_chain& chain, const settings& settings)
+  : session<network::session_outbound>(network, false),
+    chain_(chain),
     reservations_(hashes, chain, settings),
     CONSTRUCT_TRACK(session_block_sync)
 {
@@ -70,6 +72,10 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         return;
     }
 
+    // TODO: expose block count from reservations and emit here.
+    LOG_INFO(LOG_NODE)
+        << "Getting blocks.";
+
     // Copy the reservations table.
     const auto table = reservations_.table();
 
@@ -79,12 +85,17 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         return;
     }
 
-    // TODO: expose valid block count from reservations and emit here.
-    log::info(LOG_NODE)
-        << "Getting blocks.";
+    if (!reservations_.start())
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Failed to set write lock.";
+        handler(error::operation_failed);
+        return;
+    }
 
     const auto connector = create_connector();
-    const auto complete = synchronize(handler, table.size(), NAME);
+    const auto complete = synchronize(
+        BIND2(handle_complete, _1, handler), table.size(), NAME);
 
     // This is the end of the start sequence.
     for (const auto row: table)
@@ -101,13 +112,13 @@ void session_block_sync::new_connection(connector::ptr connect,
 {
     if (stopped())
     {
-        log::debug(LOG_NODE)
-            << "Suspending slot (" << row ->slot() << ").";
+        LOG_DEBUG(LOG_NODE)
+            << "Suspending block slot (" << row ->slot() << ").";
         return;
     }
 
-    log::debug(LOG_NODE)
-        << "Starting slot (" << row->slot() << ").";
+    LOG_DEBUG(LOG_NODE)
+        << "Starting block slot (" << row->slot() << ").";
 
     // BLOCK SYNC CONNECT
     this->connect(connect,
@@ -119,15 +130,15 @@ void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
 {
     if (ec)
     {
-        log::debug(LOG_NODE)
-            << "Failure connecting slot (" << row->slot() << ") "
+        LOG_DEBUG(LOG_NODE)
+            << "Failure connecting block slot (" << row->slot() << ") "
             << ec.message();
         new_connection(connect, row, handler);
         return;
     }
 
-    log::debug(LOG_NODE)
-        << "Connected slot (" << row->slot() << ") ["
+    LOG_DEBUG(LOG_NODE)
+        << "Connected block slot (" << row->slot() << ") ["
         << channel->authority() << "]";
 
     register_channel(channel,
@@ -141,12 +152,12 @@ void session_block_sync::attach_handshake_protocols(channel::ptr channel,
     // Don't use configured services or relay for block sync.
     const auto relay = false;
     const auto own_version = settings_.protocol_maximum;
-    const auto own_services = message::version::service::none;
+    const auto own_services = version::service::none;
     const auto minimum_version = settings_.protocol_minimum;
-    const auto minimum_services = message::version::service::node_network;
+    const auto minimum_services = version::service::node_network;
 
     // The negotiated_version is initialized to the configured maximum.
-    if (channel->negotiated_version() >= message::version::level::bip61)
+    if (channel->negotiated_version() >= version::level::bip61)
         attach<protocol_version_70002>(channel, own_version, own_services,
             minimum_version, minimum_services, relay)->start(handle_started);
     else
@@ -161,7 +172,7 @@ void session_block_sync::handle_channel_start(const code& ec,
     // Treat a start failure just like a completion failure.
     if (ec)
     {
-        handle_complete(ec, connect, row, handler);
+        handle_channel_complete(ec, connect, row, handler);
         return;
     }
 
@@ -171,42 +182,70 @@ void session_block_sync::handle_channel_start(const code& ec,
 void session_block_sync::attach_protocols(channel::ptr channel,
     connector::ptr connect, reservation::ptr row, result_handler handler)
 {
-    if (channel->negotiated_version() >= message::version::level::bip31)
+    if (channel->negotiated_version() >= version::level::bip31)
         attach<protocol_ping_60001>(channel)->start();
     else
         attach<protocol_ping_31402>(channel)->start();
 
     attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_sync>(channel, row)->start(
-        BIND4(handle_complete, _1, connect, row, handler));
+        BIND4(handle_channel_complete, _1, connect, row, handler));
 }
 
-void session_block_sync::handle_complete(const code& ec,
+void session_block_sync::handle_channel_complete(const code& ec,
     network::connector::ptr connect, reservation::ptr row,
     result_handler handler)
 {
-    if (!ec)
+    if (ec)
     {
-        timer_->stop();
-        reservations_.remove(row);
-
-        log::debug(LOG_NODE)
-            << "Completed slot (" << row->slot() << ")";
-
-        // This is the end of the block sync sequence.
-        handler(ec);
+        // There is no failure scenario, we ignore the result code here.
+        new_connection(connect, row, handler);
         return;
     }
 
-    // There is no failure scenario, we ignore the result code here.
-    new_connection(connect, row, handler);
+    timer_->stop();
+    reservations_.remove(row);
+
+    LOG_DEBUG(LOG_NODE)
+        << "Completed block slot (" << row->slot() << ")";
+
+    // This is the end of the block sync sequence.
+    handler(error::success);
 }
 
 void session_block_sync::handle_channel_stop(const code& ec,
     reservation::ptr row)
 {
-    log::info(LOG_NODE)
-        << "Channel stopped on slot (" << row->slot() << ") " << ec.message();
+    LOG_INFO(LOG_NODE)
+        << "Channel stopped on block slot (" << row->slot() << ") "
+        << ec.message();
+}
+
+void session_block_sync::handle_complete(const code& ec,
+    result_handler handler)
+{
+    // Always stop but give sync priority over stop for reporting.
+    const auto stop = reservations_.stop();
+
+    if (ec)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Failed to complete block sync: " << ec.message();
+        handler(ec);
+        return;
+    }
+
+    if (!stop)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Failed to reset write lock: " << ec.message();
+        handler(error::operation_failed);
+        return;
+    }
+
+    LOG_DEBUG(LOG_NODE)
+        << "Completed block sync.";
+    handler(ec);
 }
 
 // Timer.
@@ -226,7 +265,7 @@ void session_block_sync::handle_timer(const code& ec, connector::ptr connect)
     if (stopped())
         return;
 
-    log::debug(LOG_NODE)
+    LOG_DEBUG(LOG_NODE)
         << "Fired session_block_sync timer: " << ec.message();
 
     ////// TODO: If (total database time as a fn of total time) add a channel.
@@ -235,9 +274,7 @@ void session_block_sync::handle_timer(const code& ec, connector::ptr connect)
     ////const size_t id = reservations_.table().size();
     ////const auto row = std::make_shared<reservation>(reservations_, id);
     ////const synchronizer<result_handler> handler({}, 0, "name", true);
-
     ////if (add) new_connection(connect, row, handler);
-
     ////// TODO: drop the slowest channel
     //////If (drop) reservations_.prune();
 

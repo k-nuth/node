@@ -28,7 +28,6 @@ namespace libbitcoin {
 namespace node {
 
 class executor
-  : public enable_shared_from_base<executor>
 {
 public:
     executor(parser& metadata, std::istream&, std::ostream& output,
@@ -63,9 +62,8 @@ private:
 
     parser& metadata_;
     std::ostream& output_;
-    bc::ofstream debug_file_;
-    bc::ofstream error_file_;
-    p2p_node::ptr node_;
+    std::ostream& error_;
+    full_node::ptr node_;
 };
     
 // Localizable messages.
@@ -75,7 +73,7 @@ private:
     "Runs a full bitcoin node with additional client-server query protocol."
 
 #define BN_UNINITIALIZED_CHAIN \
-    "The %1% directory is not initialized."
+    "The %1% directory is not initialized, run: bn --initchain"
 #define BN_INITIALIZING_CHAIN \
     "Please wait while initializing %1% directory..."
 #define BN_INITCHAIN_NEW \

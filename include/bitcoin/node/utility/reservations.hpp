@@ -28,7 +28,7 @@
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 
 namespace libbitcoin {
@@ -49,8 +49,14 @@ public:
 
     /// Construct a reservation table of reservations, allocating hashes evenly
     /// among the rows up to the limit of a single get headers p2p request.
-    reservations(header_queue& hashes, blockchain::simple_chain& chain,
+    reservations(check_list& hashes, blockchain::fast_chain& chain,
         const settings& settings);
+
+    /// Set the flush lock guard.
+    bool start();
+
+    /// Clear the flush lock guard.
+    bool stop();
 
     /// The average and standard deviation of block import rates.
     rate_statistics rates() const;
@@ -59,7 +65,7 @@ public:
     reservation::list table() const;
 
     /// Import the given block to the blockchain at the specified height.
-    bool import(chain::block::ptr block, size_t height);
+    bool import(block_const_ptr block, size_t height);
 
     /// Populate a starved row by taking half of the hashes from a weak row.
     bool populate(reservation::ptr minimal);
@@ -74,12 +80,10 @@ public:
     void set_max_request(size_t value);
 
 private:
+    bool inline flush(size_t height);
 
     // Create the specified number of reservations and distribute hashes.
-    void initialize(size_t size);
-
-    // Mark hashes for blocks we already have.
-    void mark_existing();
+    void initialize(size_t connections);
 
     // Find the reservation with the most hashes.
     reservation::ptr find_maximal();
@@ -91,15 +95,16 @@ private:
     bool reserve(reservation::ptr minimal);
 
     // Thread safe.
-    header_queue& hashes_;
-    blockchain::simple_chain& blockchain_;
+    check_list& hashes_;
+    std::atomic<size_t> max_request_;
+    const uint32_t timeout_;
+
+    // Protected by block exclusivity and limited call scope.
+    blockchain::fast_chain& chain_;
 
     // Protected by mutex.
     reservation::list table_;
     mutable upgrade_mutex mutex_;
-
-    const uint32_t timeout_;
-    std::atomic<size_t> max_request_;
 };
 
 } // namespace node

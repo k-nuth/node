@@ -17,13 +17,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <bitcoin/node/p2p_node.hpp>
+#include <bitcoin/node/full_node.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/node/configuration.hpp>
+#include <bitcoin/node/define.hpp>
 #include <bitcoin/node/sessions/session_block_sync.hpp>
 #include <bitcoin/node/sessions/session_header_sync.hpp>
 #include <bitcoin/node/sessions/session_inbound.hpp>
@@ -39,24 +40,23 @@ using namespace bc::config;
 using namespace bc::network;
 using namespace std::placeholders;
 
-p2p_node::p2p_node(const configuration& configuration)
+full_node::full_node(const configuration& configuration)
   : p2p(configuration.network),
-    hashes_(configuration.chain.checkpoints),
-    blockchain_(thread_pool(), configuration.chain, configuration.database),
+    chain_(thread_pool(), configuration.chain, configuration.database),
     protocol_maximum_(configuration.network.protocol_maximum),
     settings_(configuration.node)
 {
 }
 
-p2p_node::~p2p_node()
+full_node::~full_node()
 {
-    p2p_node::close();
+    full_node::close();
 }
 
 // Start.
 // ----------------------------------------------------------------------------
 
-void p2p_node::start(result_handler handler)
+void full_node::start(result_handler handler)
 {
     if (!stopped())
     {
@@ -64,9 +64,9 @@ void p2p_node::start(result_handler handler)
         return;
     }
 
-    if (!blockchain_.start())
+    if (!chain_.start())
     {
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Blockchain failed to start.";
         handler(error::operation_failed);
         return;
@@ -80,7 +80,7 @@ void p2p_node::start(result_handler handler)
 // Run sequence.
 // ----------------------------------------------------------------------------
 
-void p2p_node::run(result_handler handler)
+void full_node::run(result_handler handler)
 {
     if (stopped())
     {
@@ -88,10 +88,14 @@ void p2p_node::run(result_handler handler)
         return;
     }
 
+    // Skip sync sessions.
+    handle_running(error::success, handler);
+    return;
+
     // TODO: make this safe by requiring sync if gaps found.
     ////// By setting no download connections checkpoints can be used without sync.
     ////// This also allows the maximum protocol version to be set below headers.
-    ////if (settings_.download_connections == 0)
+    ////if (settings_.initial_connections == 0)
     ////{
     ////    // This will spawn a new thread before returning.
     ////    handle_running(error::success, handler);
@@ -103,11 +107,11 @@ void p2p_node::run(result_handler handler)
 
     // This is invoked on a new thread.
     header_sync->start(
-        std::bind(&p2p_node::handle_headers_synchronized,
+        std::bind(&full_node::handle_headers_synchronized,
             this, _1, handler));
 }
 
-void p2p_node::handle_headers_synchronized(const code& ec,
+void full_node::handle_headers_synchronized(const code& ec,
     result_handler handler)
 {
     if (stopped())
@@ -118,7 +122,7 @@ void p2p_node::handle_headers_synchronized(const code& ec,
 
     if (ec)
     {
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failure synchronizing headers: " << ec.message();
         handler(ec);
         return;
@@ -129,11 +133,11 @@ void p2p_node::handle_headers_synchronized(const code& ec,
 
     // This is invoked on a new thread.
     block_sync->start(
-        std::bind(&p2p_node::handle_running,
+        std::bind(&full_node::handle_running,
             this, _1, handler));
 }
 
-void p2p_node::handle_running(const code& ec, result_handler handler)
+void full_node::handle_running(const code& ec, result_handler handler)
 {
     if (stopped())
     {
@@ -143,30 +147,37 @@ void p2p_node::handle_running(const code& ec, result_handler handler)
 
     if (ec)
     {
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failure synchronizing blocks: " << ec.message();
         handler(ec);
         return;
     }
 
-    uint64_t height;
-
-    if (!blockchain_.get_last_height(height))
+    if (!chain_.start_pools())
     {
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
+            << "Failure starting pools.";
+        handler(error::operation_failed);
+        return;
+    }
+
+    size_t height;
+
+    if (!chain_.get_last_height(height))
+    {
+        LOG_ERROR(LOG_NODE)
             << "The blockchain is corrupt.";
         handler(error::operation_failed);
         return;
     }
 
-    BITCOIN_ASSERT(height <= max_size_t);
-    set_height(static_cast<size_t>(height));
+    set_top_block({ null_hash, height });
 
-    log::info(LOG_NODE)
+    LOG_INFO(LOG_NODE)
         << "Node start height is (" << height << ").";
 
     subscribe_blockchain(
-        std::bind(&p2p_node::handle_reorganized,
+        std::bind(&full_node::handle_reorganized,
             this, _1, _2, _3, _4));
 
     // This is invoked on a new thread.
@@ -174,29 +185,30 @@ void p2p_node::handle_running(const code& ec, result_handler handler)
     p2p::run(handler);
 }
 
-// This maintains a height member.
-bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
-    const block_ptr_list& incoming, const block_ptr_list& outgoing)
+// A typical reorganization consists of one incoming and zero outgoing blocks.
+bool full_node::handle_reorganized(const code& ec, size_t fork_height,
+    const block_const_ptr_list& incoming, const block_const_ptr_list& outgoing)
 {
     if (stopped() || ec == error::service_stopped)
         return false;
 
     if (ec)
     {
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failure handling reorganization: " << ec.message();
         stop();
         return false;
     }
 
     for (const auto block: outgoing)
-        log::debug(LOG_NODE)
-            << "Reorganization discarded block ["
-            << encode_hash(block->header.hash()) << "]";
+        LOG_DEBUG(LOG_NODE)
+            << "Reorganization moved block to orphan pool ["
+            << encode_hash(block->header().hash()) << "]";
 
-    BITCOIN_ASSERT(max_size_t - fork_point >= incoming.size());
-    const auto height = fork_point + incoming.size();
-    set_height(height);
+    BITCOIN_ASSERT(!incoming.empty());
+    const auto height = safe_add(fork_height, incoming.size());
+
+    set_top_block({ incoming.back()->hash(), height });
     return true;
 }
 
@@ -206,68 +218,68 @@ bool p2p_node::handle_reorganized(const code& ec, size_t fork_point,
 
 // Must not connect until running, otherwise imports may conflict with sync.
 // But we establish the session in network so caller doesn't need to run.
-network::session_manual::ptr p2p_node::attach_manual_session()
+network::session_manual::ptr full_node::attach_manual_session()
 {
-    return attach<node::session_manual>(blockchain_, blockchain_.pool());
+    return attach<node::session_manual>(chain_);
 }
 
-network::session_inbound::ptr p2p_node::attach_inbound_session()
+network::session_inbound::ptr full_node::attach_inbound_session()
 {
-    return attach<node::session_inbound>(blockchain_, blockchain_.pool());
+    return attach<node::session_inbound>(chain_);
 }
 
-network::session_outbound::ptr p2p_node::attach_outbound_session()
+network::session_outbound::ptr full_node::attach_outbound_session()
 {
-    return attach<node::session_outbound>(blockchain_, blockchain_.pool());
+    return attach<node::session_outbound>(chain_);
 }
 
-session_header_sync::ptr p2p_node::attach_header_sync_session()
+session_header_sync::ptr full_node::attach_header_sync_session()
 {
-    const auto& checkpoints = blockchain_.chain_settings().checkpoints;
-    return attach<session_header_sync>(hashes_, blockchain_, checkpoints);
+    const auto& checkpoints = chain_.chain_settings().checkpoints;
+    return attach<session_header_sync>(hashes_, chain_, checkpoints);
 }
 
-session_block_sync::ptr p2p_node::attach_block_sync_session()
+session_block_sync::ptr full_node::attach_block_sync_session()
 {
-    return attach<session_block_sync>(hashes_, blockchain_, settings_);
+    return attach<session_block_sync>(hashes_, chain_, settings_);
 }
 
 // Shutdown
 // ----------------------------------------------------------------------------
 
-bool p2p_node::stop()
+bool full_node::stop()
 {
     // Suspend new work last so we can use work to clear subscribers.
     const auto p2p_stop = p2p::stop();
-    const auto chain_stop = blockchain_.stop();
+    const auto chain_stop = chain_.stop();
 
     if (!p2p_stop)
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failed to stop network.";
 
     if (!chain_stop)
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failed to stop database.";
 
     return p2p_stop && chain_stop;
 }
 
 // This must be called from the thread that constructed this class (see join).
-bool p2p_node::close()
+bool full_node::close()
 {
     // Invoke own stop to signal work suspension.
-    if (!p2p_node::stop())
+    if (!full_node::stop())
         return false;
 
     const auto p2p_close = p2p::close();
-    const auto chain_close = blockchain_.close();
+    const auto chain_close = chain_.close();
 
     if (!p2p_close)
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failed to close network.";
 
     if (!chain_close)
-        log::error(LOG_NODE)
+        LOG_ERROR(LOG_NODE)
             << "Failed to close database.";
 
     return p2p_close && chain_close;
@@ -276,33 +288,28 @@ bool p2p_node::close()
 // Properties.
 // ----------------------------------------------------------------------------
 
-const settings& p2p_node::node_settings() const
+const settings& full_node::node_settings() const
 {
     return settings_;
 }
 
-block_chain& p2p_node::chain()
+safe_chain& full_node::chain()
 {
-    return blockchain_;
-}
-
-transaction_pool& p2p_node::pool()
-{
-    return blockchain_.pool();
+    return chain_;
 }
 
 // Subscriptions.
 // ----------------------------------------------------------------------------
 
-void p2p_node::subscribe_blockchain(reorganize_handler handler)
+void full_node::subscribe_blockchain(reorganize_handler handler)
 {
     chain().subscribe_reorganize(handler);
 }
 
-void p2p_node::subscribe_transaction_pool(transaction_handler handler)
+void full_node::subscribe_transaction(transaction_handler handler)
 {
-    pool().subscribe_transaction(handler);
+    chain().subscribe_transaction(handler);
 }
 
 } // namespace node
-} //namespace libbitcoin
+} // namespace libbitcoin

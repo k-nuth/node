@@ -26,35 +26,59 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#include <boost/core/null_deleter.hpp>
 #include <bitcoin/node.hpp>
 
 namespace libbitcoin {
 namespace node {
 
 using boost::format;
-using namespace std::placeholders;
+using namespace boost;
 using namespace boost::system;
+using namespace bc::chain;
 using namespace bc::config;
 using namespace bc::database;
 using namespace bc::network;
+using namespace std::placeholders;
 
+static const auto application_name = "bn";
 static constexpr int initialize_stop = 0;
 static constexpr int directory_exists = 0;
 static constexpr int directory_not_found = 2;
-static constexpr auto append = std::ofstream::out | std::ofstream::app;
-static const auto application_name = "bn";
+static const auto mode = std::ofstream::out | std::ofstream::app;
 
 std::promise<code> executor::stopping_;
 
 executor::executor(parser& metadata, std::istream& input,
     std::ostream& output, std::ostream& error)
-  : metadata_(metadata), output_(output),
-    debug_file_(metadata_.configured.network.debug_file.string(), append),
-    error_file_(metadata_.configured.network.error_file.string(), append)
+  : metadata_(metadata), output_(output), error_(error)
 {
-    initialize_logging(debug_file_, error_file_, output, error);
+    const auto& network = metadata_.configured.network;
+
+    const log::rotable_file debug_file
+    {
+        network.debug_file,
+        network.archive_directory,
+        network.rotation_size,
+        network.maximum_archive_size,
+        network.minimum_free_space,
+        network.maximum_archive_files
+    };
+
+    const log::rotable_file error_file
+    {
+        network.error_file,
+        network.archive_directory,
+        network.rotation_size,
+        network.maximum_archive_size,
+        network.minimum_free_space,
+        network.maximum_archive_files
+    };
+
+    log::stream console_out(&output_, null_deleter());
+    log::stream console_err(&error_, null_deleter());
+
+    log::initialize(debug_file, error_file, console_out, console_err);
     handle_stop(initialize_stop);
 }
 
@@ -96,25 +120,26 @@ bool executor::do_initchain()
 
     if (create_directories(directory, ec))
     {
-        log::info(LOG_NODE) << format(BN_INITIALIZING_CHAIN) % directory;
+        LOG_INFO(LOG_NODE) << format(BN_INITIALIZING_CHAIN) % directory;
 
         // Unfortunately we are still limited to a choice of hardcoded chains.
         const auto genesis = metadata_.configured.chain.use_testnet_rules ?
-            chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+            block::genesis_testnet() : block::genesis_mainnet();
 
-        const auto result = data_base::initialize(directory, genesis);
+        const auto& settings = metadata_.configured.database;
+        const auto result = data_base(settings).create(genesis);
 
-        log::info(LOG_NODE) << BN_INITCHAIN_COMPLETE;
+        LOG_INFO(LOG_NODE) << BN_INITCHAIN_COMPLETE;
         return result;
     }
 
     if (ec.value() == directory_exists)
     {
-        log::error(LOG_NODE) << format(BN_INITCHAIN_EXISTS) % directory;
+        LOG_ERROR(LOG_NODE) << format(BN_INITCHAIN_EXISTS) % directory;
         return false;
     }
 
-    log::error(LOG_NODE) << format(BN_INITCHAIN_NEW) % directory % ec.message();
+    LOG_ERROR(LOG_NODE) << format(BN_INITCHAIN_NEW) % directory % ec.message();
     return false;
 }
 
@@ -159,14 +184,14 @@ bool executor::run()
 {
     initialize_output();
 
-    log::info(LOG_NODE) << BN_NODE_INTERRUPT;
-    log::info(LOG_NODE) << BN_NODE_STARTING;
+    LOG_INFO(LOG_NODE) << BN_NODE_INTERRUPT;
+    LOG_INFO(LOG_NODE) << BN_NODE_STARTING;
 
     if (!verify_directory())
         return false;
 
     // Now that the directory is verified we can create the node for it.
-    node_ = std::make_shared<p2p_node>(metadata_.configured);
+    node_ = std::make_shared<full_node>(metadata_.configured);
 
     // The callback may be returned on the same thread.
     node_->start(
@@ -176,13 +201,13 @@ bool executor::run()
     // Wait for stop.
     stopping_.get_future().wait();
 
-    log::info(LOG_NODE) << BN_NODE_STOPPING;
+    LOG_INFO(LOG_NODE) << BN_NODE_STOPPING;
 
     // Close must be called from main thread.
     if (node_->close())
-        log::info(LOG_NODE) << BN_NODE_STOPPED;
+        LOG_INFO(LOG_NODE) << BN_NODE_STOPPED;
     else
-        log::info(LOG_NODE) << BN_NODE_STOP_FAIL;
+        LOG_INFO(LOG_NODE) << BN_NODE_STOP_FAIL;
 
     return true;
 }
@@ -192,12 +217,12 @@ void executor::handle_started(const code& ec)
 {
     if (ec)
     {
-        log::error(LOG_NODE) << format(BN_NODE_START_FAIL) % ec.message();
+        LOG_ERROR(LOG_NODE) << format(BN_NODE_START_FAIL) % ec.message();
         stop(ec);
         return;
     }
 
-    log::info(LOG_NODE) << BN_NODE_SEEDED;
+    LOG_INFO(LOG_NODE) << BN_NODE_SEEDED;
 
     // This is the beginning of the stop sequence.
     node_->subscribe_stop(
@@ -215,12 +240,12 @@ void executor::handle_running(const code& ec)
 {
     if (ec)
     {
-        log::info(LOG_NODE) << format(BN_NODE_START_FAIL) % ec.message();
+        LOG_INFO(LOG_NODE) << format(BN_NODE_START_FAIL) % ec.message();
         stop(ec);
         return;
     }
 
-    log::info(LOG_NODE) << BN_NODE_STARTED;
+    LOG_INFO(LOG_NODE) << BN_NODE_STARTED;
 }
 
 // This is the end of the stop sequence.
@@ -242,7 +267,7 @@ void executor::handle_stop(int code)
     if (code == initialize_stop)
         return;
 
-    log::info(LOG_NODE) << format(BN_NODE_SIGNALED) % code;
+    LOG_INFO(LOG_NODE) << format(BN_NODE_SIGNALED) % code;
     stop(error::success);
 }
 
@@ -259,18 +284,18 @@ void executor::stop(const code& ec)
 // Set up logging.
 void executor::initialize_output()
 {
-    log::debug(LOG_NODE) << BN_LOG_HEADER;
-    log::info(LOG_NODE) << BN_LOG_HEADER;
-    log::warning(LOG_NODE) << BN_LOG_HEADER;
-    log::error(LOG_NODE) << BN_LOG_HEADER;
-    log::fatal(LOG_NODE) << BN_LOG_HEADER;
+    LOG_DEBUG(LOG_NODE) << BN_LOG_HEADER;
+    LOG_INFO(LOG_NODE) << BN_LOG_HEADER;
+    LOG_WARNING(LOG_NODE) << BN_LOG_HEADER;
+    LOG_ERROR(LOG_NODE) << BN_LOG_HEADER;
+    LOG_FATAL(LOG_NODE) << BN_LOG_HEADER;
 
     const auto& file = metadata_.configured.file;
 
     if (file.empty())
-        log::info(LOG_NODE) << BN_USING_DEFAULT_CONFIG;
+        LOG_INFO(LOG_NODE) << BN_USING_DEFAULT_CONFIG;
     else
-        log::info(LOG_NODE) << format(BN_USING_CONFIG_FILE) % file;
+        LOG_INFO(LOG_NODE) << format(BN_USING_CONFIG_FILE) % file;
 }
 
 // Use missing directory as a sentinel indicating lack of initialization.
@@ -284,12 +309,12 @@ bool executor::verify_directory()
 
     if (ec.value() == directory_not_found)
     {
-        log::error(LOG_NODE) << format(BN_UNINITIALIZED_CHAIN) % directory;
+        LOG_ERROR(LOG_NODE) << format(BN_UNINITIALIZED_CHAIN) % directory;
         return false;
     }
 
     const auto message = ec.message();
-    log::error(LOG_NODE) << format(BN_INITCHAIN_TRY) % directory % message;
+    LOG_ERROR(LOG_NODE) << format(BN_INITCHAIN_TRY) % directory % message;
     return false;
 }
 

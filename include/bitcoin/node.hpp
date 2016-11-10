@@ -18,7 +18,7 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/configuration.hpp>
 #include <bitcoin/node/define.hpp>
-#include <bitcoin/node/p2p_node.hpp>
+#include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/parser.hpp>
 #include <bitcoin/node/settings.hpp>
 #include <bitcoin/node/version.hpp>
@@ -28,12 +28,14 @@
 #include <bitcoin/node/protocols/protocol_header_sync.hpp>
 #include <bitcoin/node/protocols/protocol_transaction_in.hpp>
 #include <bitcoin/node/protocols/protocol_transaction_out.hpp>
+#include <bitcoin/node/sessions/session.hpp>
 #include <bitcoin/node/sessions/session_block_sync.hpp>
 #include <bitcoin/node/sessions/session_header_sync.hpp>
 #include <bitcoin/node/sessions/session_inbound.hpp>
 #include <bitcoin/node/sessions/session_manual.hpp>
 #include <bitcoin/node/sessions/session_outbound.hpp>
-#include <bitcoin/node/utility/header_queue.hpp>
+#include <bitcoin/node/utility/check_list.hpp>
+#include <bitcoin/node/utility/header_list.hpp>
 #include <bitcoin/node/utility/performance.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 #include <bitcoin/node/utility/reservations.hpp>

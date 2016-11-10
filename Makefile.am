@@ -36,7 +36,7 @@ src_libbitcoin_node_la_CPPFLAGS = -I${srcdir}/include -DSYSCONFDIR=\"${sysconfdi
 src_libbitcoin_node_la_LIBADD = ${bitcoin_blockchain_LIBS} ${bitcoin_network_LIBS}
 src_libbitcoin_node_la_SOURCES = \
     src/configuration.cpp \
-    src/p2p_node.cpp \
+    src/full_node.cpp \
     src/parser.cpp \
     src/settings.cpp \
     src/protocols/protocol_block_in.cpp \
@@ -50,7 +50,8 @@ src_libbitcoin_node_la_SOURCES = \
     src/sessions/session_inbound.cpp \
     src/sessions/session_manual.cpp \
     src/sessions/session_outbound.cpp \
-    src/utility/header_queue.cpp \
+    src/utility/check_list.cpp \
+    src/utility/header_list.cpp \
     src/utility/performance.cpp \
     src/utility/reservation.cpp \
     src/utility/reservations.cpp
@@ -65,8 +66,9 @@ check_PROGRAMS = test/libbitcoin_node_test
 test_libbitcoin_node_test_CPPFLAGS = -I${srcdir}/include ${bitcoin_blockchain_CPPFLAGS} ${bitcoin_network_CPPFLAGS}
 test_libbitcoin_node_test_LDADD = src/libbitcoin-node.la ${boost_unit_test_framework_LIBS} ${bitcoin_blockchain_LIBS} ${bitcoin_network_LIBS}
 test_libbitcoin_node_test_SOURCES = \
+    test/check_list.cpp \
     test/configuration.cpp \
-    test/header_queue.cpp \
+    test/header_list.cpp \
     test/main.cpp \
     test/node.cpp \
     test/performance.cpp \
@@ -102,7 +104,7 @@ include_bitcoin_nodedir = ${includedir}/bitcoin/node
 include_bitcoin_node_HEADERS = \
     include/bitcoin/node/configuration.hpp \
     include/bitcoin/node/define.hpp \
-    include/bitcoin/node/p2p_node.hpp \
+    include/bitcoin/node/full_node.hpp \
     include/bitcoin/node/parser.hpp \
     include/bitcoin/node/settings.hpp \
     include/bitcoin/node/version.hpp
@@ -118,6 +120,7 @@ include_bitcoin_node_protocols_HEADERS = \
 
 include_bitcoin_node_sessionsdir = ${includedir}/bitcoin/node/sessions
 include_bitcoin_node_sessions_HEADERS = \
+    include/bitcoin/node/sessions/session.hpp \
     include/bitcoin/node/sessions/session_block_sync.hpp \
     include/bitcoin/node/sessions/session_header_sync.hpp \
     include/bitcoin/node/sessions/session_inbound.hpp \
@@ -126,7 +129,8 @@ include_bitcoin_node_sessions_HEADERS = \
 
 include_bitcoin_node_utilitydir = ${includedir}/bitcoin/node/utility
 include_bitcoin_node_utility_HEADERS = \
-    include/bitcoin/node/utility/header_queue.hpp \
+    include/bitcoin/node/utility/check_list.hpp \
+    include/bitcoin/node/utility/header_list.hpp \
     include/bitcoin/node/utility/performance.hpp \
     include/bitcoin/node/utility/reservation.hpp \
     include/bitcoin/node/utility/reservations.hpp

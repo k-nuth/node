@@ -17,31 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 #include <bitcoin/node.hpp>
-#include "executor.hpp"
 
-BC_USE_LIBBITCOIN_MAIN
+using namespace bc;
 
-/**
- * Invoke this program with the raw arguments provided on the command line.
- * All console input and output streams for the application originate here.
- * @param argc  The number of elements in the argv array.
- * @param argv  The array of arguments, including the process.
- * @return      The numeric result to return via console exit.
- */
-int bc::main(int argc, char* argv[])
+BOOST_AUTO_TEST_SUITE(check_list_tests)
+
+BOOST_AUTO_TEST_CASE(todo)
 {
-    using namespace bc;
-    using namespace bc::node;
-
-    set_utf8_stdio();
-    node::parser metadata(config::settings::mainnet);
-    const auto& args = const_cast<const char**>(argv);
-
-    if (!metadata.parse(argc, args, cerr))
-        return console_result::failure;
-
-    executor host(metadata, cin, cout, cerr);
-    return host.menu() ? console_result::okay : console_result::failure;
+    BOOST_REQUIRE(true);
 }
+
+BOOST_AUTO_TEST_SUITE_END()
