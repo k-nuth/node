@@ -1,12 +1,10 @@
-[![Build Status](https://travis-ci.org/libbitcoin/libbitcoin-node.svg?branch=master)](https://travis-ci.org/libbitcoin/libbitcoin-node)
+[![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg?branch=master)](https://travis-ci.org/bitprim/bitprim-node)
 
-[![Coverage Status](https://coveralls.io/repos/libbitcoin/libbitcoin-node/badge.svg)](https://coveralls.io/r/libbitcoin/libbitcoin-node)
-
-# Libbitcoin Node
+# Bitprim Node
 
 *Bitcoin full node based on libbitcoin-blockchain*
 
-Make sure you have installed [libbitcoin-blockchain](https://github.com/libbitcoin/libbitcoin-blockchain) and [libbitcoin-network](https://github.com/libbitcoin/libbitcoin-network) beforehand according to their build instructions.
+Make sure you have installed [bitprim-blockchain](https://github.com/bitprim/bitprim-blockchain) beforehand according to its build instructions.
 
 ```sh
 $ ./autogen.sh
@@ -16,6 +14,6 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-libbitcoin-node is now installed in `/usr/local/`.
+bitprim-node is now installed in `/usr/local/`.
 
-In version2 the `bitcoin-node` console app is for demonstration purposes only. See [libbitcoin-server](https://github.com/libbitcoin/libbitcoin-server) for release quality full node functionality.
+In version2 the `bitcoin-node` console app is for demonstration purposes only. See [bitprim-server](https://github.com/bitprim/bitprim-server) for release quality full node functionality.
