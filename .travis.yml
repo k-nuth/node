@@ -13,6 +13,18 @@ git:
   
 matrix:
   include:
+    # gcc-5
+    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+      os: linux
+      addons: &gcc5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - g++-5
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
 
     # Linux clang-3.6 Debug
     - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
@@ -271,7 +283,7 @@ install:
   - cd secp256k1
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DWITH_EXAMPLES=OFF -DENABLE_MODULE_RECOVERY=ON -DWITH_TOOLS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
   - make -j2 --silent
   - sudo make install --silent
   - cd ..
