@@ -1,4 +1,4 @@
-# Bitprim.Build
+# Bitprim.Node
 #
 # Copyright (c) 2016 Bitprim developers (see AUTHORS)
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -15,7 +15,7 @@ matrix:
   include:
 
     # Linux clang-3.6 Debug
-    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: linux
       sudo: required
       dist: trusty
@@ -28,7 +28,7 @@ matrix:
             - llvm-toolchain-precise-3.6
 
     # Linux clang-3.6 Release
-    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
+    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: linux
       sudo: required
       dist: trusty
@@ -41,7 +41,7 @@ matrix:
             - llvm-toolchain-precise-3.6
 
     # Linux clang-3.7 Debug
-    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: linux
       sudo: required
       dist: trusty
@@ -54,7 +54,7 @@ matrix:
             - llvm-toolchain-precise-3.7
 
     # Linux clang-3.7 Release
-    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
+    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: linux
       sudo: required
       dist: trusty
@@ -67,7 +67,7 @@ matrix:
             - llvm-toolchain-precise-3.7
 
     # Linux clang-3.8 Debug
-    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: linux
       sudo: required
       dist: trusty
@@ -80,7 +80,7 @@ matrix:
             - llvm-toolchain-precise-3.8
 
     # Linux clang-3.8 Release
-    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
+    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: linux
       sudo: required
       dist: trusty
@@ -93,7 +93,7 @@ matrix:
             - llvm-toolchain-precise-3.8
 
     # gcc-4.9 Debug
-    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: linux
       sudo: required
       dist: trusty
@@ -106,7 +106,7 @@ matrix:
             - llvm-toolchain-precise-3.6
 
     # gcc-4.9 Release
-    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
+    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: linux
       sudo: required
       dist: trusty
@@ -121,13 +121,13 @@ matrix:
     # OSX
 
     # Xcode 7 Debug
-    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
+    - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: osx
       osx_image: xcode7
       addons: &xcode7
 
     # Xcode 7 Release
-    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
+    - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: osx
       osx_image: xcode7
       addons: &xcode7
@@ -356,8 +356,8 @@ install:
   - mkdir build
   - cd build
   - cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DWITH_EXAMPLES=OFF -DWITH_TOOLS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
-  - make -j2
-  - sudo make install
+  - make -j2 --silent
+  - sudo make install --silent
   - cd ..
   - cd ..
 
@@ -377,8 +377,8 @@ install:
   - mkdir build
   - cd build
   - cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
-  - make -j2
-  - sudo make install
+  - make -j2 --silent
+  - sudo make install --silent
   - cd ..
   - cd ..
 
