@@ -13,19 +13,6 @@ git:
   
 matrix:
   include:
-    # gcc-5
-    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
-      os: linux
-      addons: &gcc5
-        apt:
-          packages:
-            - cmake
-            - cmake-data
-            - g++-5
-          sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-
     # Linux clang-3.6 Debug
     - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: linux
@@ -129,33 +116,86 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
+            
+    # gcc-5
+    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
+      os: linux
+      sudo: required
+      dist: trusty
+      addons: &gcc5
+        apt:
+          packages:
+            - cmake
+            - g++-5
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
+      os: linux
+      sudo: required
+      dist: trusty
+      addons: &gcc5
+        apt:
+          packages:
+            - cmake
+            - g++-5
+          sources:
+            - ubuntu-toolchain-r-test
+            
+    # gcc-6
+    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
+      os: linux
+      sudo: required
+      dist: trusty
+      addons: &gcc6
+        apt:
+          packages:
+            - cmake
+            - g++-6
+          sources:
+            - ubuntu-toolchain-r-test
+    
+    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
+      os: linux
+      sudo: required
+      dist: trusty
+      addons: &gcc6
+        apt:
+          packages:
+            - cmake
+            - g++-6
+          sources:
+            - ubuntu-toolchain-r-test
 
     # OSX
 
     # Xcode 7 Debug
     - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
       os: osx
-      osx_image: xcode7
-      addons: &xcode7
+      osx_image: xcode73
+      addons: &xcode73
+      sudo: required
 
     # Xcode 7 Release
     - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
       os: osx
-      osx_image: xcode7
-      addons: &xcode7
-
-    # ZeroMQ NOT WORKING
-    ## Xcode 8 Debug 
-    #- env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
-    #  os: osx
-    #  osx_image: xcode8
-    #  addons: &xcode8
-
-    ## Xcode 8 Release
-    #- env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
-    #  os: osx
-    #  osx_image: xcode8
-    #  addons: &xcode8
+      osx_image: xcode73
+      addons: &xcode73
+      sudo: required
+      
+    # Xcode 8 Release
+    - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
+      os: osx
+      osx_image: xcode8
+      addons: &xcode8
+      sudo: required
+      
+    # Xcode 8 Release
+    - env: CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
+      os: osx
+      osx_image: xcode8
+      addons: &xcode8
+      sudo: required
 
 
     ##########################################################################
@@ -181,16 +221,6 @@ before_install:
   # Update submodules 
   - git submodule update --init --recursive
 
-  # Update apt lists (in order to install boost 1.58+)
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      cat /etc/apt/sources.list
-      cp /etc/apt/sources.list /tmp/sources.list
-      echo 'deb http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse' >> /tmp/sources.list
-      echo 'deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse' >> /tmp/sources.list
-      sudo mv /tmp/sources.list /etc/apt/sources.list
-    fi
-  
   # protobuf prerequisites
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
@@ -225,20 +255,21 @@ install:
       brew unlink cmake
       brew install cmake
     fi
-    
-
-  # Install boost 1.58+
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      sudo apt-get -qq update
-      sudo apt-get install -y libboost-all-dev
-    fi
-    #boost 1.60 already installed in osx
-    #brew install boost
 
   ############################################################################
   # Install Boost
-  ############################################################################  
+  ############################################################################
+  
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      wget -O boost.tar.gz https://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.gz/download
+      tar -xzf boost.tar.gz
+      cd boost_1_61_0
+      ./bootstrap.sh --prefix=/usr/local 
+      ./b2 #--toolset="gcc-${GCC_VERSION}"
+      sudo ./b2 install 
+      cd ..
+    fi
   
   #- sudo apt-get -y install libboost-{chrono,program-options,date-time,thread,system,filesystem,regex,serialization,iostreams,locale}1.58{-dev,.0}
     
@@ -247,15 +278,33 @@ install:
   ############################################################################    
   - wget https://github.com/zeromq/libzmq/releases/download/v4.2.0/zeromq-4.2.0.tar.gz
   - tar -xzvf zeromq-4.2.0.tar.gz
-  - cd zeromq-4.2.0 && ./autogen.sh && ./configure --prefix=/usr && make --silent && sudo make install --silent
+  - cd zeromq-4.2.0
+  - sudo ./autogen.sh
+  - sudo ./configure #--prefix=/usr 
+  - sudo make --silent 
+  - sudo make install --silent
   - cd ..
+
   ############################################################################
   # Install protobuf
   ############################################################################
-  - wget https://github.com/google/protobuf/releases/download/v3.1.0/protobuf-cpp-3.1.0.tar.gz
-  - tar -xzvf protobuf-cpp-3.1.0.tar.gz
-  - cd protobuf-3.1.0 && ./configure --prefix=/usr && make --silent && sudo make install --silent
-  - cd ..
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      wget https://github.com/google/protobuf/releases/download/v3.1.0/protobuf-cpp-3.1.0.tar.gz
+      tar -xzvf protobuf-cpp-3.1.0.tar.gz
+      cd protobuf-3.1.0
+      sudo ./configure #--prefix=/usr 
+      sudo make --silent
+      sudo make install --silent
+      cd ..
+    fi
+  
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+      brew unlink protobuf
+      brew install protobuf
+    fi  
+    
   ############################################################################
   # Ldconfig only in linux
   ############################################################################
@@ -283,7 +332,7 @@ install:
   - cd secp256k1
   - mkdir build
   - cd build
-  - cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DWITH_EXAMPLES=OFF -DENABLE_MODULE_RECOVERY=ON -DWITH_TOOLS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}"
+  - cmake .. -DENABLE_MODULE_RECOVERY=ON 
   - make -j2 --silent
   - sudo make install --silent
   - cd ..
