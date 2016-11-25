@@ -4,14 +4,16 @@
 
 *Bitcoin full node based on libbitcoin-blockchain*
 
-Make sure you have installed [bitprim-blockchain](https://github.com/bitprim/bitprim-blockchain) beforehand according to its build instructions.
+Make sure you have installed [bitprim-core](https://github.com/bitprim/bitprim-core), [bitprim-database](https://github.com/bitprim/bitprim-database), [bitprim-blockchain](https://github.com/bitprim/bitprim-blockchain), [bitprim-consensus](https://github.com/bitprim/bitprim-consensus) (optional) and [bitprim-network](https://github.com/bitprim/bitprim-network) beforehand according to its build instructions.
 
-```sh
-$ ./autogen.sh
-$ ./configure
-$ make
+```
+$ git clone https://github.com/bitprim/bitprim-node.git
+$ cd bitprim-node
+$ mkdir build
+$ cd build
+$ cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-std=c++11" 
+$ make -j2
 $ sudo make install
-$ sudo ldconfig
 ```
 
 bitprim-node is now installed in `/usr/local/`.
