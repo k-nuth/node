@@ -44,6 +44,12 @@ if (NOT TARGET bitprim-blockchain)
   find_package(bitprim-blockchain 3.0.0 REQUIRED)
 endif()
 
+# Require bitprim-blockchain-requester of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+if (NOT TARGET bitprim-blockchain-requester)
+  find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+endif()
+
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
 if (NOT TARGET bitprim-network)
@@ -163,50 +169,27 @@ if (ENABLE_SHARED)
   set(MODE SHARED)
 endif()
 
-#add_library(bitprim-node ${MODE}
-#  src/configuration.cpp
-#  src/p2p_node.cpp
-#  src/parser.cpp
-#  src/settings.cpp
-#  src/protocols/protocol_block_in.cpp
-#  src/protocols/protocol_block_out.cpp
-#  src/protocols/protocol_block_sync.cpp
-#  src/protocols/protocol_header_sync.cpp
-#  src/protocols/protocol_transaction_in.cpp
-#  src/protocols/protocol_transaction_out.cpp
-#  src/sessions/session_block_sync.cpp
-#  src/sessions/session_header_sync.cpp
-#  src/sessions/session_inbound.cpp
-#  src/sessions/session_manual.cpp
-#  src/sessions/session_outbound.cpp
-#  src/utility/header_queue.cpp
-#  src/utility/performance.cpp
-#  src/utility/reservation.cpp
-#  src/utility/reservations.cpp)
-
 add_library(bitprim-node ${MODE}
-    src/configuration.cpp
-    src/full_node.cpp
-    src/parser.cpp
-    src/protocols/protocol_block_in.cpp
-    src/protocols/protocol_block_out.cpp
-    src/protocols/protocol_block_sync.cpp
-    src/protocols/protocol_header_sync.cpp
-    src/protocols/protocol_transaction_in.cpp
-    src/protocols/protocol_transaction_out.cpp
-    src/sessions/session_block_sync.cpp
-    src/sessions/session_header_sync.cpp
-    src/sessions/session_inbound.cpp
-    src/sessions/session_manual.cpp
-    src/sessions/session_outbound.cpp
-    src/settings.cpp
-    src/utility/check_list.cpp
-    src/utility/header_list.cpp
-    src/utility/performance.cpp
-    src/utility/reservation.cpp
-    src/utility/reservations.cpp)
-
-
+  src/configuration.cpp
+  src/full_node.cpp
+  src/parser.cpp
+  src/protocols/protocol_block_in.cpp
+  src/protocols/protocol_block_out.cpp
+  src/protocols/protocol_block_sync.cpp
+  src/protocols/protocol_header_sync.cpp
+  src/protocols/protocol_transaction_in.cpp
+  src/protocols/protocol_transaction_out.cpp
+  src/sessions/session_block_sync.cpp
+  src/sessions/session_header_sync.cpp
+  src/sessions/session_inbound.cpp
+  src/sessions/session_manual.cpp
+  src/sessions/session_outbound.cpp
+  src/settings.cpp
+  src/utility/check_list.cpp
+  src/utility/header_list.cpp
+  src/utility/performance.cpp
+  src/utility/reservation.cpp
+  src/utility/reservations.cpp)
 target_include_directories(bitprim-node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -219,6 +202,44 @@ endif()
 target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 
 _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
+
+# src/bitprim-node-requester.la => ${libdir}
+#------------------------------------------------------------------------------
+add_library(bitprim-node-requester ${MODE}
+  src/configuration.cpp
+  src/full_node.cpp
+  src/parser.cpp
+  src/protocols/protocol_block_in.cpp
+  src/protocols/protocol_block_out.cpp
+  src/protocols/protocol_block_sync.cpp
+  src/protocols/protocol_header_sync.cpp
+  src/protocols/protocol_transaction_in.cpp
+  src/protocols/protocol_transaction_out.cpp
+  src/sessions/session_block_sync.cpp
+  src/sessions/session_header_sync.cpp
+  src/sessions/session_inbound.cpp
+  src/sessions/session_manual.cpp
+  src/sessions/session_outbound.cpp
+  src/settings.cpp
+  src/utility/check_list.cpp
+  src/utility/header_list.cpp
+  src/utility/performance.cpp
+  src/utility/reservation.cpp
+  src/utility/reservations.cpp)
+target_include_directories(bitprim-node-requester PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
+target_compile_definitions(bitprim-node-requester PUBLIC
+  -DWITH_NODE_REQUESTER)
+if (NOT MSVC)
+  target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
+endif()
+
+target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
+
+_group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
 
 # Tests
 #==============================================================================
@@ -248,32 +269,18 @@ endif()
 # local: test/bitprim_node_test
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
-
-#  add_executable(bitprim_node_test
-#    test/configuration.cpp
-#    test/header_queue.cpp
-#    test/main.cpp
-#    test/node.cpp
-#    test/performance.cpp
-#    test/reservation.cpp
-#    test/reservations.cpp
-#    test/settings.cpp
-#    test/utility.cpp
-#    test/utility.hpp)
-
   add_executable(bitprim_node_test
-          test/check_list.cpp
-          test/configuration.cpp
-          test/header_list.cpp
-          test/main.cpp
-          test/node.cpp
-          test/performance.cpp
-          test/reservation.cpp
-          test/reservations.cpp
-          test/settings.cpp
-          test/utility.cpp
-          test/utility.hpp)
-
+    test/check_list.cpp
+    test/configuration.cpp
+    test/header_list.cpp
+    test/main.cpp
+    test/node.cpp
+    test/performance.cpp
+    test/reservation.cpp
+    test/reservations.cpp
+    test/settings.cpp
+    test/utility.cpp
+    test/utility.hpp)
   target_link_libraries(bitprim_node_test PUBLIC bitprim-node)
   _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
@@ -302,9 +309,25 @@ if (WITH_CONSOLE)
     OUTPUT_NAME bn)
 endif()
 
+# console/bnr => ${bindir}
+#------------------------------------------------------------------------------
+if (WITH_CONSOLE)
+  add_executable(console.bnr
+    console/executor.cpp
+    console/executor.hpp
+    console/main.cpp)
+  target_link_libraries(console.bn bitprim-node)
+
+  set_target_properties(
+    console.bnr PROPERTIES
+    FOLDER "node"
+    OUTPUT_NAME bnr)
+  target_link_libraries(console.bnr bitprim-node-requester)
+endif()
+
 # Install
 #==============================================================================
-install(TARGETS bitprim-node
+install(TARGETS bitprim-node bitprim-node-requester
   EXPORT bitprim-node
   ARCHIVE DESTINATION lib)
 
@@ -313,61 +336,36 @@ if (WITH_CONSOLE)
     RUNTIME DESTINATION bin)
 endif()
 
-#set(_bitprim_headers
-#  # include_bitcoin_HEADERS =
-#  bitcoin/node.hpp
-#  # include_bitcoin_node_HEADERS =
-#  bitcoin/node/configuration.hpp
-#  bitcoin/node/define.hpp
-#  bitcoin/node/p2p_node.hpp
-#  bitcoin/node/parser.hpp
-#  bitcoin/node/settings.hpp
-#  bitcoin/node/version.hpp
-#  # include_bitcoin_node_protocols_HEADERS =
-#  bitcoin/node/protocols/protocol_block_in.hpp
-#  bitcoin/node/protocols/protocol_block_out.hpp
-#  bitcoin/node/protocols/protocol_block_sync.hpp
-#  bitcoin/node/protocols/protocol_header_sync.hpp
-#  bitcoin/node/protocols/protocol_transaction_in.hpp
-#  bitcoin/node/protocols/protocol_transaction_out.hpp
-#  # include_bitcoin_node_sessions_HEADERS =
-#  bitcoin/node/sessions/session_block_sync.hpp
-#  bitcoin/node/sessions/session_header_sync.hpp
-#  bitcoin/node/sessions/session_inbound.hpp
-#  bitcoin/node/sessions/session_manual.hpp
-#  bitcoin/node/sessions/session_outbound.hpp
-#  # include_bitcoin_node_utility_HEADERS =
-#  bitcoin/node/utility/header_queue.hpp
-#  bitcoin/node/utility/performance.hpp
-#  bitcoin/node/utility/reservation.hpp
-#  bitcoin/node/utility/reservations.hpp)
-
 set(_bitprim_headers
-    bitcoin/node/configuration.hpp
-    bitcoin/node/define.hpp
-    bitcoin/node/full_node.hpp
-    bitcoin/node/parser.hpp
-    bitcoin/node/protocols/protocol_block_in.hpp
-    bitcoin/node/protocols/protocol_block_out.hpp
-    bitcoin/node/protocols/protocol_block_sync.hpp
-    bitcoin/node/protocols/protocol_header_sync.hpp
-    bitcoin/node/protocols/protocol_transaction_in.hpp
-    bitcoin/node/protocols/protocol_transaction_out.hpp
-    bitcoin/node/sessions/session.hpp
-    bitcoin/node/sessions/session_block_sync.hpp
-    bitcoin/node/sessions/session_header_sync.hpp
-    bitcoin/node/sessions/session_inbound.hpp
-    bitcoin/node/sessions/session_manual.hpp
-    bitcoin/node/sessions/session_outbound.hpp
-    bitcoin/node/settings.hpp
-    bitcoin/node/utility/check_list.hpp
-    bitcoin/node/utility/header_list.hpp
-    bitcoin/node/utility/performance.hpp
-    bitcoin/node/utility/reservation.hpp
-    bitcoin/node/utility/reservations.hpp
-    bitcoin/node/version.hpp
-    bitcoin/node.hpp)
-
+  # include_bitcoin_HEADERS =
+  include/bitcoin/node.hpp
+  # include_bitcoin_node_HEADERS =
+  include/bitcoin/node/configuration.hpp
+  include/bitcoin/node/define.hpp
+  include/bitcoin/node/full_node.hpp
+  include/bitcoin/node/parser.hpp
+  include/bitcoin/node/settings.hpp
+  include/bitcoin/node/version.hpp
+  # include_bitcoin_node_protocols_HEADERS =
+  include/bitcoin/node/protocols/protocol_block_in.hpp
+  include/bitcoin/node/protocols/protocol_block_out.hpp
+  include/bitcoin/node/protocols/protocol_block_sync.hpp
+  include/bitcoin/node/protocols/protocol_header_sync.hpp
+  include/bitcoin/node/protocols/protocol_transaction_in.hpp
+  include/bitcoin/node/protocols/protocol_transaction_out.hpp
+  # include_bitcoin_node_sessions_HEADERS =
+  include/bitcoin/node/sessions/session.hpp
+  include/bitcoin/node/sessions/session_block_sync.hpp
+  include/bitcoin/node/sessions/session_header_sync.hpp
+  include/bitcoin/node/sessions/session_inbound.hpp
+  include/bitcoin/node/sessions/session_manual.hpp
+  include/bitcoin/node/sessions/session_outbound.hpp
+  # include_bitcoin_node_utility_HEADERS =
+  include/bitcoin/node/utility/check_list.hpp
+  include/bitcoin/node/utility/header_list.hpp
+  include/bitcoin/node/utility/performance.hpp
+  include/bitcoin/node/utility/reservation.hpp
+  include/bitcoin/node/utility/reservations.hpp)
 foreach (_header ${_bitprim_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")

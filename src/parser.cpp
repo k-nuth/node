@@ -53,6 +53,11 @@ parser::parser(const config::settings& context)
     // A node doesn't require history, and history is expensive.
     configured.database.index_start_height = max_uint32;
 
+#if WITH_NODE_REQUESTER
+    // Default endpoint for blockchain replier.
+    configured.chain.replier = { "tcp://localhost:5502" };
+#endif
+
     // A node allows 8 inbound connections by default.
     configured.network.inbound_connections = 8;
 
