@@ -44,11 +44,11 @@ if (NOT TARGET bitprim-blockchain)
   find_package(bitprim-blockchain 3.0.0 REQUIRED)
 endif()
 
-# Require bitprim-blockchain-requester of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
-#------------------------------------------------------------------------------
-if (NOT TARGET bitprim-blockchain-requester)
-  find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
-endif()
+## Require bitprim-blockchain-requester of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+##------------------------------------------------------------------------------
+#if (NOT TARGET bitprim-blockchain-requester)
+#  find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+#endif()
 
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
@@ -203,43 +203,43 @@ target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 
 _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
-# src/bitprim-node-requester.la => ${libdir}
-#------------------------------------------------------------------------------
-add_library(bitprim-node-requester ${MODE}
-  src/configuration.cpp
-  src/full_node.cpp
-  src/parser.cpp
-  src/protocols/protocol_block_in.cpp
-  src/protocols/protocol_block_out.cpp
-  src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_header_sync.cpp
-  src/protocols/protocol_transaction_in.cpp
-  src/protocols/protocol_transaction_out.cpp
-  src/sessions/session_block_sync.cpp
-  src/sessions/session_header_sync.cpp
-  src/sessions/session_inbound.cpp
-  src/sessions/session_manual.cpp
-  src/sessions/session_outbound.cpp
-  src/settings.cpp
-  src/utility/check_list.cpp
-  src/utility/header_list.cpp
-  src/utility/performance.cpp
-  src/utility/reservation.cpp
-  src/utility/reservations.cpp)
-target_include_directories(bitprim-node-requester PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
-target_compile_definitions(bitprim-node-requester PUBLIC
-  -DWITH_NODE_REQUESTER)
-if (NOT MSVC)
-  target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
-endif()
-
-target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
-
-_group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
+## src/bitprim-node-requester.la => ${libdir}
+##------------------------------------------------------------------------------
+#add_library(bitprim-node-requester ${MODE}
+#  src/configuration.cpp
+#  src/full_node.cpp
+#  src/parser.cpp
+#  src/protocols/protocol_block_in.cpp
+#  src/protocols/protocol_block_out.cpp
+#  src/protocols/protocol_block_sync.cpp
+#  src/protocols/protocol_header_sync.cpp
+#  src/protocols/protocol_transaction_in.cpp
+#  src/protocols/protocol_transaction_out.cpp
+#  src/sessions/session_block_sync.cpp
+#  src/sessions/session_header_sync.cpp
+#  src/sessions/session_inbound.cpp
+#  src/sessions/session_manual.cpp
+#  src/sessions/session_outbound.cpp
+#  src/settings.cpp
+#  src/utility/check_list.cpp
+#  src/utility/header_list.cpp
+#  src/utility/performance.cpp
+#  src/utility/reservation.cpp
+#  src/utility/reservations.cpp)
+#target_include_directories(bitprim-node-requester PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:include>)
+#
+#target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
+#target_compile_definitions(bitprim-node-requester PUBLIC
+#  -DWITH_NODE_REQUESTER)
+#if (NOT MSVC)
+#  target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
+#endif()
+#
+#target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
+#
+#_group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
 
 # Tests
 #==============================================================================
@@ -309,25 +309,29 @@ if (WITH_CONSOLE)
     OUTPUT_NAME bn)
 endif()
 
-# console/bnr => ${bindir}
-#------------------------------------------------------------------------------
-if (WITH_CONSOLE)
-  add_executable(console.bnr
-    console/executor.cpp
-    console/executor.hpp
-    console/main.cpp)
-  target_link_libraries(console.bn bitprim-node)
-
-  set_target_properties(
-    console.bnr PROPERTIES
-    FOLDER "node"
-    OUTPUT_NAME bnr)
-  target_link_libraries(console.bnr bitprim-node-requester)
-endif()
+## console/bnr => ${bindir}
+##------------------------------------------------------------------------------
+#if (WITH_CONSOLE)
+#  add_executable(console.bnr
+#    console/executor.cpp
+#    console/executor.hpp
+#    console/main.cpp)
+#  target_link_libraries(console.bn bitprim-node)
+#
+#  set_target_properties(
+#    console.bnr PROPERTIES
+#    FOLDER "node"
+#    OUTPUT_NAME bnr)
+#  target_link_libraries(console.bnr bitprim-node-requester)
+#endif()
 
 # Install
 #==============================================================================
-install(TARGETS bitprim-node bitprim-node-requester
+#install(TARGETS bitprim-node bitprim-node-requester
+#  EXPORT bitprim-node
+#  ARCHIVE DESTINATION lib)
+
+install(TARGETS bitprim-node
   EXPORT bitprim-node
   ARCHIVE DESTINATION lib)
 
