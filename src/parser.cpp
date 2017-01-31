@@ -367,7 +367,12 @@ options_metadata parser::load_settings()
         value<config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
-
+    (
+        "blockchain.replier",
+        value<config::endpoint>(&configured.chain.replier),
+        "Blockchain Replier connect() endpoint."
+    )
+    
     /* [node] */
     (
         "node.block_timeout_seconds",
