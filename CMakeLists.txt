@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.4)
 # bitprim-node
 #==============================================================================
 project(bitprim-node
-  VERSION 3.0.0
-  LANGUAGES CXX C)
+        VERSION 3.0.0
+        LANGUAGES CXX C)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
@@ -14,6 +14,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Process options.
 #==============================================================================
+# Implement --with-remote-blockchain and declare WITH_REMOTE_BLOCKCHAIN.
+#------------------------------------------------------------------------------
+option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." ON)
+
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
@@ -35,20 +39,20 @@ if (NOT ENABLE_SHARED)
 endif()
 
 find_package(
-  Boost 1.56.0 REQUIRED
-  COMPONENTS unit_test_framework)
+        Boost 1.56.0 REQUIRED
+        COMPONENTS unit_test_framework)
 
 # Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
+if(WITH_REMOTE_BLOCKCHAIN)
+  if (NOT TARGET bitprim-blockchain-requester)
+    find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+  endif()
+endif()
+
 if (NOT TARGET bitprim-blockchain)
   find_package(bitprim-blockchain 3.0.0 REQUIRED)
 endif()
-
-## Require bitprim-blockchain-requester of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
-##------------------------------------------------------------------------------
-#if (NOT TARGET bitprim-blockchain-requester)
-#  find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
-#endif()
 
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
@@ -143,7 +147,7 @@ endif()
 #==============================================================================
 function(_group_sources target sources_dir)
   file(GLOB_RECURSE _headers
-    ${sources_dir}/include/*.h ${sources_dir}/include/*.hpp)
+          ${sources_dir}/include/*.h ${sources_dir}/include/*.hpp)
   target_sources(${target} PRIVATE ${_headers})
 
   get_target_property(sources ${target} SOURCES)
@@ -170,77 +174,83 @@ if (ENABLE_SHARED)
 endif()
 
 add_library(bitprim-node ${MODE}
-  src/configuration.cpp
-  src/full_node.cpp
-  src/parser.cpp
-  src/protocols/protocol_block_in.cpp
-  src/protocols/protocol_block_out.cpp
-  src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_header_sync.cpp
-  src/protocols/protocol_transaction_in.cpp
-  src/protocols/protocol_transaction_out.cpp
-  src/sessions/session_block_sync.cpp
-  src/sessions/session_header_sync.cpp
-  src/sessions/session_inbound.cpp
-  src/sessions/session_manual.cpp
-  src/sessions/session_outbound.cpp
-  src/settings.cpp
-  src/utility/check_list.cpp
-  src/utility/header_list.cpp
-  src/utility/performance.cpp
-  src/utility/reservation.cpp
-  src/utility/reservations.cpp)
+        src/configuration.cpp
+        src/full_node.cpp
+        src/parser.cpp
+        src/protocols/protocol_block_in.cpp
+        src/protocols/protocol_block_out.cpp
+        src/protocols/protocol_block_sync.cpp
+        src/protocols/protocol_header_sync.cpp
+        src/protocols/protocol_transaction_in.cpp
+        src/protocols/protocol_transaction_out.cpp
+        src/sessions/session_block_sync.cpp
+        src/sessions/session_header_sync.cpp
+        src/sessions/session_inbound.cpp
+        src/sessions/session_manual.cpp
+        src/sessions/session_outbound.cpp
+        src/settings.cpp
+        src/utility/check_list.cpp
+        src/utility/header_list.cpp
+        src/utility/performance.cpp
+        src/utility/reservation.cpp
+        src/utility/reservations.cpp)
 target_include_directories(bitprim-node PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
 
 target_compile_definitions(bitprim-node PUBLIC -DBCN_STATIC)
 if (NOT MSVC)
   target_compile_definitions(bitprim-node PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
 endif()
 
-target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+if (WITH_REMOTE_BLOCKCHAIN)
+  target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
+  target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+else()
+  target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+endif()
 
 _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
-## src/bitprim-node-requester.la => ${libdir}
-##------------------------------------------------------------------------------
-#add_library(bitprim-node-requester ${MODE}
-#  src/configuration.cpp
-#  src/full_node.cpp
-#  src/parser.cpp
-#  src/protocols/protocol_block_in.cpp
-#  src/protocols/protocol_block_out.cpp
-#  src/protocols/protocol_block_sync.cpp
-#  src/protocols/protocol_header_sync.cpp
-#  src/protocols/protocol_transaction_in.cpp
-#  src/protocols/protocol_transaction_out.cpp
-#  src/sessions/session_block_sync.cpp
-#  src/sessions/session_header_sync.cpp
-#  src/sessions/session_inbound.cpp
-#  src/sessions/session_manual.cpp
-#  src/sessions/session_outbound.cpp
-#  src/settings.cpp
-#  src/utility/check_list.cpp
-#  src/utility/header_list.cpp
-#  src/utility/performance.cpp
-#  src/utility/reservation.cpp
-#  src/utility/reservations.cpp)
-#target_include_directories(bitprim-node-requester PUBLIC
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#  $<INSTALL_INTERFACE:include>)
-#
-#target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
-#target_compile_definitions(bitprim-node-requester PUBLIC
-#  -DWITH_NODE_REQUESTER)
-#if (NOT MSVC)
-#  target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
-#endif()
-#
-#target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
-#
-#_group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
+# src/bitprim-node-requester.la => ${libdir}
+#------------------------------------------------------------------------------
+if(WITH_REMOTE_BLOCKCHAIN)
+  add_library(bitprim-node-requester ${MODE}
+    src/configuration.cpp
+    src/full_node.cpp
+    src/parser.cpp
+    src/protocols/protocol_block_in.cpp
+    src/protocols/protocol_block_out.cpp
+    src/protocols/protocol_block_sync.cpp
+    src/protocols/protocol_header_sync.cpp
+    src/protocols/protocol_transaction_in.cpp
+    src/protocols/protocol_transaction_out.cpp
+    src/sessions/session_block_sync.cpp
+    src/sessions/session_header_sync.cpp
+    src/sessions/session_inbound.cpp
+    src/sessions/session_manual.cpp
+    src/sessions/session_outbound.cpp
+    src/settings.cpp
+    src/utility/check_list.cpp
+    src/utility/header_list.cpp
+    src/utility/performance.cpp
+    src/utility/reservation.cpp
+    src/utility/reservations.cpp)
+  target_include_directories(bitprim-node-requester PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
 
+  target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
+  target_compile_definitions(bitprim-node-requester PUBLIC
+    -DWITH_NODE_REQUESTER)
+  if (NOT MSVC)
+    target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
+  endif()
+
+  target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
+
+  _group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
+endif()
 # Tests
 #==============================================================================
 function(_add_tests target)
@@ -252,13 +262,13 @@ function(_add_tests target)
 
   foreach (_test_name ${ARGN})
     add_test(
-      NAME test.node.${_test_name}
-      COMMAND ${target}
-        --run_test=${_test_name}
-        --show_progress=no
-        --detect_memory_leak=0
-        --report_level=no
-        --build_info=yes)
+            NAME test.node.${_test_name}
+            COMMAND ${target}
+            --run_test=${_test_name}
+            --show_progress=no
+            --detect_memory_leak=0
+            --report_level=no
+            --build_info=yes)
   endforeach()
 endfunction()
 
@@ -270,106 +280,110 @@ endif()
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
   add_executable(bitprim_node_test
-    test/check_list.cpp
-    test/configuration.cpp
-    test/header_list.cpp
-    test/main.cpp
-    test/node.cpp
-    test/performance.cpp
-    test/reservation.cpp
-    test/reservations.cpp
-    test/settings.cpp
-    test/utility.cpp
-    test/utility.hpp)
+          test/check_list.cpp
+          test/configuration.cpp
+          test/header_list.cpp
+          test/main.cpp
+          test/node.cpp
+          test/performance.cpp
+          test/reservation.cpp
+          test/reservations.cpp
+          test/settings.cpp
+          test/utility.cpp
+          test/utility.hpp)
   target_link_libraries(bitprim_node_test PUBLIC bitprim-node)
   _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
   _add_tests(bitprim_node_test
-    configuration_tests
-    node_tests
-    header_queue_tests
-    performance_tests
-    reservation_tests
-    reservations_tests
-    settings_tests)
+          configuration_tests
+          node_tests
+          header_queue_tests
+          performance_tests
+          reservation_tests
+          reservations_tests
+          settings_tests)
 endif()
 
 # console/bn => ${bindir}
 #------------------------------------------------------------------------------
 if (WITH_CONSOLE)
   add_executable(console.bn
-    console/executor.cpp
-    console/executor.hpp
-    console/main.cpp)
+          console/executor.cpp
+          console/executor.hpp
+          console/main.cpp)
   target_link_libraries(console.bn bitprim-node)
 
   set_target_properties(
-    console.bn PROPERTIES
-    FOLDER "node"
-    OUTPUT_NAME bn)
+          console.bn PROPERTIES
+          FOLDER "node"
+          OUTPUT_NAME bn)
 endif()
 
-## console/bnr => ${bindir}
-##------------------------------------------------------------------------------
-#if (WITH_CONSOLE)
-#  add_executable(console.bnr
-#    console/executor.cpp
-#    console/executor.hpp
-#    console/main.cpp)
-#  target_link_libraries(console.bn bitprim-node)
-#
-#  set_target_properties(
-#    console.bnr PROPERTIES
-#    FOLDER "node"
-#    OUTPUT_NAME bnr)
-#  target_link_libraries(console.bnr bitprim-node-requester)
-#endif()
+# console/bnr => ${bindir}
+#------------------------------------------------------------------------------
+if (WITH_CONSOLE)
+  if(WITH_REMOTE_BLOCKCHAIN)
+    add_executable(console.bnr
+      console/executor.cpp
+      console/executor.hpp
+      console/main.cpp)
+    target_link_libraries(console.bn bitprim-node)
+
+    set_target_properties(
+      console.bnr PROPERTIES
+      FOLDER "node"
+      OUTPUT_NAME bnr)
+    target_link_libraries(console.bnr bitprim-node-requester)
+  endif()
+endif()
 
 # Install
 #==============================================================================
-#install(TARGETS bitprim-node bitprim-node-requester
-#  EXPORT bitprim-node
-#  ARCHIVE DESTINATION lib)
-
-install(TARGETS bitprim-node
-  EXPORT bitprim-node
-  ARCHIVE DESTINATION lib)
+if(WITH_REMOTE_BLOCKCHAIN)
+  install(TARGETS bitprim-node bitprim-node-requester
+          EXPORT bitprim-node
+          ARCHIVE DESTINATION lib)
+else()
+  install(TARGETS bitprim-node
+          EXPORT bitprim-node
+          ARCHIVE DESTINATION lib)
+endif()
 
 if (WITH_CONSOLE)
   install(TARGETS console.bn
-    RUNTIME DESTINATION bin)
+          RUNTIME DESTINATION bin)
 endif()
 
 set(_bitprim_headers
-  # include_bitcoin_HEADERS =
-  include/bitcoin/node.hpp
-  # include_bitcoin_node_HEADERS =
-  include/bitcoin/node/configuration.hpp
-  include/bitcoin/node/define.hpp
-  include/bitcoin/node/full_node.hpp
-  include/bitcoin/node/parser.hpp
-  include/bitcoin/node/settings.hpp
-  include/bitcoin/node/version.hpp
-  # include_bitcoin_node_protocols_HEADERS =
-  include/bitcoin/node/protocols/protocol_block_in.hpp
-  include/bitcoin/node/protocols/protocol_block_out.hpp
-  include/bitcoin/node/protocols/protocol_block_sync.hpp
-  include/bitcoin/node/protocols/protocol_header_sync.hpp
-  include/bitcoin/node/protocols/protocol_transaction_in.hpp
-  include/bitcoin/node/protocols/protocol_transaction_out.hpp
-  # include_bitcoin_node_sessions_HEADERS =
-  include/bitcoin/node/sessions/session.hpp
-  include/bitcoin/node/sessions/session_block_sync.hpp
-  include/bitcoin/node/sessions/session_header_sync.hpp
-  include/bitcoin/node/sessions/session_inbound.hpp
-  include/bitcoin/node/sessions/session_manual.hpp
-  include/bitcoin/node/sessions/session_outbound.hpp
-  # include_bitcoin_node_utility_HEADERS =
-  include/bitcoin/node/utility/check_list.hpp
-  include/bitcoin/node/utility/header_list.hpp
-  include/bitcoin/node/utility/performance.hpp
-  include/bitcoin/node/utility/reservation.hpp
-  include/bitcoin/node/utility/reservations.hpp)
+        # include_bitcoin_HEADERS =
+        include/bitcoin/node.hpp
+        # include_bitcoin_node_HEADERS =
+        include/bitcoin/node/configuration.hpp
+        include/bitcoin/node/define.hpp
+        include/bitcoin/node/full_node.hpp
+        include/bitcoin/node/parser.hpp
+        include/bitcoin/node/settings.hpp
+        include/bitcoin/node/version.hpp
+        # include_bitcoin_node_protocols_HEADERS =
+        include/bitcoin/node/protocols/protocol_block_in.hpp
+        include/bitcoin/node/protocols/protocol_block_out.hpp
+        include/bitcoin/node/protocols/protocol_block_sync.hpp
+        include/bitcoin/node/protocols/protocol_header_sync.hpp
+        include/bitcoin/node/protocols/protocol_transaction_in.hpp
+        include/bitcoin/node/protocols/protocol_transaction_out.hpp
+        # include_bitcoin_node_sessions_HEADERS =
+        include/bitcoin/node/sessions/session.hpp
+        include/bitcoin/node/sessions/session_block_sync.hpp
+        include/bitcoin/node/sessions/session_header_sync.hpp
+        include/bitcoin/node/sessions/session_inbound.hpp
+        include/bitcoin/node/sessions/session_manual.hpp
+        include/bitcoin/node/sessions/session_outbound.hpp
+        # include_bitcoin_node_utility_HEADERS =
+        include/bitcoin/node/utility/check_list.hpp
+        include/bitcoin/node/utility/header_list.hpp
+        include/bitcoin/node/utility/performance.hpp
+        include/bitcoin/node/utility/reservation.hpp
+        include/bitcoin/node/utility/reservations.hpp)
 foreach (_header ${_bitprim_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")
@@ -380,7 +394,7 @@ endforeach()
 include(CMakePackageConfigHelpers)
 
 export(EXPORT bitprim-node
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeTargets.cmake")
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeTargets.cmake")
 export(PACKAGE bitprim-node)
 
 if (UNIX)
@@ -390,20 +404,20 @@ elseif (WIN32)
 endif()
 
 install(EXPORT bitprim-node
-  FILE bitprim-nodeTargets.cmake
-  DESTINATION ${_config_package_location})
+        FILE bitprim-nodeTargets.cmake
+        DESTINATION ${_config_package_location})
 
 configure_file(bitprim-nodeConfig.cmake.in
-  "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfig.cmake"
-  @ONLY)
+        "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfig.cmake"
+        @ONLY)
 
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY AnyNewerVersion)
+        "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion)
 
 install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfigVersion.cmake"
-  DESTINATION ${_config_package_location})
+        FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/bitprim-nodeConfigVersion.cmake"
+        DESTINATION ${_config_package_location})

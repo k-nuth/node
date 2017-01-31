@@ -9,5 +9,9 @@ set(BITPRIM_NODE_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 include("${BITPRIM_NODE_CMAKE_DIR}/bitprim-nodeTargets.cmake")
 set(BITPRIM_NODE_LIBRARIES bitprim-node)
 
+if ("WITH_REMOTE_BLOCKCHAIN" IN_LIST _compile_definitions)
+    find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+endif()
+
 find_package(bitprim-blockchain 3.0.0 REQUIRED)
 find_package(bitprim-network 3.0.0 REQUIRED)
