@@ -48,6 +48,14 @@ if (NOT TARGET bitprim-protocol)
   find_package(bitprim-protocol 3.0.0 REQUIRED)
 endif()
 
+# Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+if (WITH_CONSENSUS)
+  if (NOT TARGET bitprim-consensus)
+    find_package(bitprim-consensus 2.0.0 REQUIRED)
+  endif()
+endif()
+
 
 # Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
@@ -60,6 +68,11 @@ else()
     find_package(bitprim-blockchain 3.0.0 REQUIRED)
   endif()
 endif()
+
+if (NOT TARGET bitprim-blockchain)
+  find_package(bitprim-blockchain 3.0.0 REQUIRED)
+endif()
+
 
 
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
