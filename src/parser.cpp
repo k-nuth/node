@@ -320,6 +320,11 @@ options_metadata parser::load_settings()
         value<uint32_t>(&configured.database.history_table_buckets),
         "History hash table size, defaults to 107000000."
     )
+    (
+        "database.replier",
+        value<config::endpoint>(&configured.database.replier),
+        "Database-blockchain connection, defaults to 127.0.0.1:5568."
+    )    
 
     /* [blockchain] */
     (

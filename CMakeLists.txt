@@ -48,11 +48,12 @@ if(WITH_REMOTE_BLOCKCHAIN)
   if (NOT TARGET bitprim-blockchain-requester)
     find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
   endif()
+else()
+  if (NOT TARGET bitprim-blockchain)
+    find_package(bitprim-blockchain 3.0.0 REQUIRED)
+  endif()
 endif()
 
-if (NOT TARGET bitprim-blockchain)
-  find_package(bitprim-blockchain 3.0.0 REQUIRED)
-endif()
 
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
@@ -241,8 +242,7 @@ if(WITH_REMOTE_BLOCKCHAIN)
     $<INSTALL_INTERFACE:include>)
 
   target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
-  target_compile_definitions(bitprim-node-requester PUBLIC
-    -DWITH_NODE_REQUESTER)
+  target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_NODE_REQUESTER)
   if (NOT MSVC)
     target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
   endif()
