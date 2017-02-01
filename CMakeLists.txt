@@ -42,6 +42,13 @@ find_package(
         Boost 1.56.0 REQUIRED
         COMPONENTS unit_test_framework)
 
+# Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
+#------------------------------------------------------------------------------
+if (NOT TARGET bitprim-protocol)
+  find_package(bitprim-protocol 3.0.0 REQUIRED)
+endif()
+
+
 # Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
 if(WITH_REMOTE_BLOCKCHAIN)
