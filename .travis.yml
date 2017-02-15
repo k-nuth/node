@@ -53,248 +53,56 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
 
-    # Linux clang-3.7 Debug
-    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang37
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
 
-    # Linux clang-3.7 Release
-    - env: CLANG_VERSION=3.7 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang37
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-
-    # Linux clang-3.8 Debug
-    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang38
-        apt:
-          packages:
-            - clang-3.8
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-
-    # Linux clang-3.8 Release
-    - env: CLANG_VERSION=3.8 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang38
-        apt:
-          packages:
-            - clang-3.8
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-
-    # gcc-4.9 Debug
-    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc49
-        apt:
-          packages:
-            - g++-4.9
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-
-    # gcc-4.9 Release
-    - env: GCC_VERSION=4.9 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc49
-        apt:
-          packages:
-            - g++-4.9
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-            
-    # gcc-5
-    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc5
-        apt:
-          packages:
-            - cmake
-            - g++-5
-          sources:
-            - ubuntu-toolchain-r-test
-
-    - env: GCC_VERSION=5 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc5
-        apt:
-          packages:
-            - cmake
-            - g++-5
-          sources:
-            - ubuntu-toolchain-r-test
-            
-    # gcc-6
-    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc6
-        apt:
-          packages:
-            - cmake
-            - g++-6
-          sources:
-            - ubuntu-toolchain-r-test
-    
-    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
-      os: linux
-      sudo: required
-      dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &gcc6
-        apt:
-          packages:
-            - cmake
-            - g++-6
-          sources:
-            - ubuntu-toolchain-r-test
-
-    # OSX
-
-    # Xcode 7 Debug
-#    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
-#      os: osx
-#      osx_image: xcode73
-#      addons: &xcode73
-#      sudo: required
-
-    # Xcode 7 Release
-#    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
-#      os: osx
-#      osx_image: xcode73
-#      addons: &xcode73
-#      sudo: required
-      
-    # Xcode 8 Release
-#    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
-#      os: osx
-#      osx_image: xcode8
-#      addons: &xcode8
-#      sudo: required
-      
-    # Xcode 8 Release
-#    - env: CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
-#      os: osx
-#      osx_image: xcode8
-#      addons: &xcode8
-#      sudo: required
-
-branches:
-  only:
-    - master
+matrix:
+    include:
+        - os: osx
+          compiler: clang
+          env: LINK=dynamic
+        - os: osx
+          compiler: clang
+          env: LINK=static
+        - os: linux
+          compiler: clang
+          env: LINK=dynamic
+          apt:
+            sources:
+                - sourceline: 'ppa:h-rayflood/llvm'
+            packages:
+                - clang-3.4
+        - os: linux
+          compiler: clang
+          env: LINK=static
+          apt:
+            sources:
+                - sourceline: 'ppa:h-rayflood/llvm'
+            packages:
+                - clang-3.4
+        - os: linux
+          compiler: gcc
+          env: LINK=dynamic
+          apt:
+            packages:
+                - bash-completion
+        - os: linux
+          compiler: gcc
+          env: LINK=static
+          apt:
+            packages:
+                - lcov
+                - bash-completion
+    fast_finish:
+        - true
 
 before_install:
 
-  # Update submodules 
-  - git submodule update --init --recursive
-
-  - if [ -n "$GCC_VERSION" ]; then export CXX="g++-${GCC_VERSION}" CC="gcc-${GCC_VERSION}"; fi
-  - if [ -n "$CLANG_VERSION" ]; then export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"; fi
-  - if [ -n "$GCC_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} -Wall -Wextra"; fi
-  - if [ -n "$CLANG_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} -Wall -Wextra"; fi
-  
+    # Set aliases for readability.
+    - if [[ $CC             == gcc     ]]; then GCC=true; fi
+    - if [[ $CC             == clang   ]]; then CLANG=true; fi
+    - if [[ $LINK           == static  ]]; then STATIC=true; fi
+    - if [[ $LINK           == dynamic ]]; then DYNAMIC=true; fi
+    - if [[ $TRAVIS_OS_NAME == osx     ]]; then OSX=true; fi
+    - if [[ $TRAVIS_OS_NAME == linux   ]]; then LINUX=true; fi
 
 install:
   ############################################################################
@@ -303,18 +111,15 @@ install:
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
 
-  ############################################################################
-  # Install a recent CMake
-  ############################################################################
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc3-Linux-x86_64.tar.gz"
-      mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
-      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-    else 
-      brew unlink cmake
-      brew install cmake
-    fi
+
+    # Export CC/CXX to control gcc version.
+    - if [[ $GCC                         ]]; then export CC=gcc-4.8; export CXX=g++-4.8; fi
+
+    # Download and install packages.
+    - if [[ $OSX   && $CLANG && $DYNAMIC ]]; then brew unlink boost; brew install boost; fi
+    - if [[ $OSX   && $CLANG && $DYNAMIC ]]; then brew unlink bash-completion; brew install bash-completion; fi
+
+script:
 
   ############################################################################
   # Custom script for external dependences

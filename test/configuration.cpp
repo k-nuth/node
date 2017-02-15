@@ -1,21 +1,20 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <boost/test/unit_test.hpp>
 #include <bitcoin/node.hpp>
@@ -34,8 +33,8 @@ BOOST_AUTO_TEST_CASE(configuration__construct1__none_context__expected)
     BOOST_REQUIRE(!instance.initchain);
     BOOST_REQUIRE(!instance.settings);
     BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.initial_connections, 8u);
-    BOOST_REQUIRE_EQUAL(instance.node.block_timeout_seconds, 5u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
 }
 
 BOOST_AUTO_TEST_CASE(configuration__construct1__mainnet_context__expected)
@@ -45,8 +44,8 @@ BOOST_AUTO_TEST_CASE(configuration__construct1__mainnet_context__expected)
     BOOST_REQUIRE(!instance.initchain);
     BOOST_REQUIRE(!instance.settings);
     BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.initial_connections, 8u);
-    BOOST_REQUIRE_EQUAL(instance.node.block_timeout_seconds, 5u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
 }
 
 BOOST_AUTO_TEST_CASE(configuration__construct1__testnet_context__expected)
@@ -56,8 +55,8 @@ BOOST_AUTO_TEST_CASE(configuration__construct1__testnet_context__expected)
     BOOST_REQUIRE(!instance.initchain);
     BOOST_REQUIRE(!instance.settings);
     BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.initial_connections, 8u);
-    BOOST_REQUIRE_EQUAL(instance.node.block_timeout_seconds, 5u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
+    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
 }
 
 BOOST_AUTO_TEST_CASE(configuration__construct2__none_context__expected)
@@ -67,8 +66,8 @@ BOOST_AUTO_TEST_CASE(configuration__construct2__none_context__expected)
     instance1.initchain = true;
     instance1.settings = true;
     instance1.version = true;
-    instance1.node.initial_connections = 42;
-    instance1.node.block_timeout_seconds = 24;
+    instance1.node.sync_peers = 42;
+    instance1.node.sync_timeout_seconds = 24;
 
     node::configuration instance2(instance1);
 
@@ -76,8 +75,8 @@ BOOST_AUTO_TEST_CASE(configuration__construct2__none_context__expected)
     BOOST_REQUIRE(instance2.initchain);
     BOOST_REQUIRE(instance2.settings);
     BOOST_REQUIRE(instance2.version);
-    BOOST_REQUIRE_EQUAL(instance2.node.initial_connections, 42u);
-    BOOST_REQUIRE_EQUAL(instance2.node.block_timeout_seconds, 24u);
+    BOOST_REQUIRE_EQUAL(instance2.node.sync_peers, 42u);
+    BOOST_REQUIRE_EQUAL(instance2.node.sync_timeout_seconds, 24u);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

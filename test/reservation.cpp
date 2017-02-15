@@ -1,22 +1,21 @@
-/////**
-//// * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
-//// *
-//// * This file is part of libbitcoin-node.
-//// *
-//// * libbitcoin-node is free software: you can redistribute it and/or
-//// * modify it under the terms of the GNU Affero General Public License with
-//// * additional permissions to the one published by the Free Software
-//// * Foundation, either version 3 of the License, or (at your option)
-//// * any later version. For more information see LICENSE.
-//// *
-//// * This program is distributed in the hope that it will be useful,
-//// * but WITHOUT ANY WARRANTY; without even the implied warranty of
-//// * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//// * GNU Affero General Public License for more details.
-//// *
-//// * You should have received a copy of the GNU Affero General Public License
-//// * along with this program. If not, see <http://www.gnu.org/licenses/>.
-//// */
+/**
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
+ *
+ * This file is part of libbitcoin.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 ////#include <chrono>
 ////#include <memory>
 ////#include <utility>
@@ -113,7 +112,7 @@
 ////    const auto message = message_factory(1, check42.hash());
 ////    const auto& header1 = message->elements()[0];
 ////    reserve->insert(header1.hash(), 42);
-////    const auto block1 = std::make_shared<const block_message>(block_message{ header1, {} });
+////    const auto block1 = std::make_shared<const block>(block{ header1, {} });
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->empty());
 ////    BOOST_REQUIRE(reserve->stopped());
@@ -203,9 +202,9 @@
 ////    // Create a history entry.
 ////    const auto message = message_factory(3, null_hash);
 ////    reserve->insert(message->elements()[0].hash(), 0);
-////    const auto block0 = std::make_shared<const block_message>(block_message{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block_message>(block_message{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block_message>(block_message{ message->elements()[2], {} });
+////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////    reserve->import(block0);
 ////    reserve->import(block1);
 ////
@@ -287,7 +286,7 @@
 ////    const auto reserve = std::make_shared<reservation>(reserves, 0, 0);
 ////    const auto message = message_factory(1, check42.hash());
 ////    const auto& header = message->elements()[0];
-////    const auto block1 = std::make_shared<const block_message>(block_message{ header, {} });
+////    const auto block1 = std::make_shared<const block>(block{ header, {} });
 ////    BOOST_REQUIRE(reserve->idle());
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->idle());
@@ -301,7 +300,7 @@
 ////    const auto message = message_factory(1, check42.hash());
 ////    const auto& header = message->elements()[0];
 ////    reserve->insert(header.hash(), 42);
-////    const auto block1 = std::make_shared<const block_message>(block_message{ header, {} });
+////    const auto block1 = std::make_shared<const block>(block{ header, {} });
 ////    BOOST_REQUIRE(reserve->idle());
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->idle());
@@ -319,9 +318,9 @@
 ////    reserve->insert(message->elements()[0].hash(), 0);
 ////    reserve->insert(message->elements()[1].hash(), 1);
 ////    reserve->insert(message->elements()[2].hash(), 2);
-////    const auto block0 = std::make_shared<const block_message>(block_message{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block_message>(block_message{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block_message>(block_message{ message->elements()[2], {} });
+////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////    reserve->import(block0);
 ////    reserve->import(block1);
 ////    reserve->import(block2);
@@ -342,9 +341,9 @@
 ////    reserve->insert(message->elements()[0].hash(), 0);
 ////    reserve->insert(message->elements()[1].hash(), 1);
 ////    reserve->insert(message->elements()[2].hash(), 2);
-////    const auto block0 = std::make_shared<const block_message>(block_message{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block_message>(block_message{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block_message>(block_message{ message->elements()[2], {} });
+////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////
 ////    // Idle checks assume minimum_history is set to 3.
 ////    BOOST_REQUIRE(reserve->idle());
@@ -497,7 +496,7 @@
 ////BOOST_AUTO_TEST_CASE(reservation__expired__various__expected)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 5;
+////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
 ////    config::checkpoint::list checkpoints;
 ////    header_queue hashes(checkpoints);

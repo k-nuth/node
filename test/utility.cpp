@@ -1,21 +1,20 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "utility.hpp"
 
@@ -53,7 +52,7 @@ message::headers::ptr message_factory(size_t count)
 }
 
 // Create a headers message of specified size, using specified previous hash.
-message::headers::ptr message_factory(size_t count, 
+message::headers::ptr message_factory(size_t count,
     const hash_digest& previous)
 {
     auto previous_hash = previous;
@@ -71,9 +70,9 @@ message::headers::ptr message_factory(size_t count,
 }
 
 reservation_fixture::reservation_fixture(reservations& reservations,
-    size_t slot, uint32_t block_timeout_seconds,
+    size_t slot, uint32_t sync_timeout_seconds,
     clock::time_point now)
-  : reservation(reservations, slot, block_timeout_seconds),
+  : reservation(reservations, slot, sync_timeout_seconds),
     now_(now)
 {
 }
@@ -135,7 +134,7 @@ bool blockchain_fixture::get_block_exists(const hash_digest& block_hash) const
     return false;
 }
 
-bool blockchain_fixture::get_fork_difficulty(hash_number& out_difficulty,
+bool blockchain_fixture::get_fork_work(uint256_t& out_difficulty,
     size_t height) const
 {
     return false;
@@ -175,7 +174,7 @@ bool blockchain_fixture::get_last_height(size_t& out_height) const
     return false;
 }
 
-bool blockchain_fixture::get_output(chain::output& out_output, 
+bool blockchain_fixture::get_output(chain::output& out_output,
     size_t& out_height, size_t& out_position,
     const chain::output_point& outpoint) const
 {

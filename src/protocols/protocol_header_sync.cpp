@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/node/protocols/protocol_header_sync.hpp>
 
@@ -37,9 +36,6 @@ using namespace bc::config;
 using namespace bc::message;
 using namespace bc::network;
 using namespace std::placeholders;
-
-// The protocol maximum size for get data header requests.
-static constexpr size_t max_header_response = 2000;
 
 // The interval in which header download rate is measured and tested.
 static const asio::seconds expiry_interval(5);
@@ -66,7 +62,9 @@ protocol_header_sync::protocol_header_sync(full_node& network,
 
 void protocol_header_sync::start(event_handler handler)
 {
-    auto complete = synchronize(BIND2(headers_complete, _1, handler), 1, NAME);
+    const auto complete = synchronize<event_handler>(
+        BIND2(headers_complete, _1, handler), 1, NAME);
+
     protocol_timer::start(expiry_interval, BIND2(handle_event, _1, complete));
 
     SUBSCRIBE3(headers, handle_receive_headers, _1, _2, complete);
@@ -89,37 +87,14 @@ void protocol_header_sync::send_get_headers(event_handler complete)
         headers_->stop_hash()
     };
 
-    SEND2(request, handle_send, _1, complete);
-}
-
-void protocol_header_sync::handle_send(const code& ec, event_handler complete)
-{
-    if (stopped())
-        return;
-
-    if (ec)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure sending get headers to sync [" << authority() << "] "
-            << ec.message();
-        complete(ec);
-    }
+    SEND2(request, handle_send, _1, request.command);
 }
 
 bool protocol_header_sync::handle_receive_headers(const code& ec,
     headers_const_ptr message, event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
-
-    if (ec)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure receiving headers from sync ["
-            << authority() << "] " << ec.message();
-        complete(ec);
-        return false;
-    }
 
     const auto start = headers_->previous_height() + 1;
 
@@ -145,7 +120,7 @@ bool protocol_header_sync::handle_receive_headers(const code& ec,
     }
 
     // If we received fewer than 2000 the peer is exhausted, try another.
-    if (message->elements().size() < max_header_response)
+    if (message->elements().size() < max_get_headers)
     {
         complete(error::operation_failed);
         return false;
@@ -159,11 +134,8 @@ bool protocol_header_sync::handle_receive_headers(const code& ec,
 // This is fired by the base timer and stop handler.
 void protocol_header_sync::handle_event(const code& ec, event_handler complete)
 {
-    if (ec == error::channel_stopped)
-    {
-        complete(ec);
+    if (stopped(ec))
         return;
-    }
 
     if (ec && ec != error::channel_timeout)
     {

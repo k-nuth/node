@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,13 +14,14 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_PROTOCOL_BLOCK_OUT_HPP
 #define LIBBITCOIN_NODE_PROTOCOL_BLOCK_OUT_HPP
 
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
@@ -46,30 +46,40 @@ public:
     virtual void start();
 
 private:
-    void send_block(const code& ec, block_ptr message, uint64_t height,
-        const hash_digest& hash);
-    void send_merkle_block(const code& ec, merkle_block_ptr message,
-        uint64_t height, const hash_digest& hash);
+    size_t locator_limit();
 
-    bool handle_receive_get_data(const code& ec, get_data_const_ptr message);
+    void send_next_data(inventory_ptr inventory);
+    void send_block(const code& ec, block_ptr message,
+        uint64_t height, inventory_ptr inventory);
+    void send_merkle_block(const code& ec, merkle_block_ptr message,
+        uint64_t height, inventory_ptr inventory);
+    void send_compact_block(const code& ec, compact_block_ptr message,
+        uint64_t height, inventory_ptr inventory);
+
+    bool handle_receive_get_data(const code& ec,
+        get_data_const_ptr message);
     bool handle_receive_get_blocks(const code& ec,
         get_blocks_const_ptr message);
     bool handle_receive_get_headers(const code& ec,
         get_headers_const_ptr message);
     bool handle_receive_send_headers(const code& ec,
         send_headers_const_ptr message);
+    bool handle_receive_send_compact(const code& ec,
+        send_compact_const_ptr message);
 
     void handle_fetch_locator_hashes(const code& ec, inventory_ptr message);
     void handle_fetch_locator_headers(const code& ec, headers_ptr message);
 
-    void handle_stop(const code&);
-    bool handle_reorganized(const code& ec, size_t fork_height,
-        const block_const_ptr_list& incoming,
-        const block_const_ptr_list& outgoing);
+    void handle_stop(const code& ec);
+    void handle_send_next(const code& ec, inventory_ptr inventory);
+    bool handle_reorganized(code ec, size_t fork_height,
+        block_const_ptr_list_const_ptr incoming,
+        block_const_ptr_list_const_ptr outgoing);
 
     full_node& node_;
     blockchain::safe_chain& chain_;
     bc::atomic<hash_digest> last_locator_top_;
+    std::atomic<bool> compact_to_peer_;
     std::atomic<bool> headers_to_peer_;
 };
 

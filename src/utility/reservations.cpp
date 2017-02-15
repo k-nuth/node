@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2016 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/node/utility/reservations.hpp>
 
@@ -38,38 +37,31 @@ namespace node {
 using namespace bc::blockchain;
 using namespace bc::chain;
 
-// The protocol maximum size of get data block requests.
-static constexpr size_t max_block_request = 50000;
-
 reservations::reservations(check_list& hashes, fast_chain& chain,
     const settings& settings)
   : hashes_(hashes),
-    max_request_(max_block_request),
-    timeout_(settings.block_timeout_seconds),
+    max_request_(max_get_data),
+    timeout_(settings.sync_timeout_seconds),
     chain_(chain)
 {
-    initialize(settings.initial_connections);
+    initialize(std::min(settings.sync_peers, 3u));
 }
 
 bool reservations::start()
 {
-    ///////////////////////////////////////////////////////////////////////////
-    // Begin flush lock.
-    return chain_.begin_writes();
+    return chain_.begin_insert();
 }
 
 bool reservations::import(block_const_ptr block, size_t height)
 {
     //#########################################################################
-    return chain_.insert(block, height, false);
+    return chain_.insert(block, height);
     //#########################################################################
 }
 
 bool reservations::stop()
 {
-    return chain_.end_writes();
-    // End flush lock.
-    ///////////////////////////////////////////////////////////////////////////
+    return chain_.end_insert();
 }
 
 // Rate methods.
@@ -263,7 +255,7 @@ bool reservations::reserve(reservation::ptr minimal)
 // Exposed for test to be able to control the request size.
 size_t reservations::max_request() const
 {
-    return max_request_.load();
+    return max_request_;
 }
 
 // Exposed for test to be able to control the request size.

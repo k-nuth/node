@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/node/protocols/protocol_block_sync.hpp>
 
@@ -56,10 +55,12 @@ protocol_block_sync::protocol_block_sync(full_node& network,
 
 void protocol_block_sync::start(event_handler handler)
 {
-    auto complete = synchronize(BIND2(blocks_complete, _1, handler), 1, NAME);
+    const auto complete = synchronize<event_handler>(
+        BIND2(blocks_complete, _1, handler), 1, NAME);
+
     protocol_timer::start(expiry_interval, BIND2(handle_event, _1, complete));
 
-    SUBSCRIBE3(block_message, handle_receive_block, _1, _2, complete);
+    SUBSCRIBE3(block, handle_receive_block, _1, _2, complete);
 
     // This is the end of the start sequence.
     send_get_blocks(complete, true);
@@ -92,21 +93,7 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
         << "Sending request of " << request.inventories().size()
         << " hashes for slot (" << reservation_->slot() << ").";
 
-    SEND2(request, handle_send, _1, complete);
-}
-
-void protocol_block_sync::handle_send(const code& ec, event_handler complete)
-{
-    if (stopped())
-        return;
-
-    if (ec)
-    {
-        LOG_WARNING(LOG_NODE)
-            << "Failure sending get blocks to slot (" << reservation_->slot()
-            << ") " << ec.message();
-        complete(ec);
-    }
+    SEND2(request, handle_send, _1, request.command);
 }
 
 // The message subscriber implements an optimization to bypass queueing of
@@ -116,17 +103,8 @@ void protocol_block_sync::handle_send(const code& ec, event_handler complete)
 bool protocol_block_sync::handle_receive_block(const code& ec,
     block_const_ptr message, event_handler complete)
 {
-    if (stopped())
+    if (stopped(ec))
         return false;
-
-    if (ec)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Receive failure on slot (" << reservation_->slot() << ") "
-            << ec.message();
-        complete(ec);
-        return false;
-    }
 
     // Add the block to the blockchain store.
     reservation_->import(message);
@@ -147,11 +125,8 @@ bool protocol_block_sync::handle_receive_block(const code& ec,
 // This is fired by the base timer and stop handler.
 void protocol_block_sync::handle_event(const code& ec, event_handler complete)
 {
-    if (ec == error::channel_stopped)
-    {
-        complete(ec);
+    if (stopped(ec))
         return;
-    }
 
     if (ec && ec != error::channel_timeout)
     {

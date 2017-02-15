@@ -1,27 +1,27 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/node/full_node.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <utility>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/node/configuration.hpp>
 #include <bitcoin/node/define.hpp>
@@ -42,9 +42,11 @@ using namespace std::placeholders;
 
 full_node::full_node(const configuration& configuration)
   : p2p(configuration.network),
-    chain_(thread_pool(), configuration.chain, configuration.database),
+    chain_(thread_pool(), configuration.chain, configuration.database,
+        configuration.network.relay_transactions),
     protocol_maximum_(configuration.network.protocol_maximum),
-    settings_(configuration.node)
+    chain_settings_(configuration.chain),
+    node_settings_(configuration.node)
 {
 }
 
@@ -67,7 +69,7 @@ void full_node::start(result_handler handler)
     if (!chain_.start())
     {
         LOG_ERROR(LOG_NODE)
-            << "Blockchain failed to start.";
+            << "Failure starting blockchain.";
         handler(error::operation_failed);
         return;
     }
@@ -95,46 +97,46 @@ void full_node::run(result_handler handler)
     // TODO: make this safe by requiring sync if gaps found.
     ////// By setting no download connections checkpoints can be used without sync.
     ////// This also allows the maximum protocol version to be set below headers.
-    ////if (settings_.initial_connections == 0)
+    ////if (settings_.sync_peers == 0)
     ////{
     ////    // This will spawn a new thread before returning.
     ////    handle_running(error::success, handler);
     ////    return;
     ////}
 
-    // The instance is retained by the stop handler (i.e. until shutdown).
-    const auto header_sync = attach_header_sync_session();
+    ////// The instance is retained by the stop handler (i.e. until shutdown).
+    ////const auto header_sync = attach_header_sync_session();
 
-    // This is invoked on a new thread.
-    header_sync->start(
-        std::bind(&full_node::handle_headers_synchronized,
-            this, _1, handler));
+    ////// This is invoked on a new thread.
+    ////header_sync->start(
+    ////    std::bind(&full_node::handle_headers_synchronized,
+    ////        this, _1, handler));
 }
 
 void full_node::handle_headers_synchronized(const code& ec,
     result_handler handler)
 {
-    if (stopped())
-    {
-        handler(error::service_stopped);
-        return;
-    }
+    ////if (stopped())
+    ////{
+    ////    handler(error::service_stopped);
+    ////    return;
+    ////}
 
-    if (ec)
-    {
-        LOG_ERROR(LOG_NODE)
-            << "Failure synchronizing headers: " << ec.message();
-        handler(ec);
-        return;
-    }
+    ////if (ec)
+    ////{
+    ////    LOG_ERROR(LOG_NODE)
+    ////        << "Failure synchronizing headers: " << ec.message();
+    ////    handler(ec);
+    ////    return;
+    ////}
 
-    // The instance is retained by the stop handler (i.e. until shutdown).
-    const auto block_sync = attach_block_sync_session();
+    ////// The instance is retained by the stop handler (i.e. until shutdown).
+    ////const auto block_sync = attach_block_sync_session();
 
-    // This is invoked on a new thread.
-    block_sync->start(
-        std::bind(&full_node::handle_running,
-            this, _1, handler));
+    ////// This is invoked on a new thread.
+    ////block_sync->start(
+    ////    std::bind(&full_node::handle_running,
+    ////        this, _1, handler));
 }
 
 void full_node::handle_running(const code& ec, result_handler handler)
@@ -153,17 +155,11 @@ void full_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
-    if (!chain_.start_pools())
-    {
-        LOG_ERROR(LOG_NODE)
-            << "Failure starting pools.";
-        handler(error::operation_failed);
-        return;
-    }
+    size_t top_height;
+    hash_digest top_hash;
 
-    size_t height;
-
-    if (!chain_.get_last_height(height))
+    if (!chain_.get_last_height(top_height) ||
+        !chain_.get_block_hash(top_hash, top_height))
     {
         LOG_ERROR(LOG_NODE)
             << "The blockchain is corrupt.";
@@ -171,10 +167,10 @@ void full_node::handle_running(const code& ec, result_handler handler)
         return;
     }
 
-    set_top_block({ null_hash, height });
+    set_top_block({ std::move(top_hash), top_height });
 
     LOG_INFO(LOG_NODE)
-        << "Node start height is (" << height << ").";
+        << "Node start height is (" << top_height << ").";
 
     subscribe_blockchain(
         std::bind(&full_node::handle_reorganized,
@@ -186,8 +182,9 @@ void full_node::handle_running(const code& ec, result_handler handler)
 }
 
 // A typical reorganization consists of one incoming and zero outgoing blocks.
-bool full_node::handle_reorganized(const code& ec, size_t fork_height,
-    const block_const_ptr_list& incoming, const block_const_ptr_list& outgoing)
+bool full_node::handle_reorganized(code ec, size_t fork_height,
+    block_const_ptr_list_const_ptr incoming,
+    block_const_ptr_list_const_ptr outgoing)
 {
     if (stopped() || ec == error::service_stopped)
         return false;
@@ -200,15 +197,15 @@ bool full_node::handle_reorganized(const code& ec, size_t fork_height,
         return false;
     }
 
-    for (const auto block: outgoing)
+    for (const auto block: *outgoing)
         LOG_DEBUG(LOG_NODE)
             << "Reorganization moved block to orphan pool ["
             << encode_hash(block->header().hash()) << "]";
 
-    BITCOIN_ASSERT(!incoming.empty());
-    const auto height = safe_add(fork_height, incoming.size());
+    BITCOIN_ASSERT(!incoming->empty());
+    const auto height = safe_add(fork_height, incoming->size());
 
-    set_top_block({ incoming.back()->hash(), height });
+    set_top_block({ incoming->back()->hash(), height });
     return true;
 }
 
@@ -235,13 +232,13 @@ network::session_outbound::ptr full_node::attach_outbound_session()
 
 session_header_sync::ptr full_node::attach_header_sync_session()
 {
-    const auto& checkpoints = chain_.chain_settings().checkpoints;
-    return attach<session_header_sync>(hashes_, chain_, checkpoints);
+    return attach<session_header_sync>(hashes_, chain_,
+        chain_.chain_settings().checkpoints);
 }
 
 session_block_sync::ptr full_node::attach_block_sync_session()
 {
-    return attach<session_block_sync>(hashes_, chain_, settings_);
+    return attach<session_block_sync>(hashes_, chain_, node_settings_);
 }
 
 // Shutdown
@@ -288,9 +285,14 @@ bool full_node::close()
 // Properties.
 // ----------------------------------------------------------------------------
 
-const settings& full_node::node_settings() const
+const node::settings& full_node::node_settings() const
 {
-    return settings_;
+    return node_settings_;
+}
+
+const blockchain::settings& full_node::chain_settings() const
+{
+    return chain_settings_;
 }
 
 safe_chain& full_node::chain()
@@ -301,14 +303,14 @@ safe_chain& full_node::chain()
 // Subscriptions.
 // ----------------------------------------------------------------------------
 
-void full_node::subscribe_blockchain(reorganize_handler handler)
+void full_node::subscribe_blockchain(reorganize_handler&& handler)
 {
-    chain().subscribe_reorganize(handler);
+    chain().subscribe_reorganize(std::move(handler));
 }
 
-void full_node::subscribe_transaction(transaction_handler handler)
+void full_node::subscribe_transaction(transaction_handler&& handler)
 {
-    chain().subscribe_transaction(handler);
+    chain().subscribe_transaction(std::move(handler));
 }
 
 } // namespace node

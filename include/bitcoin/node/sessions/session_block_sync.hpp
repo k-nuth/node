@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_SESSION_BLOCK_SYNC_HPP
 #define LIBBITCOIN_NODE_SESSION_BLOCK_SYNC_HPP
@@ -56,30 +55,25 @@ protected:
 
     /// Override to attach and start specialized protocols after handshake.
     virtual void attach_protocols(network::channel::ptr channel,
-        network::connector::ptr connect, reservation::ptr row,
-        result_handler handler);
+        reservation::ptr row, result_handler handler);
 
 private:
     void handle_started(const code& ec, result_handler handler);
-    void new_connection(network::connector::ptr connect,
-        reservation::ptr row, result_handler handler);
+    void new_connection(reservation::ptr row, result_handler handler);
 
     // Sequence.
     void handle_connect(const code& ec, network::channel::ptr channel,
-        network::connector::ptr connect, reservation::ptr row,
-        result_handler handler);
+        reservation::ptr row, result_handler handler);
     void handle_channel_start(const code& ec, network::channel::ptr channel,
-        network::connector::ptr connect, reservation::ptr row,
-        result_handler handler);
-    void handle_channel_complete(const code& ec,
-        network::connector::ptr connect, reservation::ptr row,
+        reservation::ptr row, result_handler handler);
+    void handle_channel_complete(const code& ec, reservation::ptr row,
         result_handler handler);
     void handle_channel_stop(const code& ec, reservation::ptr row);
     void handle_complete(const code& ec, result_handler handler);
 
     // Timers.
-    void reset_timer(network::connector::ptr connect);
-    void handle_timer(const code& ec, network::connector::ptr connect);
+    void reset_timer();
+    void handle_timer(const code& ec);
 
     // These are thread safe.
     blockchain::fast_chain& chain_;

@@ -1,21 +1,20 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_FULL_NODE_HPP
 #define LIBBITCOIN_NODE_FULL_NODE_HPP
@@ -74,7 +73,10 @@ public:
     // ------------------------------------------------------------------------
 
     /// Node configuration settings.
-    virtual const settings& node_settings() const;
+    virtual const node::settings& node_settings() const;
+
+    /// Node configuration settings.
+    virtual const blockchain::settings& chain_settings() const;
 
     /// Blockchain query interface.
     virtual blockchain::safe_chain& chain();
@@ -83,10 +85,10 @@ public:
     // ------------------------------------------------------------------------
 
     /// Subscribe to blockchain reorganization and stop events.
-    virtual void subscribe_blockchain(reorganize_handler handler);
+    virtual void subscribe_blockchain(reorganize_handler&& handler);
 
     /// Subscribe to transaction pool acceptance and stop events.
-    virtual void subscribe_transaction(transaction_handler handler);
+    virtual void subscribe_transaction(transaction_handler&& handler);
 
 protected:
     /// Attach a node::session to the network, caller must start the session.
@@ -107,11 +109,11 @@ protected:
     virtual session_block_sync::ptr attach_block_sync_session();
 
 private:
-    typedef message::block_message::ptr_list block_ptr_list;
+    typedef message::block::ptr_list block_ptr_list;
 
-    bool handle_reorganized(const code& ec, size_t fork_height,
-        const block_const_ptr_list& incoming,
-        const block_const_ptr_list& outgoing);
+    bool handle_reorganized(code ec, size_t fork_height,
+        block_const_ptr_list_const_ptr incoming,
+        block_const_ptr_list_const_ptr outgoing);
 
     void handle_headers_synchronized(const code& ec, result_handler handler);
     void handle_network_stopped(const code& ec, result_handler handler);
@@ -123,7 +125,8 @@ private:
     check_list hashes_;
     blockchain::block_chain chain_;
     const uint32_t protocol_maximum_;
-    const settings& settings_;
+    const node::settings& node_settings_;
+    const blockchain::settings& chain_settings_;
 };
 
 } // namespace node

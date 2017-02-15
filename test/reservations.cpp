@@ -1,22 +1,21 @@
-/////**
-//// * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
-//// *
-//// * This file is part of libbitcoin-node.
-//// *
-//// * libbitcoin-node is free software: you can redistribute it and/or
-//// * modify it under the terms of the GNU Affero General Public License with
-//// * additional permissions to the one published by the Free Software
-//// * Foundation, either version 3 of the License, or (at your option)
-//// * any later version. For more information see LICENSE.
-//// *
-//// * This program is distributed in the hope that it will be useful,
-//// * but WITHOUT ANY WARRANTY; without even the implied warranty of
-//// * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-//// * GNU Affero General Public License for more details.
-//// *
-//// * You should have received a copy of the GNU Affero General Public License
-//// * along with this program. If not, see <http://www.gnu.org/licenses/>.
-//// */
+/**
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
+ *
+ * This file is part of libbitcoin.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 ////#include <algorithm>
 ////#include <memory>
 ////#include <boost/test/unit_test.hpp>
@@ -52,14 +51,14 @@
 ////
 ////BOOST_AUTO_TEST_CASE(reservations__import__true__true)
 ////{
-////    const auto block_ptr = std::make_shared<const block_message>();
+////    const auto block_ptr = std::make_shared<const block>();
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    BOOST_REQUIRE(reserves.import(block_ptr, 42));
 ////}
 ////
 ////BOOST_AUTO_TEST_CASE(reservations__import__false__false)
 ////{
-////    const auto block_ptr = std::make_shared<const block_message>();
+////    const auto block_ptr = std::make_shared<const block>();
 ////    DECLARE_RESERVATIONS(reserves, false);
 ////    BOOST_REQUIRE(!reserves.import(block_ptr, 42));
 ////}
@@ -113,7 +112,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__table__connections_5_hash_46__size_5_by_9_hashes_1)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 5;
+////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(45, check42.hash());
@@ -217,7 +216,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__populate__hashes_not_empty_row_not_empty__no_population)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(9, check42.hash());
@@ -280,7 +279,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__populate__hashes_empty_table_empty__no_population)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////
@@ -302,9 +301,9 @@
 ////
 ////    // Declare blocks that hash to the allocated headers.
 ////    // Blocks are evenly distrubuted (every third to each row).
-////    const auto block0 = std::make_shared<const block_message>(block_message{ genesis_header, {} });
-////    const auto block1 = std::make_shared<const block_message>(block_message{ elements[0], {} });
-////    const auto block2 = std::make_shared<const block_message>(block_message{ elements[1], {} });
+////    const auto block0 = std::make_shared<const block>(block{ genesis_header, {} });
+////    const auto block1 = std::make_shared<const block>(block{ elements[0], {} });
+////    const auto block2 = std::make_shared<const block>(block{ elements[1], {} });
 ////
 ////    // All rows have one hash.
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 1u); // 0
@@ -329,7 +328,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__populate__hashes_not_empty_row_emptied__uncapped_reserve)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(7, check42.hash());
@@ -344,8 +343,8 @@
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 2u);
 ////    BOOST_REQUIRE_EQUAL(table[1]->size(), 2u);
 ////
-////    const auto block1 = std::make_shared<block_message>(block_message{ message->elements()[0], {} });
-////    const auto block4 = std::make_shared<block_message>(block_message{ message->elements()[3], {} });
+////    const auto block1 = std::make_shared<block>(block{ message->elements()[0], {} });
+////    const auto block4 = std::make_shared<block>(block{ message->elements()[3], {} });
 ////
 ////    // The import of two blocks from same row will cause populate to invoke reservation.
 ////    table[1]->import(block1);
@@ -363,7 +362,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__populate__hashes_not_empty_row_emptied__capped_reserve)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(7, check42.hash());
@@ -381,8 +380,8 @@
 ////    // Cap reserve at 1 block.
 ////    reserves.set_max_request(1);
 ////
-////    const auto block1 = std::make_shared<const block_message>(block_message{ message->elements()[0], {} });
-////    const auto block4 = std::make_shared<const block_message>(block_message{ message->elements()[3], {} });
+////    const auto block1 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    const auto block4 = std::make_shared<const block>(block{ message->elements()[3], {} });
 ////
 ////    // The import of two blocks from same row will cause populate to invoke reservation.
 ////    table[1]->import(block1);
@@ -400,7 +399,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__populate__hashes_empty_rows_emptied__partition)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////
@@ -422,15 +421,15 @@
 ////
 ////    // Declare blocks that hash to the allocated headers.
 ////    // Blocks are evenly distrubuted (every third to each row).
-////    const auto block0 = std::make_shared<const block_message>(block_message{ genesis_header, {} });
-////    const auto block1 = std::make_shared<const block_message>(block_message{ elements[0], {} });
-////    const auto block2 = std::make_shared<const block_message>(block_message{ elements[1], {} });
-////    const auto block3 = std::make_shared<const block_message>(block_message{ elements[2], {} });
-////    const auto block4 = std::make_shared<const block_message>(block_message{ elements[3], {} });
-////    const auto block5 = std::make_shared<const block_message>(block_message{ elements[4], {} });
-////    const auto block6 = std::make_shared<const block_message>(block_message{ elements[5], {} });
-////    const auto block7 = std::make_shared<const block_message>(block_message{ elements[6], {} });
-////    const auto block8 = std::make_shared<const block_message>(block_message{ elements[7], {} });
+////    const auto block0 = std::make_shared<const block>(block{ genesis_header, {} });
+////    const auto block1 = std::make_shared<const block>(block{ elements[0], {} });
+////    const auto block2 = std::make_shared<const block>(block{ elements[1], {} });
+////    const auto block3 = std::make_shared<const block>(block{ elements[2], {} });
+////    const auto block4 = std::make_shared<const block>(block{ elements[3], {} });
+////    const auto block5 = std::make_shared<const block>(block{ elements[4], {} });
+////    const auto block6 = std::make_shared<const block>(block{ elements[5], {} });
+////    const auto block7 = std::make_shared<const block>(block{ elements[6], {} });
+////    const auto block8 = std::make_shared<const block>(block{ elements[7], {} });
 ////
 ////    // This will reset pending on all rows.
 ////    BOOST_REQUIRE_EQUAL(table[0]->request(false).inventories().size(), 3u);
@@ -582,7 +581,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__rates__three_reservations_same_rates__no_deviation)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 3;
+////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(2, check42.hash());
@@ -629,7 +628,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__rates__five_reservations_one_idle__idle_excluded)
 ////{
 ////    node::settings settings;
-////    settings.initial_connections = 5;
+////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
 ////    const auto message = message_factory(4, check42.hash());

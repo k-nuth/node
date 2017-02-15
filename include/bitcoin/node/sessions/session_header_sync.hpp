@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_SESSION_HEADER_SYNC_HPP
 #define LIBBITCOIN_NODE_SESSION_HEADER_SYNC_HPP
@@ -57,8 +56,7 @@ protected:
 
     /// Override to attach and start specialized protocols after handshake.
     virtual void attach_protocols(network::channel::ptr channel,
-        network::connector::ptr connect, header_list::ptr headers,
-        result_handler handler);
+        header_list::ptr headers, result_handler handler);
 
 private:
     typedef std::vector<header_list::ptr> headers_table;
@@ -67,21 +65,19 @@ private:
 
     void handle_started(const code& ec, result_handler handler);
 
-    void new_connection(network::connector::ptr connect,
-        header_list::ptr row, result_handler handler);
+    void new_connection(header_list::ptr row, result_handler handler);
 
     void start_syncing(const code& ec, const config::authority& host,
-        network::connector::ptr connect, result_handler handler);
-
-    void handle_connect(const code& ec, network::channel::ptr channel,
-        network::connector::ptr connect, header_list::ptr row,
         result_handler handler);
 
-    void handle_complete(const code& ec, network::connector::ptr connect,
+    void handle_connect(const code& ec, network::channel::ptr channel,
         header_list::ptr row, result_handler handler);
 
-    void handle_channel_start(const code& ec, network::connector::ptr connect,
-        network::channel::ptr channel, header_list::ptr row,
+    void handle_complete(const code& ec, header_list::ptr row,
+        result_handler handler);
+
+    void handle_channel_start(const code& ec, network::channel::ptr channel,
+        header_list::ptr row,
         result_handler handler);
 
     void handle_channel_stop(const code& ec, header_list::ptr row);

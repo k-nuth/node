@@ -1,21 +1,20 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
- * This file is part of libbitcoin-node.
+ * This file is part of libbitcoin.
  *
- * libbitcoin-node is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_TEST_RESERVATIONS_HPP
 #define LIBBITCOIN_NODE_TEST_RESERVATIONS_HPP
@@ -52,7 +51,7 @@ class reservation_fixture
 public:
     typedef std::chrono::high_resolution_clock clock;
     reservation_fixture(reservations& reservations, size_t slot,
-        uint32_t block_timeout_seconds, clock::time_point now = clock::now());
+        uint32_t sync_timeout_seconds, clock::time_point now = clock::now());
     std::chrono::microseconds rate_window() const;
     clock::time_point now() const override;
     bool pending() const;
@@ -74,7 +73,7 @@ public:
     bool get_gap_range(size_t& out_first, size_t& out_last) const;
     bool get_next_gap(size_t& out_height, size_t start_height) const;
     bool get_block_exists(const hash_digest& block_hash) const;
-    bool get_fork_difficulty(hash_number& out_difficulty, size_t height) const;
+    bool get_fork_work(uint256_t& out_difficulty, size_t height) const;
     bool get_header(chain::header& out_header, size_t height) const;
     bool get_height(size_t& out_height, const hash_digest& block_hash) const;
     bool get_bits(uint32_t& out_bits, const size_t& height) const;

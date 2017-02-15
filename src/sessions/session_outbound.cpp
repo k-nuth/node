@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +14,7 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <bitcoin/node/sessions/session_outbound.hpp>
 
@@ -46,16 +45,21 @@ session_outbound::session_outbound(full_node& network, safe_chain& chain)
 
 void session_outbound::attach_protocols(channel::ptr channel)
 {
-    if (channel->negotiated_version() >= version::level::bip31)
+    const auto version = channel->negotiated_version();
+
+    if (version >= version::level::bip31)
         attach<protocol_ping_60001>(channel)->start();
     else
         attach<protocol_ping_31402>(channel)->start();
 
+    if (version >= message::version::level::bip61)
+        attach<protocol_reject_70002>(channel)->start();
+
     attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_in>(channel, chain_)->start();
-    ////attach<protocol_block_out>(channel, chain_)->start();
-    ////attach<protocol_transaction_in>(channel, chain_)->start();
-    ////attach<protocol_transaction_out>(channel, chain_)->start();
+    attach<protocol_block_out>(channel, chain_)->start();
+    attach<protocol_transaction_in>(channel, chain_)->start();
+    attach<protocol_transaction_out>(channel, chain_)->start();
 }
 
 } // namespace node

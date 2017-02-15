@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2011-2015 libbitcoin developers (see AUTHORS)
+ * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
  *
  * This file is part of libbitcoin.
  *
- * libbitcoin is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License with
- * additional permissions to the one published by the Free Software
- * Foundation, either version 3 of the License, or (at your option)
- * any later version. For more information see LICENSE.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,13 +14,14 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef LIBBITCOIN_NODE_PROTOCOL_BLOCK_IN_HPP
 #define LIBBITCOIN_NODE_PROTOCOL_BLOCK_IN_HPP
 
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
@@ -46,26 +46,32 @@ public:
     virtual void start();
 
 private:
+    static void report(const chain::block& block);
+
     void get_block_inventory(const code& ec);
     void send_get_blocks(const hash_digest& stop_hash);
     void send_get_data(const code& ec, get_data_ptr message);
 
-    void handle_filter_orphans(const code& ec, get_data_ptr message);
     bool handle_receive_block(const code& ec, block_const_ptr message);
     bool handle_receive_headers(const code& ec, headers_const_ptr message);
     bool handle_receive_inventory(const code& ec, inventory_const_ptr message);
     bool handle_receive_not_found(const code& ec, not_found_const_ptr message);
     void handle_store_block(const code& ec, block_const_ptr message);
-    void handle_fetch_block_locator(const code& ec, get_blocks_ptr message,
+    void handle_fetch_block_locator(const code& ec, get_headers_ptr message,
         const hash_digest& stop_hash);
-    bool handle_reorganized(const code& ec, size_t fork_height,
-        const block_const_ptr_list& incoming,
-        const block_const_ptr_list& outgoing);
+
+    void handle_stop(const code& ec);
+
+    bool handle_reorganized(code ec, size_t fork_height,
+        block_const_ptr_list_const_ptr incoming,
+        block_const_ptr_list_const_ptr outgoing);
 
     full_node& node_;
     blockchain::safe_chain& chain_;
     bc::atomic<hash_digest> last_locator_top_;
+    const uint32_t block_poll_seconds_;
     const bool headers_from_peer_;
+    const bool blocks_from_peer_;
 };
 
 } // namespace node
