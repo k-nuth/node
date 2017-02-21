@@ -120,8 +120,14 @@ bool executor::do_initchain()
     {
         LOG_INFO(LOG_NODE) << format(BN_INITIALIZING_CHAIN) % directory;
 
+        //TODO: BITPRIM: hardcoded identifiers
         // Unfortunately we are limited to a choice of hardcoded chains.
-        auto testnet = (metadata_.configured.network.identifier == 118034699u);
+#ifdef LITECOIN
+        const auto testnet = (metadata_.configured.network.identifier == 3703030268u); //Litecoin
+#else
+        const auto testnet = (metadata_.configured.network.identifier == 118034699u);  //Bitcoin
+#endif //LITECOIN
+
         const auto genesis = testnet ? block::genesis_testnet() :
             block::genesis_mainnet();
 
