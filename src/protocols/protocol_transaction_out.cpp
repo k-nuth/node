@@ -194,8 +194,6 @@ void protocol_transaction_out::send_transaction(const code& ec,
         BITCOIN_ASSERT(!inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
-
-        // TODO: recursion hazard.
         handle_send_next(error::success, inventory);
         return;
     }
