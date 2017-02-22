@@ -339,18 +339,24 @@ void protocol_block_in::handle_store_block(const code& ec,
         return;
     }
 
-    const auto state = message->validation.state;
-    BITCOIN_ASSERT(state);
-
-    // Show that diplayed forks may be missing activations due to checkpoints.
-    const auto checked = state->is_under_checkpoint() ? "*" : "";
-
     LOG_DEBUG(LOG_NODE)
-        << "Connected block [" << encoded << "] at height [" << state->height()
-        << "] from [" << authority() << "] (" << state->enabled_forks()
-        << checked << ", " << state->minimum_version() << ").";
+        << "Connected block [" << encoded << "] at height [" << 0
+        << "] from [" << authority() << "] (" << ""
+        << "" << ", " << "" << ").";
 
-    report(*message);
+
+//    const auto state = message->validation.state;
+//    BITCOIN_ASSERT(state);
+//
+//    // Show that diplayed forks may be missing activations due to checkpoints.
+//    const auto checked = state->is_under_checkpoint() ? "*" : "";
+//
+//    LOG_DEBUG(LOG_NODE)
+//        << "Connected block [" << encoded << "] at height [" << state->height()
+//        << "] from [" << authority() << "] (" << state->enabled_forks()
+//        << checked << ", " << state->minimum_version() << ").";
+//
+//    report(*message);
 }
 
 // Subscription.
