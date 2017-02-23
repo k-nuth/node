@@ -74,6 +74,7 @@ private:
 #define BN_INFORMATION_MESSAGE \
     "Runs a full bitcoin node with additional client-server query protocol."
 
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 #define BN_UNINITIALIZED_CHAIN \
     "The %1% directory is not initialized, run: bn --initchain"
 #define BN_INITIALIZING_CHAIN \
@@ -86,6 +87,7 @@ private:
     "Failed to test directory %1% with error, '%2%'."
 #define BN_INITCHAIN_COMPLETE \
     "Completed initialization."
+#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 
 #define BN_NODE_INTERRUPT \
     "Press CTRL-C to stop the node."
