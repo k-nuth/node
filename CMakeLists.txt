@@ -18,6 +18,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #------------------------------------------------------------------------------
 option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." ON)
 
+# Implement --with-remote-database and declare WITH_REMOTE_DATABASE.
+#------------------------------------------------------------------------------
+option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." ON)
+
+
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
@@ -229,6 +234,10 @@ if (WITH_REMOTE_BLOCKCHAIN)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
 else()
   target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+endif()
+
+if (WITH_REMOTE_DATABASE)
+  target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_DATABASE)
 endif()
 
 _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")

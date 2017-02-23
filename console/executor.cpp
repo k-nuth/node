@@ -108,6 +108,7 @@ void executor::do_version()
         LIBBITCOIN_VERSION << std::endl;
 }
 
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 // Emit to the log.
 bool executor::do_initchain()
 {
@@ -148,6 +149,8 @@ bool executor::do_initchain()
     return false;
 }
 
+#endif   // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
+
 // Menu selection.
 // ----------------------------------------------------------------------------
 
@@ -173,10 +176,12 @@ bool executor::menu()
         return true;
     }
 
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     if (config.initchain)
     {
         return do_initchain();
     }
+#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)    
 
     // There are no command line arguments, just run the node.
     return run();
@@ -192,8 +197,10 @@ bool executor::run()
     LOG_INFO(LOG_NODE) << BN_NODE_INTERRUPT;
     LOG_INFO(LOG_NODE) << BN_NODE_STARTING;
 
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     if (!verify_directory())
         return false;
+#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)    
 
     // Now that the directory is verified we can create the node for it.
     node_ = std::make_shared<full_node>(metadata_.configured);
@@ -309,6 +316,7 @@ void executor::initialize_output()
         LOG_INFO(LOG_NODE) << format(BN_USING_CONFIG_FILE) % file;
 }
 
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 // Use missing directory as a sentinel indicating lack of initialization.
 bool executor::verify_directory()
 {
@@ -328,6 +336,7 @@ bool executor::verify_directory()
     LOG_ERROR(LOG_NODE) << format(BN_INITCHAIN_TRY) % directory % message;
     return false;
 }
+#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 
 } // namespace node
 } // namespace libbitcoin
