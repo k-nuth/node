@@ -278,6 +278,14 @@ if(WITH_REMOTE_BLOCKCHAIN)
 
   target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
 
+
+  target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+
+  if (WITH_REMOTE_DATABASE)
+    target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_REMOTE_DATABASE)
+  endif()
+
+
   _group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
 endif()
 # Tests
@@ -342,6 +350,15 @@ if (WITH_CONSOLE)
           console/main.cpp)
   target_link_libraries(console.bn bitprim-node)
 
+  if (WITH_REMOTE_BLOCKCHAIN)
+      target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+  endif()
+
+  if (WITH_REMOTE_DATABASE)
+      target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_DATABASE)
+  endif()
+
+
   set_target_properties(
           console.bn PROPERTIES
           FOLDER "node"
@@ -357,6 +374,15 @@ if (WITH_CONSOLE)
       console/executor.hpp
       console/main.cpp)
     target_link_libraries(console.bn bitprim-node)
+
+    if (WITH_REMOTE_BLOCKCHAIN)
+        target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+    endif()
+
+    if (WITH_REMOTE_DATABASE)
+        target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_DATABASE)
+    endif()
+
 
     set_target_properties(
       console.bnr PROPERTIES

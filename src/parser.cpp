@@ -86,14 +86,14 @@ options_metadata parser::load_options()
         "Display command line options."
     )
 
-#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)    
+#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     (
         "initchain,i",
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
-    )
-#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
+    ) asdasd
+ #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 
     (
         BN_SETTINGS_VARIABLE ",s",
