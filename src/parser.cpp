@@ -329,6 +329,11 @@ options_metadata parser::load_settings()
         "Transaction hash table size, defaults to 110000000."
     )
     (
+        "database.transaction_unconfirmed_table_buckets",
+        value<uint32_t>(&configured.database.transaction_unconfirmed_table_buckets),
+        "Unconfirmed Transaction hash table size, defaults to 10000."
+    )
+    (
         "database.cache_capacity",
         value<uint32_t>(&configured.database.cache_capacity),
         "The maximum number of entries in the unspent outputs cache, defaults to 0."
