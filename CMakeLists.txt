@@ -78,7 +78,12 @@ if (NOT TARGET bitprim-blockchain)
   find_package(bitprim-blockchain 3.0.0 REQUIRED)
 endif()
 
-
+# Implement --with-litecoin.
+#------------------------------------------------------------------------------
+option(WITH_LITECOIN "Compile with Litecoin support." OFF)
+if (WITH_LITECOIN)
+  add_definitions(-DLITECOIN)
+endif()
 
 # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
