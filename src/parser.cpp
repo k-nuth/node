@@ -92,7 +92,7 @@ options_metadata parser::load_options()
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
-    ) asdasd
+    ) 
  #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 
     (
