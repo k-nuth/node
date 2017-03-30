@@ -108,6 +108,9 @@ protected:
     virtual session_header_sync::ptr attach_header_sync_session();
     virtual session_block_sync::ptr attach_block_sync_session();
 
+    ///For mining
+    blockchain::block_chain chain_;
+
 private:
     typedef message::block::ptr_list block_ptr_list;
 
@@ -123,7 +126,7 @@ private:
 
     // These are thread safe.
     check_list hashes_;
-    blockchain::block_chain chain_;
+    //blockchain::block_chain chain_;
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
     const blockchain::settings& chain_settings_;
