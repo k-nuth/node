@@ -16,11 +16,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #==============================================================================
 # Implement --with-remote-blockchain and declare WITH_REMOTE_BLOCKCHAIN.
 #------------------------------------------------------------------------------
-option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." ON)
+option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." OFF)
 
 # Implement --with-remote-database and declare WITH_REMOTE_DATABASE.
 #------------------------------------------------------------------------------
-option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." ON)
+option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." OFF)
 
 
 # Implement --with-tests and declare WITH_TESTS.
@@ -49,9 +49,9 @@ find_package(
 
 # Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
-if (NOT TARGET bitprim-protocol)
-  find_package(bitprim-protocol 3.0.0 REQUIRED)
-endif()
+#if (NOT TARGET bitprim-protocol)
+#  find_package(bitprim-protocol 3.0.0 REQUIRED)
+#endif()
 
 # Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------

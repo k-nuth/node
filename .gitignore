@@ -28,9 +28,7 @@ obj
 node_test/
 
 /build
-.idea/bitprim-node.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/workspace.xml
-/.idea
+.idea/
 cmake-build-debug/
+
+CMakeSettings.json
