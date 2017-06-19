@@ -27,8 +27,10 @@ obj
 .dirstamp
 node_test/
 
-/build
+/build/
 .idea/
 cmake-build-debug/
+cmake-build-release/
+bitprim-node.dir/
 
 CMakeSettings.json
