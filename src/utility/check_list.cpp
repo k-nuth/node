@@ -56,8 +56,9 @@ void check_list::reserve(const block_database::heights& heights)
 
     checks_.clear();
 
-    for (const auto height: heights)
+    for (const auto height : heights) {
         const auto it = checks_.insert({ null_hash, height });
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 }
