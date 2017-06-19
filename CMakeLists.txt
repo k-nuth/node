@@ -43,15 +43,23 @@ if (NOT ENABLE_SHARED)
   set(Boost_USE_STATIC_LIBS ON)
 endif()
 
-find_package(
-        Boost 1.56.0 REQUIRED
-        COMPONENTS unit_test_framework)
+
+if (MSVC)
+  find_package(
+          Boost 1.56.0 REQUIRED
+          COMPONENTS log log_setup unit_test_framework)
+else()
+  find_package(
+          Boost 1.56.0 REQUIRED
+          COMPONENTS unit_test_framework)
+endif()
+
 
 # Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
-if (NOT TARGET bitprim-protocol)
-  find_package(bitprim-protocol 3.0.0 REQUIRED)
-endif()
+#if (NOT TARGET bitprim-protocol)
+#  find_package(bitprim-protocol 3.0.0 REQUIRED)
+#endif()
 
 # Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
 #------------------------------------------------------------------------------
@@ -125,6 +133,7 @@ if (NOT MSVC)
 else()
   _add_c_compile_flag(-W4 _has_all_warning_flag)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 # Warn on extra stuff.
@@ -173,6 +182,8 @@ _add_cxx_compile_flag(-fvisibility-inlines-hidden _has_visibility_inlines_hidden
 if (MSVC)
   add_definitions(-D_WIN32_WINNT=0x0600)
 endif()
+
+
 
 # Build
 #==============================================================================
@@ -304,6 +315,11 @@ function(_add_tests target)
     target_compile_definitions(${target} PRIVATE -DBOOST_TEST_DYN_LINK)
   endif()
   target_include_directories(${target} SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
+  
+#  if (MSVC)
+#    target_link_libraries(${target} PUBLIC ${Boost_LOG_LIBRARY})
+#  endif()
+
   target_link_libraries(${target} PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
   foreach (_test_name ${ARGN})
@@ -357,8 +373,14 @@ if (WITH_CONSOLE)
           console/executor.cpp
           console/executor.hpp
           console/main.cpp)
-  target_link_libraries(console.bn secp256k1 bitprim-node)
 
+  # target_link_libraries(console.bn secp256k1 bitprim-node)
+  target_link_libraries(console.bn bitprim-node)
+
+#  if (MSVC)
+#    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
+#  endif()
+  
   if (WITH_REMOTE_BLOCKCHAIN)
       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
   endif()
