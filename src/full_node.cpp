@@ -52,6 +52,7 @@ full_node::full_node(const configuration& configuration)
 
 full_node::~full_node()
 {
+    LOG_INFO(LOG_NODE) << "full_node::~full_node()";
     full_node::close();
 }
 

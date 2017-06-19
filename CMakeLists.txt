@@ -16,16 +16,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #==============================================================================
 # Implement --with-remote-blockchain and declare WITH_REMOTE_BLOCKCHAIN.
 #------------------------------------------------------------------------------
-option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." ON)
+option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." OFF)
 
 # Implement --with-remote-database and declare WITH_REMOTE_DATABASE.
 #------------------------------------------------------------------------------
-option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." ON)
+option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." OFF)
 
 
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
-option(WITH_TESTS "Compile with unit tests." ON)
+option(WITH_TESTS "Compile with unit tests." OFF)
 
 # Implement --with-console and declare WITH_CONSOLE.
 #------------------------------------------------------------------------------
@@ -224,7 +224,11 @@ add_library(bitprim-node ${MODE}
         src/utility/header_list.cpp
         src/utility/performance.cpp
         src/utility/reservation.cpp
-        src/utility/reservations.cpp)
+        src/utility/reservations.cpp
+)
+
+set_property(TARGET bitprim-node PROPERTY POSITION_INDEPENDENT_CODE ON)
+  
 target_include_directories(bitprim-node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
@@ -353,7 +357,7 @@ if (WITH_CONSOLE)
           console/executor.cpp
           console/executor.hpp
           console/main.cpp)
-  target_link_libraries(console.bn bitprim-node)
+  target_link_libraries(console.bn secp256k1 bitprim-node)
 
   if (WITH_REMOTE_BLOCKCHAIN)
       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
