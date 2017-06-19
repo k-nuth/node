@@ -133,6 +133,7 @@ if (NOT MSVC)
 else()
   _add_c_compile_flag(-W4 _has_all_warning_flag)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 # Warn on extra stuff.
@@ -182,11 +183,7 @@ if (MSVC)
   add_definitions(-D_WIN32_WINNT=0x0600)
 endif()
 
-# Remove some warnings
-#------------------------------------------------------------------------------
-if (MSVC)
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif()
+
 
 # Build
 #==============================================================================
@@ -315,9 +312,9 @@ function(_add_tests target)
   endif()
   target_include_directories(${target} SYSTEM PUBLIC ${Boost_INCLUDE_DIR})
   
-  if (MSVC)
-    target_link_libraries(${target} PUBLIC ${Boost_LOG_LIBRARY})
-  endif()
+#  if (MSVC)
+#    target_link_libraries(${target} PUBLIC ${Boost_LOG_LIBRARY})
+#  endif()
 
   target_link_libraries(${target} PUBLIC ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
@@ -375,9 +372,9 @@ if (WITH_CONSOLE)
 
   target_link_libraries(console.bn bitprim-node)
 
-  if (MSVC)
-    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
-  endif()
+#  if (MSVC)
+#    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
+#  endif()
   
   if (WITH_REMOTE_BLOCKCHAIN)
       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
