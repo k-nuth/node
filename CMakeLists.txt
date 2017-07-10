@@ -448,34 +448,34 @@ endif()
 
 set(_bitprim_headers
         # include_bitcoin_HEADERS =
-        include/bitcoin/node.hpp
+        bitcoin/node.hpp
         # include_bitcoin_node_HEADERS =
-        include/bitcoin/node/configuration.hpp
-        include/bitcoin/node/define.hpp
-        include/bitcoin/node/full_node.hpp
-        include/bitcoin/node/parser.hpp
-        include/bitcoin/node/settings.hpp
-        include/bitcoin/node/version.hpp
+        bitcoin/node/configuration.hpp
+        bitcoin/node/define.hpp
+        bitcoin/node/full_node.hpp
+        bitcoin/node/parser.hpp
+        bitcoin/node/settings.hpp
+        bitcoin/node/version.hpp
         # include_bitcoin_node_protocols_HEADERS =
-        include/bitcoin/node/protocols/protocol_block_in.hpp
-        include/bitcoin/node/protocols/protocol_block_out.hpp
-        include/bitcoin/node/protocols/protocol_block_sync.hpp
-        include/bitcoin/node/protocols/protocol_header_sync.hpp
-        include/bitcoin/node/protocols/protocol_transaction_in.hpp
-        include/bitcoin/node/protocols/protocol_transaction_out.hpp
+        bitcoin/node/protocols/protocol_block_in.hpp
+        bitcoin/node/protocols/protocol_block_out.hpp
+        bitcoin/node/protocols/protocol_block_sync.hpp
+        bitcoin/node/protocols/protocol_header_sync.hpp
+        bitcoin/node/protocols/protocol_transaction_in.hpp
+        bitcoin/node/protocols/protocol_transaction_out.hpp
         # include_bitcoin_node_sessions_HEADERS =
-        include/bitcoin/node/sessions/session.hpp
-        include/bitcoin/node/sessions/session_block_sync.hpp
-        include/bitcoin/node/sessions/session_header_sync.hpp
-        include/bitcoin/node/sessions/session_inbound.hpp
-        include/bitcoin/node/sessions/session_manual.hpp
-        include/bitcoin/node/sessions/session_outbound.hpp
+        bitcoin/node/sessions/session.hpp
+        bitcoin/node/sessions/session_block_sync.hpp
+        bitcoin/node/sessions/session_header_sync.hpp
+        bitcoin/node/sessions/session_inbound.hpp
+        bitcoin/node/sessions/session_manual.hpp
+        bitcoin/node/sessions/session_outbound.hpp
         # include_bitcoin_node_utility_HEADERS =
-        include/bitcoin/node/utility/check_list.hpp
-        include/bitcoin/node/utility/header_list.hpp
-        include/bitcoin/node/utility/performance.hpp
-        include/bitcoin/node/utility/reservation.hpp
-        include/bitcoin/node/utility/reservations.hpp)
+        bitcoin/node/utility/check_list.hpp
+        bitcoin/node/utility/header_list.hpp
+        bitcoin/node/utility/performance.hpp
+        bitcoin/node/utility/reservation.hpp
+        bitcoin/node/utility/reservations.hpp)
 foreach (_header ${_bitprim_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")
