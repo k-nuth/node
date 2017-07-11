@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg?branch=master)](https://travis-ci.org/bitprim/bitprim-node)
+[![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg?branch=c-api)](https://travis-ci.org/bitprim/bitprim-node)
 
 # Bitprim Node
 

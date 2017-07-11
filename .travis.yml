@@ -1,165 +1,80 @@
-# Bitprim.Node
+# Bitprim
 #
-# Copyright (c) 2016 Bitprim developers (see AUTHORS)
+# Copyright (c) 2017 Bitprim developers (see AUTHORS)
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 language: cpp
-# sudo: false
-# sudo: required
-# dist: trusty
 git:
   submodules: false
-  
+
 matrix:
   include:
-    # Linux clang-3.6 Debug
-    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Debug
+    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11" BUILD_TYPE=Release
       os: linux
       sudo: required
       dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang36
+      group: edge
+      addons: &gcc6
         apt:
           packages:
-            - clang-3.6
+            - g++-6
+            - libc6
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
 
-    # Linux clang-3.6 Release
-    - env: CLANG_VERSION=3.6 CXX_FLAGS="-std=c++11 -D_GLIBCXX_USE_CXX11_ABI" BUILD_TYPE=Release
+    - env: GCC_VERSION=6 CXX_FLAGS="-std=c++11" BUILD_TYPE=Debug
       os: linux
       sudo: required
       dist: trusty
-      cache:
-        ccache: true
-        timeout: 1000
-        directories:
-          - $HOME/boost
-          - $HOME/protobuf
-          - $HOME/zeromq
-      addons: &clang36
+      group: edge
+      addons: &gcc6d
         apt:
           packages:
-            - clang-3.6
+            - g++-6
+            - libc6
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
 
-
-matrix:
-    include:
-        - os: osx
-          compiler: clang
-          env: LINK=dynamic
-        - os: osx
-          compiler: clang
-          env: LINK=static
-        - os: linux
-          compiler: clang
-          env: LINK=dynamic
-          apt:
-            sources:
-                - sourceline: 'ppa:h-rayflood/llvm'
-            packages:
-                - clang-3.4
-        - os: linux
-          compiler: clang
-          env: LINK=static
-          apt:
-            sources:
-                - sourceline: 'ppa:h-rayflood/llvm'
-            packages:
-                - clang-3.4
-        - os: linux
-          compiler: gcc
-          env: LINK=dynamic
-          apt:
-            packages:
-                - bash-completion
-        - os: linux
-          compiler: gcc
-          env: LINK=static
-          apt:
-            packages:
-                - lcov
-                - bash-completion
-    fast_finish:
-        - true
+branches:
+  only:
+    - c-api
 
 before_install:
 
-    # Set aliases for readability.
-    - if [[ $CC             == gcc     ]]; then GCC=true; fi
-    - if [[ $CC             == clang   ]]; then CLANG=true; fi
-    - if [[ $LINK           == static  ]]; then STATIC=true; fi
-    - if [[ $LINK           == dynamic ]]; then DYNAMIC=true; fi
-    - if [[ $TRAVIS_OS_NAME == osx     ]]; then OSX=true; fi
-    - if [[ $TRAVIS_OS_NAME == linux   ]]; then LINUX=true; fi
+  # Update submodules
+  - git submodule update --init --recursive
+
+  - if [ -n "$GCC_VERSION" ]; then export CXX="g++-${GCC_VERSION}" CC="gcc-${GCC_VERSION}"; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CXX="clang++-${CLANG_VERSION}" CC="clang-${CLANG_VERSION}"; fi
+  - if [ -n "$GCC_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} "; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} "; fi
 
 install:
   ############################################################################
-  # All the dependencies are installed in ${TRAVIS_BUILD_DIR}/deps/
+  # All the dependencies are installed in /home/travis/deps/
   ############################################################################
-  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - DEPS_DIR="/home/travis/deps"
   - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
-
-
-    # Export CC/CXX to control gcc version.
-    - if [[ $GCC                         ]]; then export CC=gcc-4.8; export CXX=g++-4.8; fi
-
-    # Download and install packages.
-    - if [[ $OSX   && $CLANG && $DYNAMIC ]]; then brew unlink boost; brew install boost; fi
-    - if [[ $OSX   && $CLANG && $DYNAMIC ]]; then brew unlink bash-completion; brew install bash-completion; fi
-
-script:
-
   ############################################################################
-  # Custom script for external dependences
+  # Install a recent CMake
+  ############################################################################
+  - CMAKE_URL="https://cmake.org/files/v3.9/cmake-3.9.0-rc5-Linux-x86_64.tar.gz"
+  - mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+  - echo 'Cmake 3.9.0 installed';
+  - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+  ############################################################################
+  # Install a Boost with -fPIC
   ############################################################################
   - cd ${DEPS_DIR}
-  - wget -O build_deps.sh  https://raw.githubusercontent.com/hanchon/travis_complete_cache/master/build_deps.sh
-  - sudo chmod 777 build_deps.sh  
-  # Install Boost
-  - ./build_deps.sh boost "${TRAVIS_OS_NAME}"
-  #Set linux variables:
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      export BOOST_OPTS="-DBOOST_ROOT=/home/travis/boost -DBOOST_INCLUDEDIR=/home/travis/boost/include -DBOOST_LIBRARYDIR=/home/travis/boost/lib"    
-      export ZEROMQ=" -DZeroMQ_ROOT_DIR=/home/travis/zeromq "  
-      export PROTOBUF=" -DProtobuf_ROOT_DIR=/home/travis/protobuf "
-      export PATH=/home/travis/protobuf/bin:${PATH}
-      sudo ldconfig
-    else
-      export BOOST_OPTS=" "    
-      export ZEROMQ=" "  
-      export PROTOBUF=" "
-    fi  
-  
-  ############################################################################
-  # Custom script for internal dependences
-  ############################################################################
-  - wget -O build_bitprim.sh  https://raw.githubusercontent.com/hanchon/travis_complete_cache/master/build_bitprim.sh
-  - sudo chmod 777 build_bitprim.sh
-  #Install bitprim-secp256k1
-  - ./build_bitprim.sh secp256k1 "${TRAVIS_OS_NAME}"
-  #Install bitprim-core
-  - ./build_bitprim.sh core "${TRAVIS_OS_NAME}"
-  #Install bitprim-consensus
-  - ./build_bitprim.sh consensus "${TRAVIS_OS_NAME}"
-  #Install bitprim-database
-  - ./build_bitprim.sh database "${TRAVIS_OS_NAME}"
-  #Install bitprim-blockchain
-  - ./build_bitprim.sh blockchain "${TRAVIS_OS_NAME}"
-  #Install bitprim-network
-  - ./build_bitprim.sh network "${TRAVIS_OS_NAME}"
+  - wget -O boost_1_64_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.64.0/boost_1_64_0.tar.gz/download
+  - tar -xzf boost_1_64_0.tar.gz
+  - cd boost_1_64_0
+  - wget -O boost_bin_fpic.tar.bz2 http://repo.bitprim.org/packages/binary/boost_bin_fpic.tar.bz2
+  - tar -xvjf boost_bin_fpic.tar.bz2
+  - export BOOST_OPTS="-DBOOST_ROOT=/home/travis/deps/boost_1_64_0 -DBOOST_INCLUDEDIR=/home/travis/deps/boost_1_64_0 -DBOOST_LIBRARYDIR=/home/travis/deps/boost_1_64_0/lib"
+  - sudo ldconfig
+  - echo 'Boost 1.64.0 installed';
 
 before_script:
   ############################################################################
@@ -168,21 +83,49 @@ before_script:
   - git config --global user.name "Travis bot"
   - git config --global user.email travis-bot@travis-ci.org
 
-  ############################################################################
-  # Go back to the root of the project and setup the build directory
-  ############################################################################
+  - if [ -n "$GCC_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} "; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} "; fi
 
-  - if [ -n "$GCC_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} -Wall -Wextra"; fi
-  - if [ -n "$CLANG_VERSION" ]; then export CXX_FLAGS="${CXX_FLAGS} -Wall -Wextra"; fi
+  ############################################################################
+  # Build and install local deps
+  ############################################################################
+  - cd ${DEPS_DIR}
+  - |
+    function build_project
+    {
+    cd $1
+    mkdir build
+    cd build
+    cmake .. -G "Unix Makefiles" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ${BOOST_OPTS} -DENABLE_TESTS=OFF -DWITH_EXAMPLES=OFF -DWITH_REMOTE_DATABASE=OFF -DWITH_REMOTE_BLOCKCHAIN=OFF -DWITH_LITECOIN=OFF -DWITH_TESTS=OFF -DENABLE_MODULE_RECOVERY=ON -DWITH_TOOLS=OFF -DCMAKE_BUILD_TYPE=Debug
+    make -j4
+    sudo make install
+    cd ..
+    cd ..
+    }
+  - git clone 'https://github.com/bitprim/secp256k1' -b c-api
+  - git clone 'https://github.com/bitprim/bitprim-core' -b c-api
+  - git clone 'https://github.com/bitprim/bitprim-database' -b c-api
+  - git clone 'https://github.com/bitprim/bitprim-network' -b c-api
+  - git clone 'https://github.com/bitprim/bitprim-consensus' -b c-api
+  - git clone 'https://github.com/bitprim/bitprim-blockchain' -b c-api
 
+  - build_project secp256k1
+  - build_project bitprim-core
+  - build_project bitprim-network
+  - build_project bitprim-database
+  - build_project bitprim-consensus
+  - build_project bitprim-blockchain
+
+  ############################################################################
+  # Build this repo
+  ############################################################################
   - cd ${TRAVIS_BUILD_DIR}
-  - mkdir build 
-  - cd build 
-  - cmake .. -DWITH_TESTS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ${BOOST_OPTS}
+  - mkdir build
+  - cd build
+  - cmake .. -DENABLE_TESTS=OFF -DWITH_TESTS=OFF -DWITH_TOOLS=OFF -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ${BOOST_OPTS}
 
 script:
-
-  - make -j2 
+  - make -j2
   - sudo make install
 
 notifications:
