@@ -109,6 +109,12 @@ endif()
 #==============================================================================
 include(CheckCXXCompilerFlag)
 
+# Including common functions
+#------------------------------------------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(BitprimTools)
+
+
 # Warn on all stuff.
 #------------------------------------------------------------------------------
 if (NOT MSVC)
