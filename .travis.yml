@@ -39,6 +39,7 @@ matrix:
 branches:
   only:
     - c-api
+    - conan-build
 
 before_install:
 
