@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.4)
 project(bitprim-node
         VERSION 3.0.0
         LANGUAGES CXX C)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
@@ -44,15 +48,15 @@ if (NOT ENABLE_SHARED)
 endif()
 
 
-if (MSVC)
-  find_package(
-          Boost 1.56.0 REQUIRED
-          COMPONENTS log log_setup unit_test_framework)
-else()
-  find_package(
-          Boost 1.56.0 REQUIRED
-          COMPONENTS unit_test_framework)
-endif()
+#if (MSVC)
+#  find_package(
+#          Boost 1.56.0 REQUIRED
+#          COMPONENTS log log_setup unit_test_framework)
+#else()
+#  find_package(
+#          Boost 1.56.0 REQUIRED
+#          COMPONENTS unit_test_framework)
+#endif()
 
 
 # Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
@@ -67,30 +71,30 @@ endif()
 #  find_package(bitprim-protocol 3.0.0 REQUIRED)
 #endif()
 
-# Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
-#------------------------------------------------------------------------------
-if (WITH_CONSENSUS)
-  if (NOT TARGET bitprim-consensus)
-    find_package(bitprim-consensus 2.0.0 REQUIRED)
-  endif()
-endif()
+## Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
+##------------------------------------------------------------------------------
+#if (WITH_CONSENSUS)
+#  if (NOT TARGET bitprim-consensus)
+#    find_package(bitprim-consensus 2.0.0 REQUIRED)
+#  endif()
+#endif()
 
 
-# Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
-#------------------------------------------------------------------------------
-if(WITH_REMOTE_BLOCKCHAIN)
-  if (NOT TARGET bitprim-blockchain-requester)
-    find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
-  endif()
-else()
-  if (NOT TARGET bitprim-blockchain)
-    find_package(bitprim-blockchain 3.0.0 REQUIRED)
-  endif()
-endif()
-
-if (NOT TARGET bitprim-blockchain)
-  find_package(bitprim-blockchain 3.0.0 REQUIRED)
-endif()
+## Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+##------------------------------------------------------------------------------
+#if(WITH_REMOTE_BLOCKCHAIN)
+#  if (NOT TARGET bitprim-blockchain-requester)
+#    find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+#  endif()
+#else()
+#  if (NOT TARGET bitprim-blockchain)
+#    find_package(bitprim-blockchain 3.0.0 REQUIRED)
+#  endif()
+#endif()
+#
+#if (NOT TARGET bitprim-blockchain)
+#  find_package(bitprim-blockchain 3.0.0 REQUIRED)
+#endif()
 
 # Implement --with-litecoin.
 #------------------------------------------------------------------------------
@@ -99,11 +103,11 @@ if (WITH_LITECOIN)
   add_definitions(-DLITECOIN)
 endif()
 
-# Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
-#------------------------------------------------------------------------------
-if (NOT TARGET bitprim-network)
-  find_package(bitprim-network 3.0.0 REQUIRED)
-endif()
+## Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+##------------------------------------------------------------------------------
+#if (NOT TARGET bitprim-network)
+#  find_package(bitprim-network 3.0.0 REQUIRED)
+#endif()
 
 # Set flags.
 #==============================================================================
@@ -219,11 +223,13 @@ if (NOT MSVC)
 endif()
 
 if (WITH_REMOTE_BLOCKCHAIN)
-  target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
+#  target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-else()
-  target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+#else()
+#  target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 endif()
+
+target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
 
 if (WITH_REMOTE_DATABASE)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_DATABASE)
@@ -265,8 +271,8 @@ if(WITH_REMOTE_BLOCKCHAIN)
     target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
   endif()
 
-  target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
-
+#  target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
+  target_link_libraries(bitprim-node-requester PUBLIC ${CONAN_LIBS})
 
   target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
 
