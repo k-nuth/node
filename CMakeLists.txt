@@ -29,7 +29,7 @@ option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-
 
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
-option(WITH_TESTS "Compile with unit tests." OFF)
+option(WITH_TESTS "Compile with unit tests." ON)
 
 # Implement --with-console and declare WITH_CONSOLE.
 #------------------------------------------------------------------------------
