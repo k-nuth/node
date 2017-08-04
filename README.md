@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg?branch=c-api)](https://travis-ci.org/bitprim/bitprim-node) [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?branch=c-api&svg=true)](https://ci.appveyor.com/project/hanchon/bitprim-node?branch=c-api)
+[![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg?branch=conan-build)](https://travis-ci.org/bitprim/bitprim-node) [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?branch=conan-build&svg=true)](https://ci.appveyor.com/project/bitprim/bitprim-node?branch=conan-build)
 
 
 # Bitprim Node
