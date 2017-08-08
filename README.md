@@ -1,4 +1,4 @@
-# Bitprim Node
+# Bitprim Node <a target="_blank" href="https://gitter.im/bitprim/Lobby">![Gitter Chat][badge.Gitter]</a>
 
 *Bitcoin full node based on libbitcoin-blockchain*
 
