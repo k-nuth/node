@@ -32,7 +32,7 @@ class BitprimNodeConan(ConanFile):
         "with_litecoin=False"
 
     generators = "cmake"
-    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "include/*", "test/*"
+    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "include/*", "test/*", "console/*"
     package_files = "build/lbitprim-node.a"
     build_policy = "missing"
 
