@@ -6,8 +6,13 @@ project(bitprim-node
         VERSION 3.0.0
         LANGUAGES CXX C)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+else()
+    message(WARNING "The file conanbuildinfo.cmake doesn't exist, you have to run conan install first")
+endif()
+
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -18,6 +23,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Process options.
 #==============================================================================
+
+# Implement --use-conan
+#------------------------------------------------------------------------------
+option(USE_CONAN "Use Conan Build Tool." OFF)
+
+# Inherit --enable-shared and define BOOST_TEST_DYN_LINK.
+#------------------------------------------------------------------------------
+option(ENABLE_SHARED "" OFF)
+
+# Implement POSITION_INDEPENDENT_CODE
+#------------------------------------------------------------------------------
+option(ENABLE_POSITION_INDEPENDENT_CODE "Enable POSITION_INDEPENDENT_CODE property" ON)
+
 # Implement --with-remote-blockchain and declare WITH_REMOTE_BLOCKCHAIN.
 #------------------------------------------------------------------------------
 option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitprim-blockchain-requester)." OFF)
@@ -25,7 +43,6 @@ option(WITH_REMOTE_BLOCKCHAIN "Compile with remote bitprim-blockchain (aka. bitp
 # Implement --with-remote-database and declare WITH_REMOTE_DATABASE.
 #------------------------------------------------------------------------------
 option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-database-requester)." OFF)
-
 
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
@@ -35,9 +52,10 @@ option(WITH_TESTS "Compile with unit tests." ON)
 #------------------------------------------------------------------------------
 option(WITH_CONSOLE "Compile console application." OFF)
 
-# Inherit --enable-shared and define BOOST_TEST_DYN_LINK.
+# Implement --with-litecoin.
 #------------------------------------------------------------------------------
-option(ENABLE_SHARED "" OFF)
+option(WITH_LITECOIN "Compile with Litecoin support." OFF)
+
 
 # Check dependencies.
 #==============================================================================
@@ -46,7 +64,6 @@ option(ENABLE_SHARED "" OFF)
 if (NOT ENABLE_SHARED)
   set(Boost_USE_STATIC_LIBS ON)
 endif()
-
 
 #if (MSVC)
 #  find_package(
@@ -58,56 +75,55 @@ endif()
 #          COMPONENTS unit_test_framework)
 #endif()
 
+# if (UNIX)
+#   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/lib/cmake")
+# elseif (WIN32)
+#   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "cmake")
+# endif()
 
-# Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
-#------------------------------------------------------------------------------
-if (UNIX)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/lib/cmake")
-elseif (WIN32)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "cmake")
+
+if (NOT USE_CONAN)
+  # Require bitprim-protocol of at least version 3.0.0 and output ${bitprim_protocol_CPPFLAGS/LIBS/PKG}.
+  #------------------------------------------------------------------------------
+  #if (NOT TARGET bitprim-protocol)
+  #  find_package(bitprim-protocol 3.0.0 REQUIRED)
+  #endif()
+
+  ## Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
+  ##------------------------------------------------------------------------------
+  #if (WITH_CONSENSUS)
+  #  if (NOT TARGET bitprim-consensus)
+  #    find_package(bitprim-consensus 2.0.0 REQUIRED)
+  #  endif()
+  #endif()
+
+  # Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  #------------------------------------------------------------------------------
+  if(WITH_REMOTE_BLOCKCHAIN)
+    if (NOT TARGET bitprim-blockchain-requester)
+      find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
+    endif()
+  else()
+    if (NOT TARGET bitprim-blockchain)
+      find_package(bitprim-blockchain 3.0.0 REQUIRED)
+    endif()
+  endif()
+
+  if (NOT TARGET bitprim-blockchain)
+    find_package(bitprim-blockchain 3.0.0 REQUIRED)
+  endif()
+
+  # Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+  #------------------------------------------------------------------------------
+  if (NOT TARGET bitprim-network)
+    find_package(bitprim-network 3.0.0 REQUIRED)
+  endif()
 endif()
 
-#if (NOT TARGET bitprim-protocol)
-#  find_package(bitprim-protocol 3.0.0 REQUIRED)
-#endif()
 
-## Require bitprim-consensus of at least version 2.0.0 and output ${bitprim_consensus_CPPFLAGS/LIBS/PKG}.
-##------------------------------------------------------------------------------
-#if (WITH_CONSENSUS)
-#  if (NOT TARGET bitprim-consensus)
-#    find_package(bitprim-consensus 2.0.0 REQUIRED)
-#  endif()
-#endif()
-
-
-## Require bitprim-blockchain of at least version 3.0.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
-##------------------------------------------------------------------------------
-#if(WITH_REMOTE_BLOCKCHAIN)
-#  if (NOT TARGET bitprim-blockchain-requester)
-#    find_package(bitprim-blockchain-requester 3.0.0 REQUIRED)
-#  endif()
-#else()
-#  if (NOT TARGET bitprim-blockchain)
-#    find_package(bitprim-blockchain 3.0.0 REQUIRED)
-#  endif()
-#endif()
-#
-#if (NOT TARGET bitprim-blockchain)
-#  find_package(bitprim-blockchain 3.0.0 REQUIRED)
-#endif()
-
-# Implement --with-litecoin.
-#------------------------------------------------------------------------------
-option(WITH_LITECOIN "Compile with Litecoin support." OFF)
 if (WITH_LITECOIN)
   add_definitions(-DLITECOIN)
 endif()
-
-## Require bitprim-network of at least version 3.0.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
-##------------------------------------------------------------------------------
-#if (NOT TARGET bitprim-network)
-#  find_package(bitprim-network 3.0.0 REQUIRED)
-#endif()
 
 # Set flags.
 #==============================================================================
@@ -211,29 +227,44 @@ add_library(bitprim-node ${MODE}
         src/utility/reservations.cpp
 )
 
-set_property(TARGET bitprim-node PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+if (ENABLE_POSITION_INDEPENDENT_CODE) 
+  set_property(TARGET bitprim-node PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif(ENABLE_POSITION_INDEPENDENT_CODE)
+
   
 target_include_directories(bitprim-node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
-target_compile_definitions(bitprim-node PUBLIC -DBCN_STATIC)
+if (NOT ENABLE_SHARED)
+  target_compile_definitions(bitprim-node PUBLIC -DBCN_STATIC -DBCB_STATIC -DBCD_STATIC -DBCT_STATIC -DBC_STATIC)
+endif()
+
 if (NOT MSVC)
   target_compile_definitions(bitprim-node PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
 endif()
 
 if (WITH_REMOTE_BLOCKCHAIN)
-#  target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-#else()
-#  target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
 endif()
-
-target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
 
 if (WITH_REMOTE_DATABASE)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_DATABASE)
 endif()
+
+if (NOT USE_CONAN)
+  if (WITH_REMOTE_BLOCKCHAIN)
+    target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
+  else()
+    target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+  endif()
+else()
+  target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
+endif()
+
+
+
 
 _group_sources(bitprim-node "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -265,14 +296,12 @@ if(WITH_REMOTE_BLOCKCHAIN)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-  target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC)
+  target_compile_definitions(bitprim-node-requester PUBLIC -DBCN_STATIC -DBCB_STATIC -DBCD_STATIC -DBCT_STATIC -DBC_STATIC)
   target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_NODE_REQUESTER)
+  
   if (NOT MSVC)
     target_compile_definitions(bitprim-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
   endif()
-
-#  target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
-  target_link_libraries(bitprim-node-requester PUBLIC ${CONAN_LIBS})
 
   target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
 
@@ -280,12 +309,17 @@ if(WITH_REMOTE_BLOCKCHAIN)
     target_compile_definitions(bitprim-node-requester PUBLIC -DWITH_REMOTE_DATABASE)
   endif()
 
+  if (NOT USE_CONAN)
+    target_link_libraries(bitprim-node-requester bitprim-blockchain-requester bitprim-network)
+  else()
+    target_link_libraries(bitprim-node-requester PUBLIC ${CONAN_LIBS})
+  endif()
 
   _group_sources(bitprim-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
 endif()
+
 # Tests
 #==============================================================================
-
 if (WITH_TESTS)
   enable_testing()
 endif()
