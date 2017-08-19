@@ -261,8 +261,13 @@ if (NOT USE_CONAN)
   else()
     target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
   endif()
-else()
-  target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
+endif()
+target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
+
+if (USE_CONAN)
+  if (MINGW)
+    target_link_libraries(bitprim-node PUBLIC ws2_32 wsock32) #TODO(fernando): manage with Conan
+  endif()
 endif()
 
 
