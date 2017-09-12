@@ -137,6 +137,8 @@ options_metadata parser::load_environment()
 
 options_metadata parser::load_settings()
 {
+    std::cout << "*********** ********* configured.network.bitcoin_cash: " << configured.network.bitcoin_cash << std::endl;
+
     options_metadata description("settings");
     description.add_options()
     /* [log] */
@@ -301,6 +303,12 @@ options_metadata parser::load_settings()
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )
+    (
+        "network.bitcoin_cash",
+        value<bool>(&configured.network.bitcoin_cash),
+        "Use Bitcoin Cash (true) or Bitcoin Legacy (false), defaults to false."
+    )
+
 
     /* [database] */
     (
@@ -462,6 +470,9 @@ options_metadata parser::load_settings()
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
     );
+
+    std::cout << "*********** ********* configured.network.bitcoin_cash: " << configured.network.bitcoin_cash << std::endl;
+    set_bitcoin_cash(configured.network.bitcoin_cash);
 
     return description;
 }
