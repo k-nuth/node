@@ -23,6 +23,8 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
+#include <bitcoin/bitcoin/bitcoin_cash_support.hpp>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/full_node.hpp>
