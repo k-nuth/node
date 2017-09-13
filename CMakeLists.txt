@@ -6,7 +6,7 @@ project(bitprim-node
         VERSION 3.0.0
         LANGUAGES CXX C)
 
-if(USE_CPP11_ABI)
+if (NOT NOT_USE_CPP11_ABI)
   add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 else()
   add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
