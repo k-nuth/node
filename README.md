@@ -2,9 +2,9 @@
 
 *Bitcoin full node based on libbitcoin-blockchain*
 
-| **master(linux/osx)** | **conan-build-win(linux/osx)**   | **master(windows)**   | **conan-build-win(windows)** |
+| **master(linux/osx)** | **dev(linux/osx)**   | **master(windows)**   | **dev(windows)** |
 |:------:|:-:|:-:|:-:|
-| [![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg)](https://travis-ci.org/bitprim/bitprim-node)       | [![Build StatusB](https://travis-ci.org/bitprim/bitprim-node.svg?branch=conan-build-win)](https://travis-ci.org/bitprim/bitprim-node?branch=conan-build-win)  | [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?svg=true)](https://ci.appveyor.com/project/bitprim/bitprim-node)  | [![Appveyor StatusB](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?branch=conan-build-win&svg=true)](https://ci.appveyor.com/project/bitprim/bitprim-node?branch=conan-build-win)  |
+| [![Build Status](https://travis-ci.org/bitprim/bitprim-node.svg)](https://travis-ci.org/bitprim/bitprim-node)       | [![Build StatusB](https://travis-ci.org/bitprim/bitprim-node.svg?branch=dev)](https://travis-ci.org/bitprim/bitprim-node?branch=dev)  | [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?svg=true)](https://ci.appveyor.com/project/bitprim/bitprim-node)  | [![Appveyor StatusB](https://ci.appveyor.com/api/projects/status/github/bitprim/bitprim-node?branch=dev&svg=true)](https://ci.appveyor.com/project/bitprim/bitprim-node?branch=dev)  |
 
 Make sure you have installed [bitprim-core](https://github.com/bitprim/bitprim-core), [bitprim-database](https://github.com/bitprim/bitprim-database), [bitprim-blockchain](https://github.com/bitprim/bitprim-blockchain), [bitprim-consensus](https://github.com/bitprim/bitprim-consensus) (optional) and [bitprim-network](https://github.com/bitprim/bitprim-network) beforehand according to its build instructions.
 
