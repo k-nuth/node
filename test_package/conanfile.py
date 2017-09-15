@@ -8,7 +8,7 @@ username = os.getenv("CONAN_USERNAME", "bitprim")
 
 class BitprimnodeTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    requires = "bitprim-node/0.1@%s/%s" % (username, channel)
+    requires = "bitprim-node/0.2@%s/%s" % (username, channel)
     generators = "cmake"
 
     def build(self):
