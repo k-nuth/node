@@ -253,16 +253,33 @@ if (WITH_REMOTE_DATABASE)
   target_compile_definitions(bitprim-node PUBLIC -DWITH_REMOTE_DATABASE)
 endif()
 
+
+
 #TODO(dario) Handle WITH_REMOTE_BLOCKCHAIN with Conan?
-if (NOT NO_CONAN_AT_ALL)
-  target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
-else()
+# if (NOT NO_CONAN_AT_ALL)
+#   target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
+# else()
+#   if (WITH_REMOTE_BLOCKCHAIN)
+#     target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
+#   else()
+#     target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+#   endif()
+# endif()
+
+
+if (NOT USE_CONAN)
   if (WITH_REMOTE_BLOCKCHAIN)
-    target_link_libraries(bitprim-node bitprim-blockchain-requester bitprim-network)
+    target_link_libraries(bitprim-node PUBLIC bitprim-blockchain-requester bitprim-network)
   else()
-    target_link_libraries(bitprim-node bitprim-blockchain bitprim-network)
+    target_link_libraries(bitprim-node PUBLIC bitprim-blockchain bitprim-network)
   endif()
 endif()
+
+if (NOT NO_CONAN_AT_ALL)
+  target_link_libraries(bitprim-node PUBLIC ${CONAN_LIBS})
+endif()
+
+
 
 if (USE_CONAN)
   if (MINGW)
