@@ -92,6 +92,9 @@ class BitprimNodeConan(ConanFile):
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
 
+        self.copy("bn.exe", dst="bin", keep_path=False) # Windows
+        self.copy("bn", dst="bin", keep_path=False) # Linux / Macos
+
     def package_info(self):
         self.cpp_info.includedirs = ['include']
         self.cpp_info.libs = ["bitprim-node"]
