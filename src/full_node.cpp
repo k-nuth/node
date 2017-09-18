@@ -30,6 +30,7 @@
 #include <bitcoin/node/sessions/session_inbound.hpp>
 #include <bitcoin/node/sessions/session_manual.hpp>
 #include <bitcoin/node/sessions/session_outbound.hpp>
+#include <bitcoin/bitcoin/bitcoin_cash_support.hpp>
 
 namespace libbitcoin {
 namespace node {
@@ -48,6 +49,7 @@ full_node::full_node(const configuration& configuration)
     chain_settings_(configuration.chain),
     node_settings_(configuration.node)
 {
+    set_bitcoin_cash(configuration.network.bitcoin_cash);
 }
 
 full_node::~full_node()

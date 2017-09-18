@@ -23,6 +23,7 @@
 #include <string>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/full_node.hpp>
@@ -301,6 +302,12 @@ options_metadata parser::load_settings()
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )
+    (
+        "network.bitcoin_cash",
+        value<bool>(&configured.network.bitcoin_cash),
+        "Use Bitcoin Cash (true) or Bitcoin Legacy (false), defaults to false."
+    )
+
 
     /* [database] */
     (
