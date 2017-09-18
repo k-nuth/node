@@ -86,14 +86,19 @@ class BitprimNodeConan(ConanFile):
         self.copy("*.h", dst="include", src="include")
         self.copy("*.hpp", dst="include", src="include")
         self.copy("*.ipp", dst="include", src="include")
+
+        # self.copy("bn.exe", dst="bin", keep_path=False) # Windows
+        # self.copy("bn", dst="bin", keep_path=False) # Linux / Macos
+
+        self.copy("bn.exe", dst="bin", src="bin") # Windows
+        self.copy("bn", dst="bin", src="bin") # Linux / Macos
+
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.dylib*", dst="lib", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
 
-        self.copy("bn.exe", dst="bin", keep_path=False) # Windows
-        self.copy("bn", dst="bin", keep_path=False) # Linux / Macos
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']

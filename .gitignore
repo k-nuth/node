@@ -8,6 +8,8 @@ Makefile
 Makefile.in
 libbitcoin-node.pc
 
+pkg/
+
 bin
 obj
 .*.swp
