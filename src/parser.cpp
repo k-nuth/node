@@ -24,7 +24,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <bitcoin/bitcoin/bitcoin_cash_support.hpp>
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/full_node.hpp>
@@ -139,8 +138,6 @@ options_metadata parser::load_environment()
 
 options_metadata parser::load_settings()
 {
-    std::cout << "*********** ********* configured.network.bitcoin_cash: " << configured.network.bitcoin_cash << std::endl;
-
     options_metadata description("settings");
     description.add_options()
     /* [log] */
@@ -472,9 +469,6 @@ options_metadata parser::load_settings()
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
     );
-
-    std::cout << "*********** ********* configured.network.bitcoin_cash: " << configured.network.bitcoin_cash << std::endl;
-    set_bitcoin_cash(configured.network.bitcoin_cash);
 
     return description;
 }
