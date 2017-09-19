@@ -30,7 +30,6 @@
 #include <bitcoin/node/sessions/session_inbound.hpp>
 #include <bitcoin/node/sessions/session_manual.hpp>
 #include <bitcoin/node/sessions/session_outbound.hpp>
-#include <bitcoin/bitcoin/bitcoin_cash_support.hpp>
 
 namespace libbitcoin {
 namespace node {
@@ -42,19 +41,20 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 full_node::full_node(const configuration& configuration)
-  : p2p(configuration.network),
+  : bitcoint_cash_setter(configuration.network),
+  , p2p(configuration.network),
     chain_(thread_pool(), configuration.chain, configuration.database,
         configuration.network.relay_transactions),
     protocol_maximum_(configuration.network.protocol_maximum),
     chain_settings_(configuration.chain),
     node_settings_(configuration.node)
 {
-    set_bitcoin_cash(configuration.network.bitcoin_cash);
+    // set_bitcoin_cash(configuration.network.bitcoin_cash);
 }
 
 full_node::~full_node()
 {
-    LOG_INFO(LOG_NODE) << "full_node::~full_node()";
+    // LOG_INFO(LOG_NODE) << "full_node::~full_node()";
     full_node::close();
 }
 
