@@ -36,7 +36,7 @@ namespace node {
     
 
 struct bitcoin_cash_setter {
-    bitcoin_cash_setter(settings const& settings) {
+    bitcoin_cash_setter(network::settings const& settings) {
         set_bitcoin_cash(settings.bitcoin_cash);
     }
 };
