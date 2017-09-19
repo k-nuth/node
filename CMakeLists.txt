@@ -15,7 +15,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "
   set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-macro-redefined")
 endif()
 
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Check for baseline language coverage in the compiler for the C++11 standard.
