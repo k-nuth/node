@@ -41,7 +41,7 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 full_node::full_node(const configuration& configuration)
-  : bitcoint_cash_setter(configuration.network),
+  : bitcoin_cash_setter(configuration.network),
   , p2p(configuration.network),
     chain_(thread_pool(), configuration.chain, configuration.database,
         configuration.network.relay_transactions),

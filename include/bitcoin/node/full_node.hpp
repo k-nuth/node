@@ -35,15 +35,15 @@ namespace node {
 
     
 
-struct bitcoint_cash_setter {
-    bitcoint_cash_setter(settings const& settings) {
+struct bitcoin_cash_setter {
+    bitcoin_cash_setter(settings const& settings) {
         set_bitcoin_cash(settings.bitcoin_cash);
     }
 };
 
 /// A full node on the Bitcoin P2P network.
 class BCN_API full_node
-  : public bitcoint_cash_setter
+  : public bitcoin_cash_setter
   , public network::p2p
 {
 public:
