@@ -28,13 +28,23 @@
 #include <bitcoin/node/sessions/session_block_sync.hpp>
 #include <bitcoin/node/sessions/session_header_sync.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
+#include <bitcoin/bitcoin/bitcoin_cash_support.hpp>
 
 namespace libbitcoin {
 namespace node {
 
+    
+
+struct bitcoin_cash_setter {
+    bitcoin_cash_setter(network::settings const& settings) {
+        set_bitcoin_cash(settings.bitcoin_cash);
+    }
+};
+
 /// A full node on the Bitcoin P2P network.
 class BCN_API full_node
-  : public network::p2p
+  : public bitcoin_cash_setter
+  , public network::p2p
 {
 public:
     typedef std::shared_ptr<full_node> ptr;

@@ -6,10 +6,13 @@ project(bitprim-node
         VERSION 3.0.0
         LANGUAGES CXX C)
 
-if(USE_CPP11_ABI)
-  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
-else()
-  add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if (NOT NOT_USE_CPP11_ABI)
+    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
+  else()
+    add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+  endif()
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-macro-redefined")
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

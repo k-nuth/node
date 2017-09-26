@@ -44,22 +44,12 @@ using namespace bc::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
-static constexpr auto perpetual_timer = true;
-
-static inline uint32_t get_poll_seconds(const node::settings& settings)
-{
-    // Set 136 years as equivalent to "never" if configured to disable.
-    const auto value = settings.block_poll_seconds;
-    return value == 0 ? max_uint32 : value;
-}
-
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     safe_chain& chain)
-  : protocol_timer(node, channel, perpetual_timer, NAME),
+  : protocol_timer(node, channel, false, NAME),
     node_(node),
     chain_(chain),
-    last_locator_top_(null_hash),
-    block_poll_seconds_(get_poll_seconds(node.node_settings())),
+    block_latency_(node.node_settings().block_latency()),
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     headers_from_peer_(negotiated_version() >= version::level::bip130),
@@ -77,9 +67,8 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
 
 void protocol_block_in::start()
 {
-    // Use perpetual protocol timer to prevent stall (our heartbeat).
-    protocol_timer::start(asio::seconds(block_poll_seconds_),
-        BIND1(get_block_inventory, _1));
+    // Use timer to drop slow peers.
+    protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -93,62 +82,18 @@ void protocol_block_in::start()
     if (headers_from_peer_)
     {
         // Ask peer to send headers vs. inventory block announcements.
-        SEND2(send_headers(), handle_send, _1, send_headers::command);
-    }
-
-    // Subscribe to block acceptance notifications (for gap fill).
-    chain_.subscribe_reorganize(BIND4(handle_reorganized, _1, _2, _3, _4));
-
-    // Send initial get_[blocks|headers] message by simulating first heartbeat.
-    set_event(error::success);
-}
-
-// Send get_[headers|blocks] sequence.
-//-----------------------------------------------------------------------------
-
-// This is fired by the callback (i.e. base timer and stop handler).
-void protocol_block_in::get_block_inventory(const code& ec)
-{
-    if (stopped(ec))
-    {
-        // This may get called more than once per stop.
-        handle_stop(ec);
-        return;
-    }
-
-    // Since we need blocks do not stay connected to peer in bad version range.
-    if (!blocks_from_peer_)
-    {
-        stop(ec);
-        return;
-    }
-
-    if (ec && ec != error::channel_timeout)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure in block timer for [" << authority() << "] "
-            << ec.message();
-        stop(ec);
-        return;
+        SEND2(send_headers{}, handle_send, _1, send_headers::command);
     }
 
     send_get_blocks(null_hash);
 }
 
+// Send get_[headers|blocks] sequence.
+//-----------------------------------------------------------------------------
+
 void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
 {
-    const auto chain_top = node_.top_block();
-    const auto& chain_top_hash = chain_top.hash();
-    const auto last_locator_top = last_locator_top_.load();
-
-    // Avoid requesting from the same start as last request to this peer.
-    // This does not guarantee prevention, it's just an optimization.
-    // If the peer does not respond to the previous request this will stall
-    // unless a block announcement is connected or another channel advances.
-    if (chain_top_hash != null_hash && chain_top_hash == last_locator_top)
-        return;
-
-    const auto heights = block::locator_heights(chain_top.height());
+    const auto heights = block::locator_heights(node_.top_block().height());
 
     chain_.fetch_block_locator(heights,
         BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
@@ -159,8 +104,6 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
 {
     if (stopped(ec))
         return;
-
-    const auto& last_hash = message->start_hashes().front();
 
     if (ec)
     {
@@ -174,17 +117,26 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
     if (message->start_hashes().empty())
         return;
 
+    const auto& last_hash = message->start_hashes().front();
+
     // TODO: move get_headers to a derived class protocol_block_in_31800.
     const auto use_headers = negotiated_version() >= version::level::headers;
-    const auto default_size = use_headers ? "2000" : "500";
+    const auto request_type = (use_headers ? "headers" : "inventory");
 
-    LOG_DEBUG(LOG_NODE)
-        << "Ask [" << authority() << "] for headers from ["
-        << encode_hash(last_hash) << "] through [" <<
-        (stop_hash == null_hash ? default_size : encode_hash(stop_hash)) << "]";
+    if (stop_hash == null_hash)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Ask [" << authority() << "] for " << request_type << " after ["
+            << encode_hash(last_hash) << "]";
+    }
+    else
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Ask [" << authority() << "] for " << request_type << " from ["
+            << encode_hash(last_hash) << "] through ["
+            << encode_hash(stop_hash) << "]";
+    }
 
-    // Save the locator top to prevent a redundant future request.
-    last_locator_top_.store(last_hash);
     message->set_stop_hash(stop_hash);
 
     if (use_headers)
@@ -198,12 +150,22 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
 //-----------------------------------------------------------------------------
 
 // TODO: move headers to a derived class protocol_block_in_31800.
-// This originates from send_header->annoucements and get_headers requests.
+// This originates from send_header->annoucements and get_headers requests, or
+// from an unsolicited announcement. There is no way to distinguish.
 bool protocol_block_in::handle_receive_headers(const code& ec,
     headers_const_ptr message)
 {
     if (stopped(ec))
         return false;
+
+    // We don't want to request a batch of headers out of order.
+    if (!message->is_sequential())
+    {
+        LOG_WARNING(LOG_NODE)
+            << "Block headers out of order from [" << authority() << "].";
+        stop(error::channel_stopped);
+        return false;
+    }
 
     // There is no benefit to this use of headers, in fact it is suboptimal.
     // In v3 headers will be used to build block tree before getting blocks.
@@ -215,7 +177,8 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     return true;
 }
 
-// This originates from default annoucements and get_blocks requests.
+// This originates from default annoucements and get_blocks requests, or from
+// an unsolicited announcement. There is no way to distinguish.
 bool protocol_block_in::handle_receive_inventory(const code& ec,
     inventory_const_ptr message)
 {
@@ -247,6 +210,25 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     if (message->inventories().empty())
         return;
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section
+    mutex.lock_upgrade();
+    const auto fresh = backlog_.empty();
+    mutex.unlock_upgrade_and_lock();
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    // Enqueue the block inventory behind the preceding block inventory.
+    for (const auto& inventory: message->inventories())
+        if (inventory.type() == inventory::type_id::block)
+            backlog_.push(inventory.hash());
+
+    mutex.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    // There was no backlog so the timer must be started now.
+    if (fresh)
+        reset_timer();
+
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
 }
@@ -273,14 +255,18 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     hash_list hashes;
     message->to_hashes(hashes, inventory::type_id::block);
 
-    // The peer cannot locate a block that it told us it had.
-    // This only results from reorganization assuming peer is proper.
-    for (const auto hash: hashes)
+    for (const auto& hash: hashes)
     {
         LOG_DEBUG(LOG_NODE)
             << "Block not_found [" << encode_hash(hash) << "] from ["
             << authority() << "]";
     }
+
+    // The peer cannot locate one or more blocks that it told us it had.
+    // This only results from reorganization assuming peer is proper.
+    // Drop the peer so next channgel generates a new locator and backlog.
+    if (!hashes.empty())
+        stop(error::channel_stopped);
 
     return true;
 }
@@ -294,16 +280,53 @@ bool protocol_block_in::handle_receive_block(const code& ec,
     if (stopped(ec))
         return false;
 
-    // Reset the timer because we just received a block from this peer.
-    // Once we are at the top this will end up polling the peer.
-    reset_timer();
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section
+    mutex.lock();
+
+    auto matched = !backlog_.empty() && backlog_.front() == message->hash();
+
+    if (matched)
+        backlog_.pop();
+
+    // Empty after pop means we need to make a new request.
+    const auto cleared = backlog_.empty();
+
+    mutex.unlock();
+    ///////////////////////////////////////////////////////////////////////////
+
+    // If a peer sends a block unannounced we drop the peer - always. However
+    // it is common for block announcements to cause block requests to be sent
+    // out of backlog order due to interleaving of threads. This results in
+    // channel drops during initial block download but not after sync. The
+    // resolution to this issue is use of headers-first sync, but short of that
+    // the current implementation performs well and drops peers no more
+    // frequently than block announcements occur during initial block download,
+    // and not typically after it is complete.
+    if (!matched)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Block [" << encode_hash(message->hash())
+            << "] unexpected or out of order from [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
+    }
 
     message->validation.originator = nonce();
     chain_.organize(message, BIND2(handle_store_block, _1, message));
+
+    // Sending a new request will reset the timer upon inventory->get_data, but
+    // we need to time out the lack of response to those requests when stale.
+    // So we rest the timer in case of cleared and for not cleared.
+    reset_timer();
+
+    if (cleared)
+        send_get_blocks(null_hash);
+
     return true;
 }
 
-// The transaction has been saved to the block chain (or not).
+// The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block
 // to be announced to non-originating peers.
 void protocol_block_in::handle_store_block(const code& ec,
@@ -330,6 +353,7 @@ void protocol_block_in::handle_store_block(const code& ec,
         return;
     }
 
+    // TODO: send reject as applicable.
     if (ec)
     {
         LOG_DEBUG(LOG_NODE)
@@ -339,56 +363,75 @@ void protocol_block_in::handle_store_block(const code& ec,
         return;
     }
 
+    const auto state = message->validation.state;
+    BITCOIN_ASSERT(state);
+
+    // Show that diplayed forks may be missing activations due to checkpoints.
+    const auto checked = state->is_under_checkpoint() ? "*" : "";
+
     LOG_DEBUG(LOG_NODE)
-        << "Connected block [" << encoded << "] at height [" << 0
-        << "] from [" << authority() << "] (" << ""
-        << "" << ", " << "" << ").";
+        << "Connected block [" << encoded << "] at height [" << state->height()
+        << "] from [" << authority() << "] (" << state->enabled_forks()
+        << checked << ", " << state->minimum_version() << ").";
 
-
-//    const auto state = message->validation.state;
-//    BITCOIN_ASSERT(state);
-//
-//    // Show that diplayed forks may be missing activations due to checkpoints.
-//    const auto checked = state->is_under_checkpoint() ? "*" : "";
-//
-//    LOG_DEBUG(LOG_NODE)
-//        << "Connected block [" << encoded << "] at height [" << state->height()
-//        << "] from [" << authority() << "] (" << state->enabled_forks()
-//        << checked << ", " << state->minimum_version() << ").";
-//
-//    report(*message);
+    report(*message);
 }
 
 // Subscription.
 //-----------------------------------------------------------------------------
 
-// At least one block was accepted into the chain, originating from any peer.
-bool protocol_block_in::handle_reorganized(code ec, size_t fork_height,
-    block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr)
+// This is fired by the callback (i.e. base timer and stop handler).
+void protocol_block_in::handle_timeout(const code& ec)
 {
     if (stopped(ec))
-        return false;
-
-    // TODO: differentiate failure conditions and send reject as applicable.
-
-    if (ec)
     {
-        LOG_ERROR(LOG_NODE)
-            << "Failure handling reorganization for [" << authority() << "] "
-            << ec.message();
-        stop(ec);
-        return false;
+        // This may get called more than once per stop.
+        handle_stop(ec);
+        return;
     }
 
-    ////// Report the blocks that originated from this peer.
-    ////// If originating peer is dropped there will be no report here.
-    ////for (const auto block: *incoming)
-    ////    if (block->validation.originator == nonce())
-    ////        LOG_DEBUG(LOG_NODE)
-    ////            << "Reorganized block [" << encode_hash(block->header().hash())
-    ////            << "] from [" << authority() << "].";
+    // Since we need blocks do not stay connected to peer in bad version range.
+    if (!blocks_from_peer_)
+    {
+        stop(error::channel_stopped);
+        return;
+    }
 
-    return true;
+    if (ec && ec != error::channel_timeout)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Failure in block timer for [" << authority() << "] "
+            << ec.message();
+        stop(ec);
+        return;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Critical Section
+    mutex.lock_shared();
+    const auto backlog_empty = backlog_.empty();
+    mutex.unlock_shared();
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Can only end up here if time was not extended.
+    if (!backlog_empty)
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Peer [" << authority()
+            << "] exceeded configured block latency.";
+        stop(ec);
+    }
+
+    // Can only end up here if peer did not respond to inventory or get_data.
+    // At this point we are caught up with an honest peer. But if we are stale
+    // we should try another peer and not just keep pounding this one.
+    if (chain_.is_stale())
+        stop(error::channel_stopped);
+
+    // If we are not stale then we are either good or stalled until peer sends
+    // an announcement. There is no sense pinging a broken peer, so we either
+    // drop the peer after a certain mount of time (above 10 minutes) or rely
+    // on other peers to keep us moving and periodically age out connections.
 }
 
 void protocol_block_in::handle_stop(const code&)

@@ -29,10 +29,10 @@ environment:
     PYTHON_VERSION: "2.7.8"
     PYTHON_ARCH: "32"
 
-    CONAN_REFERENCE: "bitprim-node/0.1"
+    CONAN_REFERENCE: "bitprim-node/0.2"
     CONAN_USERNAME: "bitprim"
     CONAN_LOGIN_USERNAME: "bitprim-bintray"
-    CONAN_CHANNEL: "stable"
+    CONAN_CHANNEL: "testing"
     VS150COMNTOOLS: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\"
     CONAN_UPLOAD: "https://api.bintray.com/conan/bitprim/bitprim"
 
