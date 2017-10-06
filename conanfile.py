@@ -60,8 +60,8 @@ class BitprimNodeConan(ConanFile):
     build_policy = "missing"
 
     requires = (("bitprim-conan-boost/1.64.0@bitprim/stable"),
-                ("bitprim-blockchain/0.3@bitprim/stable"),
-                ("bitprim-network/0.3@bitprim/stable"))
+                ("bitprim-blockchain/0.3@bitprim/testing"),
+                ("bitprim-network/0.3@bitprim/testing"))
 
 
     def build(self):
