@@ -51,7 +51,7 @@ class BitprimNodeConan(ConanFile):
     # "not_use_cpp11_abi=False"
 
     with_tests = False
-    with_console = False
+    with_console = True
 
 
     generators = "cmake"
