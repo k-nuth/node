@@ -134,12 +134,16 @@ private:
     void handle_started(const code& ec, result_handler handler);
     void handle_running(const code& ec, result_handler handler);
 
+    void read_block_size();
+    void write_block_size();
+
     // These are thread safe.
     check_list hashes_;
     //blockchain::block_chain chain_;
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
     const blockchain::settings& chain_settings_;
+    std::string database_directory;    
 };
 
 } // namespace node
