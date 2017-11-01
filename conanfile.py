@@ -84,6 +84,7 @@ class BitprimNodeConan(ConanFile):
 
         cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
 
+        #TODO(bitprim): compare with the other project to see if this could be deleted!
         if self.settings.compiler == "gcc":
             if float(str(self.settings.compiler.version)) >= 5:
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(False)

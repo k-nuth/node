@@ -54,8 +54,8 @@ full_node::full_node(const configuration& configuration)
 
 full_node::~full_node()
 {
-    LOG_INFO(LOG_NODE) << "full_node::~full_node()";
-    std::cout << "full_node::~full_node() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
+    // LOG_INFO(LOG_NODE) << "full_node::~full_node()";
+    // std::cout << "full_node::~full_node() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     full_node::close();
 }
 
@@ -270,8 +270,8 @@ bool full_node::stop()
 // This must be called from the thread that constructed this class (see join).
 bool full_node::close()
 {
-    LOG_INFO(LOG_NODE) << "full_node::close()";
-    std::cout << "full_node::close() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
+    // LOG_INFO(LOG_NODE) << "full_node::close()";
+    // std::cout << "full_node::close() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     
     // Invoke own stop to signal work suspension.
     if (!full_node::stop())
