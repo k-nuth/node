@@ -216,18 +216,23 @@ add_library(bitprim-node ${MODE}
         src/configuration.cpp
         src/full_node.cpp
         src/parser.cpp
+        src/settings.cpp
+        src/version.cpp
+
         src/protocols/protocol_block_in.cpp
         src/protocols/protocol_block_out.cpp
         src/protocols/protocol_block_sync.cpp
         src/protocols/protocol_header_sync.cpp
         src/protocols/protocol_transaction_in.cpp
         src/protocols/protocol_transaction_out.cpp
+
         src/sessions/session_block_sync.cpp
         src/sessions/session_header_sync.cpp
         src/sessions/session_inbound.cpp
         src/sessions/session_manual.cpp
         src/sessions/session_outbound.cpp
-        src/settings.cpp
+
+
         src/utility/check_list.cpp
         src/utility/header_list.cpp
         src/utility/performance.cpp

@@ -23,4 +23,15 @@
 #undef STR
 #undef STR_HELPER
 
+#ifdef BITPRIM_BUILD_NUMBER
+#define BITPRIM_NODE_VERSION BITPRIM_BUILD_NUMBER
+#else
+#define BITPRIM_NODE_VERSION "v0.0.0"
+#endif
+
+namespace libbitcoin { namespace node {
+char const* version();
+}} /*namespace libbitcoin::node*/
+ 
+
 #endif
