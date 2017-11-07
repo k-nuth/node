@@ -24,33 +24,35 @@ def option_on_off(option):
 
 class BitprimNodeConan(ConanFile):
     name = "bitprim-node"
-    version = "0.2"
+    version = "0.3"
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
     settings = "os", "compiler", "build_type", "arch"
 
-    # options = {"shared": [True, False]}
-    # default_options = "shared=False"
-
     options = {"shared": [True, False],
                "fPIC": [True, False],
                "with_remote_blockchain": [True, False],
                "with_remote_database": [True, False],
-               "with_tests": [True, False],
-               "with_console": [True, False],
-               "with_litecoin": [True, False],
-               "not_use_cpp11_abi": [True, False]
+               "with_litecoin": [True, False]
     }
+    # "with_tests": [True, False],
+    # "with_console": [True, False],
+    # "not_use_cpp11_abi": [True, False]
 
     default_options = "shared=False", \
         "fPIC=True", \
         "with_remote_blockchain=False", \
         "with_remote_database=False", \
-        "with_tests=True", \
-        "with_console=True", \
-        "with_litecoin=False", \
-        "not_use_cpp11_abi=False"
+        "with_litecoin=False"
+
+    # "with_tests=True", \
+    # "with_console=True", \
+    # "not_use_cpp11_abi=False"
+
+    with_tests = False
+    with_console = True
+
 
     generators = "cmake"
     exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "include/*", "test/*", "console/*"
@@ -58,22 +60,28 @@ class BitprimNodeConan(ConanFile):
     build_policy = "missing"
 
     requires = (("bitprim-conan-boost/1.64.0@bitprim/stable"),
-                ("bitprim-blockchain/0.2@bitprim/stable"),
-                ("bitprim-network/0.2@bitprim/stable"))
+                ("bitprim-blockchain/0.3@bitprim/stable"),
+                ("bitprim-network/0.3@bitprim/stable"))
 
     def build(self):
         cmake = CMake(self)
         
-        cmake.definitions["USE_CONAN"] = "ON"
-        cmake.definitions["NO_CONAN_AT_ALL"] = "OFF"
-        cmake.definitions["CMAKE_VERBOSE_MAKEFILE"] = "ON"
+        cmake.definitions["USE_CONAN"] = option_on_off(True)
+        cmake.definitions["NO_CONAN_AT_ALL"] = option_on_off(False)
+        cmake.definitions["CMAKE_VERBOSE_MAKEFILE"] = option_on_off(False)
         cmake.definitions["ENABLE_SHARED"] = option_on_off(self.options.shared)
         cmake.definitions["ENABLE_POSITION_INDEPENDENT_CODE"] = option_on_off(self.options.fPIC)
-        # cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(self.options.not_use_cpp11_abi)
+
         cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.options.with_remote_blockchain)
         cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.options.with_remote_database)
-        cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
-        cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
+
+        # cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(self.options.not_use_cpp11_abi)
+        # cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
+        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
+
+        cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
+        cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
+
         cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
 
         if self.settings.compiler == "gcc":
