@@ -29,7 +29,7 @@
 #include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/settings.hpp>
 
-BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
+BC_DECLARE_CONFIG_DEFAULT_PATH("")
 
 // TODO: localize descriptions.
 
@@ -506,7 +506,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
 {
     try
     {
-        auto file = false;
+        int file = -1;
         variables_map variables;
         load_command_variables(variables, argc, argv);
         load_environment_variables(variables, BN_ENVIRONMENT_VARIABLE_PREFIX);
@@ -520,6 +520,10 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
         }
 
+        if(file == -1){
+            LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
+            return false;
+        }
         // Update bound variables in metadata.settings.
         notify(variables);
 
