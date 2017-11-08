@@ -54,13 +54,18 @@ option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
 
-# Implement --with-console and declare WITH_CONSOLE.
-#------------------------------------------------------------------------------
-option(WITH_CONSOLE "Compile console application." OFF)
+# # Implement --with-console and declare WITH_CONSOLE.
+# #------------------------------------------------------------------------------
+# option(WITH_CONSOLE "Compile console application." OFF)
 
 # Implement --with-litecoin.
 #------------------------------------------------------------------------------
 option(WITH_LITECOIN "Compile with Litecoin support." OFF)
+
+
+set(BITPRIM_BUILD_NUMBER "-" CACHE STRING "Specify the Bitprim Build Number.")
+# message(${BITPRIM_BUILD_NUMBER})
+
 
 # Conan infrastructure.
 #==============================================================================
@@ -211,18 +216,23 @@ add_library(bitprim-node ${MODE}
         src/configuration.cpp
         src/full_node.cpp
         src/parser.cpp
+        src/settings.cpp
+        src/version.cpp
+
         src/protocols/protocol_block_in.cpp
         src/protocols/protocol_block_out.cpp
         src/protocols/protocol_block_sync.cpp
         src/protocols/protocol_header_sync.cpp
         src/protocols/protocol_transaction_in.cpp
         src/protocols/protocol_transaction_out.cpp
+
         src/sessions/session_block_sync.cpp
         src/sessions/session_header_sync.cpp
         src/sessions/session_inbound.cpp
         src/sessions/session_manual.cpp
         src/sessions/session_outbound.cpp
-        src/settings.cpp
+
+
         src/utility/check_list.cpp
         src/utility/header_list.cpp
         src/utility/performance.cpp
@@ -239,6 +249,9 @@ endif(ENABLE_POSITION_INDEPENDENT_CODE)
 target_include_directories(bitprim-node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
+
+
+target_compile_definitions(bitprim-node PUBLIC -DBITPRIM_BUILD_NUMBER="\\"${BITPRIM_BUILD_NUMBER}\\"")
 
 if (NOT ENABLE_SHARED)
   target_compile_definitions(bitprim-node PUBLIC -DBCN_STATIC -DBCB_STATIC -DBCD_STATIC -DBCT_STATIC -DBC_STATIC)
@@ -376,62 +389,62 @@ if (WITH_TESTS)
           settings_tests)
 endif()
 
-# console/bn => ${bindir}
-#------------------------------------------------------------------------------
-if (WITH_CONSOLE)
-  add_executable(console.bn
-          console/executor.cpp
-          console/executor.hpp
-          console/main.cpp)
+# # console/bn => ${bindir}
+# #------------------------------------------------------------------------------
+# if (WITH_CONSOLE)
+#   add_executable(console.bn
+#           console/executor.cpp
+#           console/executor.hpp
+#           console/main.cpp)
 
-  # target_link_libraries(console.bn secp256k1 bitprim-node)
-  target_link_libraries(console.bn bitprim-node)
+#   # target_link_libraries(console.bn secp256k1 bitprim-node)
+#   target_link_libraries(console.bn bitprim-node)
 
-#  if (MSVC)
-#    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
-#  endif()
+# #  if (MSVC)
+# #    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
+# #  endif()
   
-  if (WITH_REMOTE_BLOCKCHAIN)
-      target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-  endif()
+#   if (WITH_REMOTE_BLOCKCHAIN)
+#       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+#   endif()
 
-  if (WITH_REMOTE_DATABASE)
-      target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_DATABASE)
-  endif()
-
-
-  set_target_properties(
-          console.bn PROPERTIES
-          FOLDER "node"
-          OUTPUT_NAME bn)
-endif()
-
-# console/bnr => ${bindir}
-#------------------------------------------------------------------------------
-if (WITH_CONSOLE)
-  if(WITH_REMOTE_BLOCKCHAIN)
-    add_executable(console.bnr
-      console/executor.cpp
-      console/executor.hpp
-      console/main.cpp)
-    target_link_libraries(console.bn bitprim-node)
-
-    if (WITH_REMOTE_BLOCKCHAIN)
-        target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-    endif()
-
-    if (WITH_REMOTE_DATABASE)
-        target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_DATABASE)
-    endif()
+#   if (WITH_REMOTE_DATABASE)
+#       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_DATABASE)
+#   endif()
 
 
-    set_target_properties(
-      console.bnr PROPERTIES
-      FOLDER "node"
-      OUTPUT_NAME bnr)
-    target_link_libraries(console.bnr bitprim-node-requester)
-  endif()
-endif()
+#   set_target_properties(
+#           console.bn PROPERTIES
+#           FOLDER "node"
+#           OUTPUT_NAME bn)
+# endif()
+
+# # console/bnr => ${bindir}
+# #------------------------------------------------------------------------------
+# if (WITH_CONSOLE)
+#   if(WITH_REMOTE_BLOCKCHAIN)
+#     add_executable(console.bnr
+#       console/executor.cpp
+#       console/executor.hpp
+#       console/main.cpp)
+#     target_link_libraries(console.bn bitprim-node)
+
+#     if (WITH_REMOTE_BLOCKCHAIN)
+#         target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
+#     endif()
+
+#     if (WITH_REMOTE_DATABASE)
+#         target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_DATABASE)
+#     endif()
+
+
+#     set_target_properties(
+#       console.bnr PROPERTIES
+#       FOLDER "node"
+#       OUTPUT_NAME bnr)
+#     target_link_libraries(console.bnr bitprim-node-requester)
+#   endif()
+# endif()
 
 # Install
 #==============================================================================
@@ -445,10 +458,10 @@ else()
           ARCHIVE DESTINATION lib)
 endif()
 
-if (WITH_CONSOLE)
-  install(TARGETS console.bn
-          RUNTIME DESTINATION bin)
-endif()
+# if (WITH_CONSOLE)
+#   install(TARGETS console.bn
+#           RUNTIME DESTINATION bin)
+# endif()
 
 set(_bitprim_headers
         # include_bitcoin_HEADERS =

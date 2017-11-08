@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 from conans import ConanFile, CMake
 
 def option_on_off(option):
@@ -84,13 +85,14 @@ class BitprimNodeConan(ConanFile):
 
         cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
 
+        #TODO(bitprim): compare with the other project to see if this could be deleted!
         if self.settings.compiler == "gcc":
             if float(str(self.settings.compiler.version)) >= 5:
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(False)
             else:
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(True)
 
-
+        cmake.definitions["BITPRIM_BUILD_NUMBER"] = os.getenv('BITPRIM_BUILD_NUMBER', '-')
         cmake.configure(source_dir=self.conanfile_directory)
         cmake.build()
 
