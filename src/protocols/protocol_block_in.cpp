@@ -492,8 +492,8 @@ void protocol_block_in::report(const chain::block& block)
             (times.end_deserialize - times.start_deserialize);
 
         boost::format format("Block [%|i|] %|4i| txs %|4i| ins "
-            "%|4i| wms %|4i| vms %|4i| vµs %|4i| rµs %|4i| cµs %|4i| pµs "
-            "%|4i| aµs %|4i| sµs %|4i| dµs %|f|");
+            "%|4i| wms %|4i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
+            "%|4i| aus %|4i| sus %|4i| dus %|f|");
 
         LOG_INFO(LOG_BLOCKCHAIN)
             << (format % height % transactions % inputs %
