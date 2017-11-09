@@ -36,6 +36,7 @@ public:
     parser(config::settings context);
     parser(const configuration& defaults);
 
+
     /// Parse all configuration into member settings.
     virtual bool parse(int argc, const char* argv[], std::ostream& error);
 
@@ -53,6 +54,11 @@ public:
 
     /// The populated configuration settings values.
     configuration configured;
+
+private:
+    config::checkpoint::list default_checkpoints();
+    void fix_checkpoints();
+
 };
 
 } // namespace node
