@@ -51,7 +51,7 @@ parser::parser(config::settings context)
   : configured(context)
 {
     // A node doesn't use history, and history is expensive.
-    configured.database.index_start_height = max_uint32;
+    configured.database.index_start_height = 0;
 
 #if WITH_NODE_REQUESTER
     // Default endpoint for blockchain replier.
@@ -497,7 +497,18 @@ options_metadata parser::load_settings()
         "node.refresh_transactions",
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
+    )
+    (
+        "node.rpc_port",
+        value<uint32_t>(&configured.node.rpc_port),
+        "TCP port for the HTTP-JSON-RPC connection, default to 8332 (8332 mainnet, 18332 testnet)."
+    )
+    (
+        "node.zmq_publisher_port",
+        value<uint32_t>(&configured.node.subscriber_port),
+        "ZMQ publisher port, defaults to 5556."
     );
+
 
     return description;
 }

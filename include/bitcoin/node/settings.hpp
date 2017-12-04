@@ -39,6 +39,11 @@ public:
     uint32_t block_latency_seconds;
     bool refresh_transactions;
 
+    /// Mining
+    uint32_t rpc_port;
+    bool testnet;
+    uint32_t subscriber_port;
+
     /// Helpers.
     asio::duration block_latency() const;
 };

@@ -309,6 +309,11 @@ safe_chain& full_node::chain()
     return chain_;
 }
 
+//TODO: remove this function and use safe_chain in the rpc lib
+block_chain& full_node::chain_bitprim()
+{
+    return chain_;
+}
 // Subscriptions.
 // ----------------------------------------------------------------------------
 

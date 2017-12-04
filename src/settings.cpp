@@ -29,7 +29,10 @@ settings::settings()
   : sync_peers(0),
     sync_timeout_seconds(5),
     block_latency_seconds(60),
-    refresh_transactions(true)
+    refresh_transactions(true),
+    rpc_port(8332),
+    testnet(false),
+    subscriber_port(5556)
 {
 }
 
