@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.4)
 # bitprim-node
 #==============================================================================
 project(bitprim-node
-        VERSION 0.3.0
+        VERSION 0.4.0
         LANGUAGES CXX C)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -105,20 +105,20 @@ endif()
 
 
 if (NOT USE_CONAN)
-  # Require bitprim-blockchain of at least version 0.3.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-blockchain of at least version 0.4.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if(WITH_REMOTE_BLOCKCHAIN)
     if (NOT TARGET bitprim-blockchain-requester)
-      find_package(bitprim-blockchain-requester 0.3.0 REQUIRED)
+      find_package(bitprim-blockchain-requester 0.4.0 REQUIRED)
     endif()
   else()
     if (NOT TARGET bitprim-blockchain)
-      find_package(bitprim-blockchain 0.3.0 REQUIRED)
+      find_package(bitprim-blockchain 0.4.0 REQUIRED)
     endif()
   endif()
 
   if (NOT TARGET bitprim-blockchain)
-    find_package(bitprim-blockchain 0.3.0 REQUIRED)
+    find_package(bitprim-blockchain 0.4.0 REQUIRED)
   endif()
 
   # Require bitprim-network of at least version 0.3.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
