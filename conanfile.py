@@ -62,7 +62,7 @@ class BitprimNodeConan(ConanFile):
 
     requires = (("bitprim-conan-boost/1.64.0@bitprim/stable"),
                 ("bitprim-blockchain/0.4@bitprim/testing"),
-                ("bitprim-network/0.3@bitprim/testing"))
+                ("bitprim-network/0.4@bitprim/testing"))
 
     def build(self):
         cmake = CMake(self)

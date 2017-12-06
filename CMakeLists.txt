@@ -121,10 +121,10 @@ if (NOT USE_CONAN)
     find_package(bitprim-blockchain 0.4.0 REQUIRED)
   endif()
 
-  # Require bitprim-network of at least version 0.3.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-network of at least version 0.4.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if (NOT TARGET bitprim-network)
-    find_package(bitprim-network 0.3.0 REQUIRED)
+    find_package(bitprim-network 0.4.0 REQUIRED)
   endif()
 endif()
 
