@@ -91,6 +91,10 @@ public:
     /// Blockchain query interface.
     virtual blockchain::safe_chain& chain();
 
+    /// Blockchain.
+    //TODO: remove this function and use safe_chain in the rpc lib
+    virtual blockchain::block_chain& chain_bitprim();
+
     // Subscriptions.
     // ------------------------------------------------------------------------
 

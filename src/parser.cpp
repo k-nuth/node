@@ -29,7 +29,7 @@
 #include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/settings.hpp>
 
-BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
+BC_DECLARE_CONFIG_DEFAULT_PATH("")
 
 // TODO: localize descriptions.
 
@@ -51,7 +51,7 @@ parser::parser(config::settings context)
   : configured(context)
 {
     // A node doesn't use history, and history is expensive.
-    configured.database.index_start_height = max_uint32;
+    configured.database.index_start_height = 0;
 
 #if WITH_NODE_REQUESTER
     // Default endpoint for blockchain replier.
@@ -497,7 +497,18 @@ options_metadata parser::load_settings()
         "node.refresh_transactions",
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
+    )
+    (
+        "node.rpc_port",
+        value<uint32_t>(&configured.node.rpc_port),
+        "TCP port for the HTTP-JSON-RPC connection, default to 8332 (8332 mainnet, 18332 testnet)."
+    )
+    (
+        "node.zmq_publisher_port",
+        value<uint32_t>(&configured.node.subscriber_port),
+        "ZMQ publisher port, defaults to 5556."
     );
+
 
     return description;
 }
@@ -639,7 +650,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
 {
     try
     {
-        auto file = false;
+        int file = -1;
         variables_map variables;
         load_command_variables(variables, argc, argv);
         load_environment_variables(variables, BN_ENVIRONMENT_VARIABLE_PREFIX);
@@ -653,7 +664,11 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
         }
 
-        
+        if(file == -1){
+            LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
+            return false;
+        }
+
         // Update bound variables in metadata.settings.
         notify(variables);
         //configured.chain.checkpoints.emplace_back("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 0);
