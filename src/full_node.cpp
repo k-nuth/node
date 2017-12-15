@@ -30,6 +30,8 @@
 #include <bitcoin/node/sessions/session_inbound.hpp>
 #include <bitcoin/node/sessions/session_manual.hpp>
 #include <bitcoin/node/sessions/session_outbound.hpp>
+#include <fstream>
+#include <sstream>
 
 namespace libbitcoin {
 namespace node {
@@ -49,7 +51,7 @@ full_node::full_node(const configuration& configuration)
     chain_settings_(configuration.chain),
     node_settings_(configuration.node)
 {
-    // set_bitcoin_cash(configuration.network.bitcoin_cash);
+    database_directory = configuration.database.directory.generic_string();
 }
 
 full_node::~full_node()
@@ -59,9 +61,38 @@ full_node::~full_node()
     full_node::close();
 }
 
+
+void full_node::read_block_size()
+{
+    std::fstream blocksize_file;
+    blocksize_file.open(database_directory+"/blocksize");
+    if (blocksize_file.is_open())
+    {
+        std::string line;        
+        if( std::getline(blocksize_file, line) )
+        {
+            size_t read_size = strtoull(line.c_str() , nullptr, 10);
+            set_max_block_size(read_size);
+        }
+        blocksize_file.close();
+    }
+}
+
+void full_node::write_block_size()
+{
+    std::ofstream blocksize_file;
+    blocksize_file.open(database_directory+"/blocksize");
+    if (blocksize_file.is_open())
+    {
+        std::stringstream line;
+        line << get_max_block_size();
+        blocksize_file << line.str();
+        blocksize_file.close();    
+    }
+}
+
 // Start.
 // ----------------------------------------------------------------------------
-
 void full_node::start(result_handler handler)
 {
     if (!stopped())
@@ -76,6 +107,9 @@ void full_node::start(result_handler handler)
         handler(error::operation_failed);
         return;
     }
+
+    if(is_bitcoin_cash())    
+        read_block_size();
 
     // This is invoked on the same thread.
     // Stopped is true and no network threads until after this call.
@@ -287,6 +321,9 @@ bool full_node::close()
     if (!chain_close)
         LOG_ERROR(LOG_NODE)
             << "Failed to close blockchain.";
+
+    if(is_bitcoin_cash())    
+        write_block_size();
 
     return p2p_close && chain_close;
 }

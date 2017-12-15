@@ -64,6 +64,7 @@ class BitprimNodeConan(ConanFile):
                 ("bitprim-blockchain/0.4@bitprim/testing"),
                 ("bitprim-network/0.4@bitprim/testing"))
 
+
     def build(self):
         cmake = CMake(self)
         
@@ -115,6 +116,7 @@ class BitprimNodeConan(ConanFile):
         self.copy("*.dylib*", dst="lib", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
+
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']

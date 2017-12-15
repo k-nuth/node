@@ -1,0 +1,6 @@
+{
+  "conduit_uri" : "http://phabricator.dev.bitprim.org/",
+  "base" : "git:HEAD^, hg:.^",
+  "git.default-relative-commit" : "HEAD^",
+  "history.immutable" : false
+}
