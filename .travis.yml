@@ -21,7 +21,8 @@ branches:
   only:
   - master
   - dev
-  
+  - /^v\d+\.\d+\.\d+$/
+
 env:
    global:
      - CONAN_REFERENCE: "bitprim-node/0.4"
