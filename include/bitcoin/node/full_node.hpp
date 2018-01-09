@@ -36,8 +36,23 @@ namespace node {
     
 
 struct bitcoin_cash_setter {
-    bitcoin_cash_setter(network::settings const& settings) {
-        set_bitcoin_cash(settings.bitcoin_cash);
+    bitcoin_cash_setter(network::settings const& net_settings) {
+        set_bitcoin_cash(net_settings.bitcoin_cash);
+        
+// Bitcoin Cash NetMagic        
+// mainnet: 0xe3, 0xe1, 0xf3, 0xe8        0xe8f3e1e3 
+// testnet: 0xf4, 0xe5, 0xf3, 0xf4        0xf4f3e5f4
+// regtest: 0xda, 0xb5, 0xbf, 0xfa        0xfabfb5da
+
+#ifndef LITECOIN
+        if (net_settings.bitcoin_cash) {
+            // const auto testnet = (metadata_.configured.network.identifier == 118034699u);  //Bitcoin
+            // const auto testnet = (metadata_.configured.network.identifier == 0x0709110bu);  //Bitcoin
+            // bool const testnet = (net_settings.identifier == 0xf4f3e5f4u);  //Bitcoin Cash
+            bool const testnet = is_testnet(net_settings.identifier, true);
+            set_cashaddr_prefix(!testnet ? "bitcoincash" : "bchtest");
+        }
+#endif //LITECOIN
     }
 };
 
