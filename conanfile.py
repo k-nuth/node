@@ -30,8 +30,8 @@ class BitprimNodeConan(ConanFile):
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
 
-    settings = "os", "compiler", "build_type", "arch"
-    # settings = "os", "compiler", "build_type", "arch", "os_build", "arch_build"
+    # settings = "os", "compiler", "build_type", "arch"
+    settings = "os", "compiler", "build_type", "arch", "os_build", "arch_build"
 
 
     options = {"shared": [True, False],
