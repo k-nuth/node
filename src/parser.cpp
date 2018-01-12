@@ -507,6 +507,11 @@ options_metadata parser::load_settings()
         "node.zmq_publisher_port",
         value<uint32_t>(&configured.node.subscriber_port),
         "ZMQ publisher port, defaults to 5556."
+    )
+    (
+        "node.rpc_allow_ip",
+        value<std::vector<std::string>>(&configured.node.rpc_allow_ip),
+        "RPC allowed ip defaults to 127.0.0.1."
     );
 
 

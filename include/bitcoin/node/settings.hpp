@@ -43,6 +43,7 @@ public:
     uint32_t rpc_port;
     bool testnet;
     uint32_t subscriber_port;
+    std::vector<std::string> rpc_allow_ip;
 
     /// Helpers.
     asio::duration block_latency() const;
