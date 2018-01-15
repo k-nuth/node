@@ -93,7 +93,7 @@ class BitprimNodeConan(ConanFile):
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(True)
 
         cmake.definitions["BITPRIM_BUILD_NUMBER"] = os.getenv('BITPRIM_BUILD_NUMBER', '-')
-        cmake.configure(source_dir=self.conanfile_directory)
+        cmake.configure(source_dir=self.source_folder)
         cmake.build()
 
     def imports(self):
