@@ -4,7 +4,7 @@ import os
 
 channel = os.getenv("CONAN_CHANNEL", "testing")
 username = os.getenv("CONAN_USERNAME", "bitprim")
-version = "0.5"
+version = "0.6"
 
 
 class BitprimnodeTestConan(ConanFile):
