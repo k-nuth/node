@@ -34,6 +34,7 @@ settings::settings()
     testnet(false),
     subscriber_port(5556)
 {
+    rpc_allow_ip.push_back("127.0.0.1");
 }
 
 // There are no current distinctions spanning chain contexts.

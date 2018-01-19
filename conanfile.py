@@ -25,13 +25,13 @@ def option_on_off(option):
 
 class BitprimNodeConan(ConanFile):
     name = "bitprim-node"
-    version = "0.5"
+    version = "0.6"
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
 
-    # settings = "os", "compiler", "build_type", "arch"
-    settings = "os", "compiler", "build_type", "arch", "os_build", "arch_build"
+    settings = "os", "compiler", "build_type", "arch"
+    # settings = "os", "compiler", "build_type", "arch", "os_build", "arch_build"
 
 
     options = {"shared": [True, False],
@@ -64,8 +64,8 @@ class BitprimNodeConan(ConanFile):
     build_policy = "missing"
 
     requires = (("bitprim-conan-boost/1.64.0@bitprim/stable"),
-                ("bitprim-blockchain/0.5@bitprim/stable"),
-                ("bitprim-network/0.5@bitprim/stable"))
+                ("bitprim-blockchain/0.6@bitprim/stable"),
+                ("bitprim-network/0.6@bitprim/stable"))
 
     def build(self):
         cmake = CMake(self)
@@ -96,10 +96,7 @@ class BitprimNodeConan(ConanFile):
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(True)
 
         cmake.definitions["BITPRIM_BUILD_NUMBER"] = os.getenv('BITPRIM_BUILD_NUMBER', '-')
-
-        # cmake.configure(source_dir=self.conanfile_directory)
         cmake.configure(source_dir=self.source_folder)
-        
         cmake.build()
 
     def imports(self):
