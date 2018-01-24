@@ -683,8 +683,9 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         fix_checkpoints();
 
         // Clear the config file path if it wasn't used.
-        if (!file)
+        if ( ! file) {
             configured.file.clear();
+        }
     }
     catch (const boost::program_options::error& e)
     {
