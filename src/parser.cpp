@@ -522,11 +522,11 @@ options_metadata parser::load_settings()
 config::checkpoint::list parser::default_checkpoints() {
     //case config::settings::mainnet:
 
-// #ifdef LITECOIN
+// #ifdef BITPRIM_LITECOIN
 //     auto const testnet = (configured.network.identifier == 4056470269u); //Litecoin
 // #else
 //     auto const testnet = (configured.network.identifier == 118034699u);  //Bitcoin
-// #endif //LITECOIN
+// #endif //BITPRIM_LITECOIN
     bool const testnet = is_testnet(configured.network.identifier, configured.network.bitcoin_cash);
 
 

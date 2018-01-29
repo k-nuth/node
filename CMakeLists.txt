@@ -130,7 +130,7 @@ endif()
 
 
 if (WITH_LITECOIN)
-  add_definitions(-DLITECOIN)
+  add_definitions(-DBITPRIM_LITECOIN)
 endif()
 
 # Set flags.
