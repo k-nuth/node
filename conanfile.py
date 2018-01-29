@@ -33,27 +33,27 @@ class BitprimNodeConan(ConanFile):
 
     options = {"shared": [True, False],
                "fPIC": [True, False],
-               "with_remote_blockchain": [True, False],
-               "with_remote_database": [True, False],
-               "with_litecoin": [True, False]
+               "with_litecoin": [True, False],
+               "with_tests": [True, False],
     }
-    # "with_tests": [True, False],
+
+    # "with_remote_blockchain": [True, False],
+    # "with_remote_database": [True, False],
     # "with_console": [True, False],
-    # "not_use_cpp11_abi": [True, False]
 
     default_options = "shared=False", \
         "fPIC=True", \
-        "with_remote_blockchain=False", \
-        "with_remote_database=False", \
-        "with_litecoin=False"
+        "with_litecoin=False", \
+        "with_tests=False"
 
-    # "with_tests=True", \
+    # "with_remote_blockchain=False", \
+    # "with_remote_database=False", \
     # "with_console=True", \
-    # "not_use_cpp11_abi=False"
 
-    with_tests = False
-    with_console = True
 
+    with_remote_blockchain = False
+    with_remote_database = False
+    with_console = False
 
     generators = "cmake"
     exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "include/*", "test/*", "console/*"
@@ -64,6 +64,9 @@ class BitprimNodeConan(ConanFile):
                 ("bitprim-blockchain/0.7@bitprim/testing"),
                 ("bitprim-network/0.7@bitprim/testing"))
 
+    def package_id(self):
+        self.info.options.with_tests = "ANY"
+
     def build(self):
         cmake = CMake(self)
         
@@ -73,15 +76,16 @@ class BitprimNodeConan(ConanFile):
         cmake.definitions["ENABLE_SHARED"] = option_on_off(self.options.shared)
         cmake.definitions["ENABLE_POSITION_INDEPENDENT_CODE"] = option_on_off(self.options.fPIC)
 
-        cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.options.with_remote_blockchain)
-        cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.options.with_remote_database)
+        # cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.options.with_remote_blockchain)
+        # cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.options.with_remote_database)
+        cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.with_remote_blockchain)
+        cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.with_remote_database)
 
-        # cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(self.options.not_use_cpp11_abi)
-        # cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
-        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
-
-        cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
+        cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
         cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
+
+        # cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
+        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
 
         cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
 
@@ -107,8 +111,8 @@ class BitprimNodeConan(ConanFile):
         # self.copy("bn.exe", dst="bin", keep_path=False) # Windows
         # self.copy("bn", dst="bin", keep_path=False) # Linux / Macos
 
-        self.copy("bn.exe", dst="bin", src="bin") # Windows
-        self.copy("bn", dst="bin", src="bin") # Linux / Macos
+        # self.copy("bn.exe", dst="bin", src="bin") # Windows
+        # self.copy("bn", dst="bin", src="bin") # Linux / Macos
 
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="bin", keep_path=False)
