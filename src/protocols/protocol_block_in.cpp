@@ -54,6 +54,9 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     headers_from_peer_(negotiated_version() >= version::level::bip130),
 
+    // TODO: move send_compact to a derived class protocol_block_in_70014.
+    compact_from_peer_(negotiated_version() >= version::level::bip152),
+
     // This patch is treated as integral to basic block handling.
     blocks_from_peer_(
         negotiated_version() > version::level::no_blocks_end ||
@@ -83,6 +86,13 @@ void protocol_block_in::start()
     {
         // Ask peer to send headers vs. inventory block announcements.
         SEND2(send_headers{}, handle_send, _1, send_headers::command);
+    }
+
+    // TODO: move send_compact to a derived class protocol_block_in_70014.
+    if (compact_from_peer_)
+    {
+        // TODO: set relay mode in setting, now is high bandwith (true) and version 1 hardcoded
+        SEND2((send_compact{true, 1}), handle_send, _1, send_compact::command);
     }
 
     send_get_blocks(null_hash);
