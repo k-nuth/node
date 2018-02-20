@@ -81,6 +81,8 @@ void protocol_block_in::start()
     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
     SUBSCRIBE2(block, handle_receive_block, _1, _2);
 
+    SUBSCRIBE2(compact_block, handle_receive_compact_block, _1, _2);
+
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     if (headers_from_peer_)
     {
@@ -335,6 +337,68 @@ bool protocol_block_in::handle_receive_block(const code& ec,
 
     return true;
 }
+
+
+bool protocol_block_in::handle_receive_compact_block(const code& ec,
+                                             compact_block_const_ptr message)
+{
+    if (stopped(ec))
+        return false;
+
+    //TODO:implementation
+    
+    //the header of the compact block is the header of the block
+    auto const& header_temp = message->header();
+    //the nonce used to calculate the short id
+    auto const nonce = message->nonce();
+
+    auto const& prefiled_txs = message->transactions();
+    auto const& short_ids = message->short_ids();
+
+    chain_.fetch_m
+
+    //for each shortid we need to search in the mempool or with the getblocktxn/blocktxn messages 
+    // and place in the first available position
+    for (auto const& short_id : short_ids) {
+    
+        //calculate the short id for the mempool transactions..
+
+        //find missings transactions
+
+        //get missing transactions
+
+    }
+
+
+    LOG_DEBUG(LOG_NODE)
+        << "compact block -> block hash " << header_temp.hash();
+
+     //the list of transactions in the block
+    chain::transaction::list transactionstemp(prefiled_txs.size() + short_ids.size());
+
+    //First the prefiled transaction goes to the index position defined in prefilled_transaction->index()
+    for (auto const& prefiled_tx : prefiled_txs) {
+    
+        auto const& tx = prefiled_tx.transaction();
+        auto idx = prefiled_tx.index();
+        
+        LOG_DEBUG(LOG_NODE)
+                << "compact block -> hash " <<  tx.hash() <<   " idx " << idx;
+
+        //transactionstemp[idx] = tx;
+    }
+
+    
+    
+    chain::block tempblock (header_temp,transactionstemp);
+    
+    LOG_INFO(LOG_NODE)
+        << "compact block [*******************************************************************].";
+
+    return true;
+    //return handle_receive_block(ec,tempblock);
+}
+
 
 // The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block

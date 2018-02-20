@@ -54,6 +54,7 @@ private:
     void send_get_data(const code& ec, get_data_ptr message);
 
     bool handle_receive_block(const code& ec, block_const_ptr message);
+    bool handle_receive_compact_block(const code& ec, compact_block_const_ptr message);
     bool handle_receive_headers(const code& ec, headers_const_ptr message);
     bool handle_receive_inventory(const code& ec, inventory_const_ptr message);
     bool handle_receive_not_found(const code& ec, not_found_const_ptr message);
