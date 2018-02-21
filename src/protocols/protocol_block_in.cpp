@@ -354,49 +354,98 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
 
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
+    
+    //auto const mempool_tx_map = chain_.get_mempool_mini_hash_map(*message);
 
-    chain_.fetch_m
+    std::vector<mini_hash> missing_tx;
+    std::vector<chain::transaction> txs_to_add;
 
     //for each shortid we need to search in the mempool or with the getblocktxn/blocktxn messages 
     // and place in the first available position
-    for (auto const& short_id : short_ids) {
-    
-        //calculate the short id for the mempool transactions..
+    /*for (auto const& short_id : short_ids) {
+   
+        auto it = mempool_tx_map.find(short_id);
 
-        //find missings transactions
+        if (it != mempool_tx_map.end()) {
+           txs_to_add.emplace_back(it->second);
+        }
+        else{
+            missing_tx.emplace_back(short_id);
+        }
+    }*/
 
-        //get missing transactions
+    if (missing_tx.size() == 0) {
 
-    }
+        //there are no missing tx, we can contruct the block
 
-
-    LOG_DEBUG(LOG_NODE)
-        << "compact block -> block hash " << header_temp.hash();
-
-     //the list of transactions in the block
-    chain::transaction::list transactionstemp(prefiled_txs.size() + short_ids.size());
-
-    //First the prefiled transaction goes to the index position defined in prefilled_transaction->index()
-    for (auto const& prefiled_tx : prefiled_txs) {
-    
-        auto const& tx = prefiled_tx.transaction();
-        auto idx = prefiled_tx.index();
+         LOG_DEBUG(LOG_NODE)
+        << "compact block -> block hash " << encode_hash(header_temp.hash());
         
-        LOG_DEBUG(LOG_NODE)
-                << "compact block -> hash " <<  tx.hash() <<   " idx " << idx;
+         //the list of transactions in the block
+        chain::transaction::list transactionstemp(prefiled_txs.size() + short_ids.size());
 
-        //transactionstemp[idx] = tx;
+        int32_t last_idx = -1;
+        //First the prefiled transaction goes to the index position defined in prefilled_transaction->index()
+        for (auto const& prefiled_tx : prefiled_txs) {
+    
+            auto const& tx = prefiled_tx.transaction();
+            auto idx = prefiled_tx.index();
+        
+            last_idx += idx+1;
+
+            /*
+            dame n elementos de  la otra lista y meetelo en transactionstemp
+                n = gap
+
+                */
+
+            LOG_DEBUG(LOG_NODE)
+                    << "compact block -> hash " <<  encode_hash(tx.hash()) <<   " idx " << idx;
+
+            /*if (last_idx > std::numeric_limits<uint16_t>::max()){
+                return READ_STATUS_INVALID;
+            
+            }
+            
+            if ((uint32_t)last_idx > cmpctblock.shorttxids.size() + i) {
+            // If we are inserting a tx at an index greater than our full list
+            // of shorttxids plus the number of prefilled txn we've inserted,
+            // then we have txn for which we have neither a prefilled txn or a
+            // shorttxid!
+                return READ_STATUS_INVALID;
+            }*/
+
+
+             //TODO       
+            transactionstemp[last_idx] = tx;
+        }
+
+    
+        //load short id transactions
+        for (auto const& tx : txs_to_add) {
+        
+                  
+
+
+        
+        }
+
+
+        chain::block tempblock (header_temp,transactionstemp);
+    
+        LOG_INFO(LOG_NODE)
+            << "compact block [*******************************************************************].";
+
+
+        return true;
+        //return handle_receive_block(ec,tempblock);
+
     }
-
-    
-    
-    chain::block tempblock (header_temp,transactionstemp);
-    
-    LOG_INFO(LOG_NODE)
-        << "compact block [*******************************************************************].";
+   
+       
+    //exists missing tx
 
     return true;
-    //return handle_receive_block(ec,tempblock);
 }
 
 
