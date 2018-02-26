@@ -29,7 +29,8 @@
 #include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/settings.hpp>
 
-BC_DECLARE_CONFIG_DEFAULT_PATH("")
+//BC_DECLARE_CONFIG_DEFAULT_PATH("")
+//BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
 
 // TODO: localize descriptions.
 
@@ -521,11 +522,11 @@ options_metadata parser::load_settings()
 config::checkpoint::list parser::default_checkpoints() {
     //case config::settings::mainnet:
 
-// #ifdef LITECOIN
+// #ifdef BITPRIM_LITECOIN
 //     auto const testnet = (configured.network.identifier == 4056470269u); //Litecoin
 // #else
 //     auto const testnet = (configured.network.identifier == 118034699u);  //Bitcoin
-// #endif //LITECOIN
+// #endif //BITPRIM_LITECOIN
     bool const testnet = is_testnet(configured.network.identifier, configured.network.bitcoin_cash);
 
 
@@ -671,7 +672,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
             file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
         }
 
-        if(file == -1){
+        if (file == -1) {
             LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
             return false;
         }
@@ -682,8 +683,9 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error)
         fix_checkpoints();
 
         // Clear the config file path if it wasn't used.
-        if (!file)
+        if ( ! file) {
             configured.file.clear();
+        }
     }
     catch (const boost::program_options::error& e)
     {

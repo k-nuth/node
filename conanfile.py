@@ -25,7 +25,7 @@ def option_on_off(option):
 
 class BitprimNodeConan(ConanFile):
     name = "bitprim-node"
-    version = "0.6"
+    version = "0.7"
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
@@ -36,57 +36,103 @@ class BitprimNodeConan(ConanFile):
 
     options = {"shared": [True, False],
                "fPIC": [True, False],
-               "with_remote_blockchain": [True, False],
-               "with_remote_database": [True, False],
-               "with_litecoin": [True, False]
+               "with_litecoin": [True, False],
+               "with_tests": [True, False],
     }
-    # "with_tests": [True, False],
+
+    # "with_remote_blockchain": [True, False],
+    # "with_remote_database": [True, False],
     # "with_console": [True, False],
-    # "not_use_cpp11_abi": [True, False]
 
     default_options = "shared=False", \
         "fPIC=True", \
-        "with_remote_blockchain=False", \
-        "with_remote_database=False", \
-        "with_litecoin=False"
+        "with_litecoin=False", \
+        "with_tests=False"
 
-    # "with_tests=True", \
+    # "with_remote_blockchain=False", \
+    # "with_remote_database=False", \
     # "with_console=True", \
-    # "not_use_cpp11_abi=False"
 
-    with_tests = False
-    with_console = True
 
+    with_remote_blockchain = False
+    with_remote_database = False
+    with_console = False
 
     generators = "cmake"
-    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "include/*", "test/*", "console/*"
+    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "bitprimbuildinfo.cmake", "include/*", "test/*", "console/*"
     package_files = "build/lbitprim-node.a"
     build_policy = "missing"
 
-    requires = (("bitprim-conan-boost/1.64.0@bitprim/stable"),
-                ("bitprim-blockchain/0.6@bitprim/stable"),
-                ("bitprim-network/0.6@bitprim/stable"))
+    requires = (("boost/1.66.0@bitprim/stable"),
+                ("bitprim-blockchain/0.7@bitprim/stable"),
+                ("bitprim-network/0.7@bitprim/stable"))
+
+    @property
+    def msvc_mt_build(self):
+        return "MT" in str(self.settings.compiler.runtime)
+
+    @property
+    def fPIC_enabled(self):
+        if self.settings.compiler == "Visual Studio":
+            return False
+        else:
+            return self.options.fPIC
+
+    @property
+    def is_shared(self):
+        if self.options.shared and self.msvc_mt_build:
+            return False
+        else:
+            return self.options.shared
+
+
+    def config_options(self):
+        self.output.info('def config_options(self):')
+        if self.settings.compiler == "Visual Studio":
+            self.options.remove("fPIC")
+
+            if self.options.shared and self.msvc_mt_build:
+                self.options.remove("shared")
+
+    def package_id(self):
+        self.info.options.with_tests = "ANY"
+
+        #For Bitprim Packages libstdc++ and libstdc++11 are the same
+        if self.settings.compiler == "gcc" or self.settings.compiler == "clang":
+            if str(self.settings.compiler.libcxx) == "libstdc++" or str(self.settings.compiler.libcxx) == "libstdc++11":
+                self.info.settings.compiler.libcxx = "ANY"
 
     def build(self):
         cmake = CMake(self)
         
         cmake.definitions["USE_CONAN"] = option_on_off(True)
         cmake.definitions["NO_CONAN_AT_ALL"] = option_on_off(False)
-        cmake.definitions["CMAKE_VERBOSE_MAKEFILE"] = option_on_off(False)
-        cmake.definitions["ENABLE_SHARED"] = option_on_off(self.options.shared)
-        cmake.definitions["ENABLE_POSITION_INDEPENDENT_CODE"] = option_on_off(self.options.fPIC)
 
-        cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.options.with_remote_blockchain)
-        cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.options.with_remote_database)
+        # cmake.definitions["CMAKE_VERBOSE_MAKEFILE"] = option_on_off(False)
+        cmake.verbose = False
 
-        # cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(self.options.not_use_cpp11_abi)
-        # cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
-        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
+        cmake.definitions["ENABLE_SHARED"] = option_on_off(self.is_shared)
+        cmake.definitions["ENABLE_POSITION_INDEPENDENT_CODE"] = option_on_off(self.fPIC_enabled)
 
-        cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
+        cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.with_remote_blockchain)
+        cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.with_remote_database)
+
+        cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
         cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
 
+        # cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
+        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
+
         cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
+
+
+        if self.settings.compiler != "Visual Studio":
+            # cmake.definitions["CONAN_CXX_FLAGS"] += " -Wno-deprecated-declarations"
+            cmake.definitions["CONAN_CXX_FLAGS"] = cmake.definitions.get("CONAN_CXX_FLAGS", "") + " -Wno-deprecated-declarations"
+
+        if self.settings.compiler == "Visual Studio":
+            cmake.definitions["CONAN_CXX_FLAGS"] = cmake.definitions.get("CONAN_CXX_FLAGS", "") + " /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE"
+
 
         #TODO(bitprim): compare with the other project to see if this could be deleted!
         if self.settings.compiler == "gcc":
@@ -94,10 +140,17 @@ class BitprimNodeConan(ConanFile):
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(False)
             else:
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(True)
+        elif self.settings.compiler == "clang":
+            if str(self.settings.compiler.libcxx) == "libstdc++" or str(self.settings.compiler.libcxx) == "libstdc++11":
+                cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(False)
+
 
         cmake.definitions["BITPRIM_BUILD_NUMBER"] = os.getenv('BITPRIM_BUILD_NUMBER', '-')
         cmake.configure(source_dir=self.source_folder)
         cmake.build()
+
+        if self.options.with_tests:
+            cmake.test()
 
     def imports(self):
         self.copy("*.h", "", "include")
@@ -110,8 +163,8 @@ class BitprimNodeConan(ConanFile):
         # self.copy("bn.exe", dst="bin", keep_path=False) # Windows
         # self.copy("bn", dst="bin", keep_path=False) # Linux / Macos
 
-        self.copy("bn.exe", dst="bin", src="bin") # Windows
-        self.copy("bn", dst="bin", src="bin") # Linux / Macos
+        # self.copy("bn.exe", dst="bin", src="bin") # Windows
+        # self.copy("bn", dst="bin", src="bin") # Linux / Macos
 
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="bin", keep_path=False)
