@@ -654,41 +654,41 @@ void parser::fix_checkpoints() {
     }
 }
 
-bool parser::parse(int argc, const char* argv[], std::ostream& error)
-{
-    try
-    {
+bool parser::parse(int argc, const char* argv[], std::ostream& error) {
+    try {
         int file = -1;
         variables_map variables;
         load_command_variables(variables, argc, argv);
         load_environment_variables(variables, BN_ENVIRONMENT_VARIABLE_PREFIX);
 
+        bool version_sett_help = true;
         // Don't load the rest if any of these options are specified.
-        if (!get_option(variables, BN_VERSION_VARIABLE) &&
-            !get_option(variables, BN_SETTINGS_VARIABLE) &&
-            !get_option(variables, BN_HELP_VARIABLE))
-        {
+        if ( ! get_option(variables, BN_VERSION_VARIABLE) &&
+             ! get_option(variables, BN_SETTINGS_VARIABLE) &&
+             ! get_option(variables, BN_HELP_VARIABLE)) {
+            version_sett_help = false;
             // Returns true if the settings were loaded from a file.
             file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
-        }
 
-        if (file == -1) {
-            LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
-            return false;
+            if (file == -1) {
+                LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
+                return false;
+            }
         }
 
         // Update bound variables in metadata.settings.
         notify(variables);
-        //configured.chain.checkpoints.emplace_back("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 0);
-        fix_checkpoints();
+        
+        if ( ! version_sett_help) {
+            //configured.chain.checkpoints.emplace_back("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f", 0);
+            fix_checkpoints();
+        }
 
         // Clear the config file path if it wasn't used.
         if ( ! file) {
             configured.file.clear();
         }
-    }
-    catch (const boost::program_options::error& e)
-    {
+    } catch (const boost::program_options::error& e) {
         // This is obtained from boost, which circumvents our localization.
         error << format_invalid_parameter(e.what()) << std::endl;
         return false;
