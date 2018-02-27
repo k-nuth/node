@@ -339,13 +339,14 @@ bool protocol_block_in::handle_receive_block(const code& ec,
 }
 
 
-bool protocol_block_in::handle_receive_compact_block(const code& ec,
-                                             compact_block_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
-    //TODO:implementation
+    //TODO(fernando): Validate if High-bandwith was sent OR getdata was sent for the block.
+    //                If not, a peer is sending a block that I didn't ask
+
     
     //the header of the compact block is the header of the block
     auto const& header_temp = message->header();
@@ -355,6 +356,9 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
     
+    //TODO(fernando): because collisions are possible, we have to use a multi-map
+    //TODO(fernando): check if complete mempool siphashing is need it. See margin notes on BIP152 print.
+    //                I think it is needed to check if there are collisions on mempool.
     //auto const mempool_tx_map = chain_.get_mempool_mini_hash_map(*message);
 
     std::vector<mini_hash> missing_tx;
@@ -378,11 +382,73 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
 
         //there are no missing tx, we can contruct the block
 
-         LOG_DEBUG(LOG_NODE)
-        << "compact block -> block hash " << encode_hash(header_temp.hash());
+        LOG_DEBUG(LOG_NODE) << "compact block -> block hash " << encode_hash(header_temp.hash());
         
          //the list of transactions in the block
-        chain::transaction::list transactionstemp(prefiled_txs.size() + short_ids.size());
+        chain::transaction::list txs_temp;
+        txs_temp.reserve(prefiled_txs.size() + short_ids.size());
+
+        // -------------------------------------------------------------------------------------
+        auto f = std::begin(prefiled_txs);
+        auto const l = std::end(prefiled_txs);
+        auto sf = std::begin(short_ids);
+        auto const sl = std::end(short_ids);
+
+        auto const ttt = std::find_if(f, l, [](prefilled_transaction const& tx) {
+            return tx.index() != 0;
+        });
+        txs_temp.insert(txs_temp.end(), f, ttt);
+        f = ttt;
+
+        while (f != l) {
+
+            auto const pos = (std::min)(f->index(), std::distance(sf, sl));
+            auto const sto = std::next(sf, pos);
+            
+            //TODO(fernando): if f->index() is greater than std::distance(sf, sl), there is an error and should be reported, stopping execution...
+
+            std::transform(sf, sto, std::back_inserter(txs_temp), [](compact_block::short_id const& x) {
+                //TODO(fernando): do the real transformation
+                return transaction{};
+            });
+
+            sf = sto;
+            ++f;
+
+            auto ttt = std::find_if(f, l, [](prefilled_transaction const& tx) {
+                return tx.index() != 0;
+            });
+            txs_temp.insert(txs_temp.end(), f, ttt);
+            f = ttt;
+        }
+        //Insertar los compactos que resten
+
+        auto const pos = txs_temp.size() - std::distance(sf, sl);
+        auto const sto = std::next(sf, pos);
+        std::transform(sf, sto, std::back_inserter(txs_temp), [](compact_block::short_id const& x) {
+            //TODO(fernando): do the real transformation
+            return transaction{};
+        });
+
+        //TODO(fernando): if prefiled_txs.size() + short_ids.size() != txs_temp.size(), there is an error
+
+        // -------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         int32_t last_idx = -1;
         //First the prefiled transaction goes to the index position defined in prefilled_transaction->index()
@@ -394,7 +460,7 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
             last_idx += idx+1;
 
             /*
-            dame n elementos de  la otra lista y meetelo en transactionstemp
+            dame n elementos de  la otra lista y meetelo en txs_temp
                 n = gap
 
                 */
@@ -417,7 +483,7 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
 
 
              //TODO       
-            transactionstemp[last_idx] = tx;
+            txs_temp[last_idx] = tx;
         }
 
     
@@ -431,7 +497,7 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
         }
 
 
-        chain::block tempblock (header_temp,transactionstemp);
+        chain::block tempblock (header_temp, txs_temp);
     
         LOG_INFO(LOG_NODE)
             << "compact block [*******************************************************************].";
