@@ -44,6 +44,9 @@ using namespace bc::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
+ 
+
+    
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     safe_chain& chain)
   : protocol_timer(node, channel, false, NAME),
@@ -82,6 +85,7 @@ void protocol_block_in::start()
     SUBSCRIBE2(block, handle_receive_block, _1, _2);
 
     SUBSCRIBE2(compact_block, handle_receive_compact_block, _1, _2);
+    SUBSCRIBE2(block_transactions, handle_receive_block_transactions, _1, _2);
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     if (headers_from_peer_)
@@ -286,6 +290,11 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 // Receive block sequence.
 //-----------------------------------------------------------------------------
 
+void protocol_block_in::organize_block(block_const_ptr message) {
+    message->validation.originator = nonce();
+    chain_.organize(message, BIND2(handle_store_block, _1, message));
+}
+
 bool protocol_block_in::handle_receive_block(const code& ec,
     block_const_ptr message)
 {
@@ -324,8 +333,10 @@ bool protocol_block_in::handle_receive_block(const code& ec,
         return false;
     }
 
-    message->validation.originator = nonce();
-    chain_.organize(message, BIND2(handle_store_block, _1, message));
+    organize_block(message);
+    //message->validation.originator = nonce();
+    //chain_.organize(message, BIND2(handle_store_block, _1, message));
+
 
     // Sending a new request will reset the timer upon inventory->get_data, but
     // we need to time out the lack of response to those requests when stale.
@@ -338,15 +349,85 @@ bool protocol_block_in::handle_receive_block(const code& ec,
     return true;
 }
 
-
-bool protocol_block_in::handle_receive_compact_block(const code& ec,
-                                             compact_block_const_ptr message)
+bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_transactions_const_ptr message)
 {
     if (stopped(ec))
         return false;
-
-    //TODO:implementation
+       
+    //todo: find the temp block by hash
+    // complete the missing transactions and publish the block
     
+    LOG_DEBUG(LOG_NODE)
+        << "*************************message blocktxn -> hash " << encode_hash(message->block_hash());
+
+    if (!temp_compact_block_.header.is_valid() || temp_compact_block_.header.hash() != message->block_hash()) {
+        //todo
+        return true;
+    }
+
+    auto const& vtx_missing = message->transactions();
+    
+    auto& txn_available = temp_compact_block_.transactions;
+    auto const& header_temp = temp_compact_block_.header;
+
+    size_t tx_missing_offset = 0;
+
+    for (size_t i = 0; i < txn_available.size(); i++) {
+        
+        LOG_DEBUG(LOG_NODE)
+            << "tx -> hash " << encode_hash(txn_available[i].hash());
+        
+        if ( ! txn_available[i].is_valid()) {
+            if (vtx_missing.size() <= tx_missing_offset) {
+                //return READ_STATUS_INVALID;
+                //todo
+                
+                
+                return true;
+            }
+            txn_available[i] = std::move(vtx_missing[tx_missing_offset++]);
+            //block.vtx[i] = vtx_missing[tx_missing_offset++];
+        } else {
+            //block.vtx[i] = std::move(txn_available[i]);
+        }
+    }
+
+
+    LOG_DEBUG(LOG_NODE)
+            << "tx -> blocktxn  2 ";
+        
+    if (vtx_missing.size() != tx_missing_offset) {
+        //todo:
+        //return READ_STATUS_INVALID;
+        return true;
+    }
+
+    //todo validate block
+
+    LOG_DEBUG(LOG_NODE)
+            << "tx -> blocktxn  3 ";
+
+    auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
+        
+    organize_block(tempblock);
+
+    LOG_DEBUG(LOG_NODE)
+            << "tx -> blocktxn  4 ";
+    return true;
+}
+
+bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
+    
+    if (stopped(ec)) {
+        return false;
+    }
+    
+    //todo: validate we have the parent block already, if not, send a get_header message
+    //todo:validate header 
+
+    //TODO: validate duplicate compact block
+    //TODO: purge old compact blocks
+
     //the header of the compact block is the header of the block
     auto const& header_temp = message->header();
     //the nonce used to calculate the short id
@@ -355,97 +436,150 @@ bool protocol_block_in::handle_receive_compact_block(const code& ec,
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
     
-    //auto const mempool_tx_map = chain_.get_mempool_mini_hash_map(*message);
-
-    std::vector<mini_hash> missing_tx;
-    std::vector<chain::transaction> txs_to_add;
-
-    //for each shortid we need to search in the mempool or with the getblocktxn/blocktxn messages 
-    // and place in the first available position
-    /*for (auto const& short_id : short_ids) {
-   
-        auto it = mempool_tx_map.find(short_id);
-
-        if (it != mempool_tx_map.end()) {
-           txs_to_add.emplace_back(it->second);
-        }
-        else{
-            missing_tx.emplace_back(short_id);
-        }
-    }*/
-
-    if (missing_tx.size() == 0) {
-
-        //there are no missing tx, we can contruct the block
-
-         LOG_DEBUG(LOG_NODE)
-        << "compact block -> block hash " << encode_hash(header_temp.hash());
-        
-         //the list of transactions in the block
-        chain::transaction::list transactionstemp(prefiled_txs.size() + short_ids.size());
-
-        int32_t last_idx = -1;
-        //First the prefiled transaction goes to the index position defined in prefilled_transaction->index()
-        for (auto const& prefiled_tx : prefiled_txs) {
+    LOG_INFO(LOG_NODE) << "compact block [*******************************************************************].";
+    LOG_DEBUG(LOG_NODE) << "compact block -> block hash " << encode_hash(header_temp.hash());
     
-            auto const& tx = prefiled_tx.transaction();
-            auto idx = prefiled_tx.index();
+    std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
+    int32_t lastprefilledindex = -1;
+    
+    for (size_t i = 0; i < prefiled_txs.size(); ++i) {
+       
+        if (!prefiled_txs[i].is_valid()) {
+            
+            //todo:check if neccesary ban the peer
+            return true;
+        }
+
+        //encoded = (current_index - prev_index) - 1
+        // current = +1 + prev
+        //       prev            current       
+        lastprefilledindex += prefiled_txs[i].index() + 1;
+
         
-            last_idx += idx+1;
-
-            /*
-            dame n elementos de  la otra lista y meetelo en transactionstemp
-                n = gap
-
-                */
-
-            LOG_DEBUG(LOG_NODE)
-                    << "compact block -> hash " <<  encode_hash(tx.hash()) <<   " idx " << idx;
-
-            /*if (last_idx > std::numeric_limits<uint16_t>::max()){
-                return READ_STATUS_INVALID;
-            
-            }
-            
-            if ((uint32_t)last_idx > cmpctblock.shorttxids.size() + i) {
+        if (lastprefilledindex > std::numeric_limits<uint16_t>::max()) {
+            //todo:check if neccesary ban the peer
+            return true;
+        }
+          
+        if ((uint32_t)lastprefilledindex > short_ids.size() + i) {
             // If we are inserting a tx at an index greater than our full list
             // of shorttxids plus the number of prefilled txn we've inserted,
             // then we have txn for which we have neither a prefilled txn or a
             // shorttxid!
-                return READ_STATUS_INVALID;
-            }*/
 
 
-             //TODO       
-            transactionstemp[last_idx] = tx;
+            //todo:check if neccesary ban the peer
+            return true;
         }
 
-    
-        //load short id transactions
-        for (auto const& tx : txs_to_add) {
-        
-                  
-
-
-        
-        }
-
-
-        chain::block tempblock (header_temp,transactionstemp);
-    
-        LOG_INFO(LOG_NODE)
-            << "compact block [*******************************************************************].";
-
-
-        return true;
-        //return handle_receive_block(ec,tempblock);
-
+        txs_available[lastprefilledindex] = prefiled_txs[i].transaction();
     }
-   
-       
-    //exists missing tx
 
-    return true;
+    LOG_INFO(LOG_NODE) << "compact block 1 [*******************************************************************].";
+    //size_t prefilled_count = prefiled_txs.size();
+
+    // Calculate map of txids -> positions and check mempool to see what we have
+    // (or don't). Because well-formed cmpctblock messages will have a
+    // (relatively) uniform distribution of short IDs, any highly-uneven
+    // distribution of elements can be safely treated as a READ_STATUS_FAILED.
+    std::unordered_map<uint64_t, uint16_t> shorttxids(short_ids.size());
+    uint16_t index_offset = 0;
+    
+    for (size_t i = 0; i < short_ids.size(); ++i) {
+        while (txs_available[i + index_offset].is_valid()) {
+            ++index_offset;
+        }
+        shorttxids[short_ids[i]] = i + index_offset;
+        // To determine the chance that the number of entries in a bucket
+        // exceeds N, we use the fact that the number of elements in a single
+        // bucket is binomially distributed (with n = the number of shorttxids
+        // S, and p = 1 / the number of buckets), that in the worst case the
+        // number of buckets is equal to S (due to std::unordered_map having a
+        // default load factor of 1.0), and that the chance for any bucket to
+        // exceed N elements is at most buckets * (the chance that any given
+        // bucket is above N elements). Thus: P(max_elements_per_bucket > N) <=
+        // S * (1 - cdf(binomial(n=S,p=1/S), N)). If we assume blocks of up to
+        // 16000, allowing 12 elements per bucket should only fail once per ~1
+        // million block transfers (per peer and connection).
+        
+        if (shorttxids.bucket_size(shorttxids.bucket(short_ids[i])) > 12) {
+            // Duplicate txindexes, the block is now in-flight, so
+            // just request it.
+            
+            //todo:
+            //send getdata message
+            return true;
+        }
+    }
+    
+    LOG_INFO(LOG_NODE) << "compact block 2 [*******************************************************************].";
+    
+    // TODO: in the shortid-collision case, we should instead request both
+    // transactions which collided. Falling back to full-block-request here is
+    // overkill.
+    if (shorttxids.size() != short_ids.size()) {
+        // Short ID collision
+        //todo:
+        //send getdata message
+        return true;
+    }
+        
+    size_t mempool_count = 0;
+    chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
+
+    LOG_INFO(LOG_NODE) << "compact block 3 [*******************************************************************].";
+
+    LOG_INFO(LOG_NODE) << "compact mempool count" << mempool_count;
+    
+    LOG_INFO(LOG_NODE) << "compact txs count" << txs_available.size();
+
+    LOG_INFO(LOG_NODE) << "compact prefil count" << prefiled_txs.size();
+    
+    LOG_INFO(LOG_NODE) << "compact short id count" << short_ids.size();
+    
+    std::vector<uint64_t> txs;
+    size_t prev_idx = 0;
+
+    for (size_t i = 0; i < txs_available.size(); ++i) {
+        if ( ! txs_available[i].is_valid()) {
+            //diff_enc = (current_index - prev_index) - 1
+            size_t diff_enc = i - prev_idx - (txs.size() > 0 ? 1 : 0);
+            prev_idx = i;
+            txs.push_back(diff_enc);
+
+            LOG_DEBUG(LOG_NODE)
+            << "compact block -> missing tx idx " << i;
+
+            LOG_DEBUG(LOG_NODE)
+            << "compact block -> missing tx idx " << diff_enc;
+        }
+    }
+
+    if (txs.empty()) {
+
+        LOG_DEBUG(LOG_NODE)
+        << "compact block -> complete " << encode_hash(header_temp.hash());
+   
+        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available));
+        
+        //return handle_receive_block(ec,tempblock);
+        
+        organize_block(tempblock);
+        return true;
+
+    } else {
+        
+        LOG_DEBUG(LOG_NODE)
+         << "compact block -> getblocktxn " << encode_hash(header_temp.hash());
+   
+        temp_compact_block_.header = std::move(header_temp);
+        temp_compact_block_.transactions = std::move(txs_available);
+        temp_compact_block_.mempool_count = mempool_count;
+
+        auto req_tx = get_block_transactions(header_temp.hash(),txs);
+        SEND2(req_tx, handle_send, _1, get_block_transactions::command);
+        return true;
+    }
 }
 
 

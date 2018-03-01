@@ -30,6 +30,12 @@
 namespace libbitcoin {
 namespace node {
 
+struct temp_compact_block {
+     chain::header header;
+     std::vector<chain::transaction> transactions;
+     size_t mempool_count;
+ };
+
 class full_node;
 
 class BCN_API protocol_block_in
@@ -55,6 +61,7 @@ private:
 
     bool handle_receive_block(const code& ec, block_const_ptr message);
     bool handle_receive_compact_block(const code& ec, compact_block_const_ptr message);
+    bool handle_receive_block_transactions(const code& ec,block_transactions_const_ptr message);
     bool handle_receive_headers(const code& ec, headers_const_ptr message);
     bool handle_receive_inventory(const code& ec, inventory_const_ptr message);
     bool handle_receive_not_found(const code& ec, not_found_const_ptr message);
@@ -64,6 +71,8 @@ private:
 
     void handle_timeout(const code& ec);
     void handle_stop(const code& ec);
+
+    void organize_block(block_const_ptr message);
 
     // These are thread safe.
     full_node& node_;
@@ -76,6 +85,8 @@ private:
     // This is protected by mutex.
     hash_queue backlog_;
     mutable upgrade_mutex mutex;
+
+    temp_compact_block temp_compact_block_;
 };
 
 } // namespace node
