@@ -98,7 +98,7 @@ void protocol_block_in::start()
     if (compact_from_peer_)
     {
         // TODO: set relay mode in setting, now is high bandwith (true) and version 1 hardcoded
-        SEND2((send_compact{true, 1}), handle_send, _1, send_compact::command);
+        SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, 1}), handle_send, _1, send_compact::command);
     }
 
     send_get_blocks(null_hash);
@@ -154,6 +154,12 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
     }
 
     message->set_stop_hash(stop_hash);
+
+    
+    LOG_INFO(LOG_NODE)
+            << "protocol_block_in::handle_fetch_block_locator "
+            << authority() << "] ";
+
 
     if (use_headers)
         SEND2(*message, handle_send, _1, message->command);
@@ -244,6 +250,11 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     // There was no backlog so the timer must be started now.
     if (fresh)
         reset_timer();
+
+    LOG_INFO(LOG_NODE)
+            << "protocol_block_in::send_get_data "
+            << authority() << "] ";
+
 
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
@@ -358,7 +369,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
     // complete the missing transactions and publish the block
     
     LOG_DEBUG(LOG_NODE)
-        << "*************************message blocktxn -> hash " << encode_hash(message->block_hash());
+        << "*************************message blocktxn -> hash " << encode_hash(message->block_hash()) ;
 
     if (!temp_compact_block_.header.is_valid() || temp_compact_block_.header.hash() != message->block_hash()) {
         //todo
@@ -374,45 +385,59 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
 
     for (size_t i = 0; i < txn_available.size(); i++) {
         
-        LOG_DEBUG(LOG_NODE)
-            << "tx -> hash " << encode_hash(txn_available[i].hash());
         
         if ( ! txn_available[i].is_valid()) {
             if (vtx_missing.size() <= tx_missing_offset) {
                 //return READ_STATUS_INVALID;
                 //todo
+               
                 
-                
+            LOG_DEBUG(LOG_NODE)
+            << "tx -> blocktxn  1.5 " << authority();
+
                 return true;
             }
             txn_available[i] = std::move(vtx_missing[tx_missing_offset++]);
+            
+            LOG_DEBUG(LOG_NODE)
+            << "tx -> hash " << encode_hash(txn_available[i].hash());
+        
+            
             //block.vtx[i] = vtx_missing[tx_missing_offset++];
         } else {
             //block.vtx[i] = std::move(txn_available[i]);
+
+            LOG_DEBUG(LOG_NODE)
+            << "tx -> hash " << encode_hash(txn_available[i].hash());
+        
         }
     }
 
 
     LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  2 ";
+            << "tx -> blocktxn  2 " << authority();
         
     if (vtx_missing.size() != tx_missing_offset) {
         //todo:
         //return READ_STATUS_INVALID;
+        
+        LOG_DEBUG(LOG_NODE)
+            << "tx -> blocktxn  2.5 " << " " << vtx_missing.size() << " " << tx_missing_offset << authority();
+        
         return true;
     }
 
     //todo validate block
 
     LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  3 ";
+            << "tx -> blocktxn  3 " << authority();
 
     auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
         
     organize_block(tempblock);
 
     LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  4 ";
+            << "tx -> blocktxn  4 " << authority();
     return true;
 }
 
@@ -486,6 +511,13 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     uint16_t index_offset = 0;
     
     for (size_t i = 0; i < short_ids.size(); ++i) {
+        
+            
+        LOG_INFO(LOG_NODE)
+            << "shortid ->  " << short_ids[i]
+            << authority() << "] ";
+
+        
         while (txs_available[i + index_offset].is_valid()) {
             ++index_offset;
         }
@@ -510,6 +542,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             //send getdata message
             return true;
         }
+
+
+
     }
     
     LOG_INFO(LOG_NODE) << "compact block 2 [*******************************************************************].";
@@ -589,14 +624,24 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 void protocol_block_in::handle_store_block(const code& ec,
     block_const_ptr message)
 {
-    if (stopped(ec))
+
+    LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 1 - [" << authority()  << "]";
+
+
+    if (stopped(ec)) {
+            LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 2 - [" << authority()  << "]";
+
         return;
+    }
 
     const auto hash = message->header().hash();
 
     // Ask the peer for blocks from the chain top up to this orphan.
-    if (ec == error::orphan_block)
+    if (ec == error::orphan_block) {
+            LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 3 - [" << authority()  << "]";
+
         send_get_blocks(hash);
+    }
 
     const auto encoded = encode_hash(hash);
 

@@ -513,8 +513,12 @@ options_metadata parser::load_settings()
         "node.rpc_allow_ip",
         value<std::vector<std::string>>(&configured.node.rpc_allow_ip),
         "RPC allowed ip defaults to 127.0.0.1."
+    )
+    (
+        "node.compact_blocks_high_bandwidth",
+        value<bool>(&configured.node.compact_blocks_high_bandwidth),
+        "Compact Blocks High-Bandwidth mode, default to true."
     );
-
 
     return description;
 }

@@ -100,6 +100,8 @@ bool protocol_block_out::handle_receive_send_compact(const code& ec,
 
     // Block annoucements will be headers messages instead of inventory.
     compact_to_peer_ = true;
+    //compact_high_bandwidth = message->high_bandwidth_mode();
+    //compact_version = message->version();
     return false;
 }
 
@@ -175,8 +177,15 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     ////if (chain_.is_stale())
     ////    return;
 
+
+      LOG_INFO(LOG_NODE)
+            << "protocol_block_out::handle_fetch_locator_headers "
+            << authority() << "] ";
+
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);
+
+
 
     // Save the locator top to limit an overlapping future request.
     last_locator_top_.store(message->elements().front().hash());

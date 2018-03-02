@@ -45,6 +45,10 @@ public:
     uint32_t subscriber_port;
     std::vector<std::string> rpc_allow_ip;
 
+
+    //Compact Blocks
+    bool compact_blocks_high_bandwidth;
+
     /// Helpers.
     asio::duration block_latency() const;
 };
