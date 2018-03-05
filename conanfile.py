@@ -25,7 +25,7 @@ def option_on_off(option):
 
 class BitprimNodeConan(ConanFile):
     name = "bitprim-node"
-    version = "0.7"
+    version = "0.8"
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
@@ -61,7 +61,7 @@ class BitprimNodeConan(ConanFile):
     build_policy = "missing"
 
     requires = (("boost/1.66.0@bitprim/stable"),
-                ("bitprim-blockchain/0.7@bitprim/testing"),
+                ("bitprim-blockchain/0.8@bitprim/testing"),
                 ("bitprim-network/0.7@bitprim/testing"))
 
     @property
