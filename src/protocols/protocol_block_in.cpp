@@ -514,7 +514,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         
             
         LOG_INFO(LOG_NODE)
-            << "shortid ->  " << short_ids[i]
+            << "shortid ->  " << short_ids[i] << " - "
             << authority() << "] ";
 
         
