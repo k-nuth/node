@@ -192,8 +192,23 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     // There is no benefit to this use of headers, in fact it is suboptimal.
     // In v3 headers will be used to build block tree before getting blocks.
     const auto response = std::make_shared<get_data>();
-    message->to_inventory(response->inventories(), inventory::type_id::block);
 
+    if (compact_from_peer_) {
+
+          LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_headers (compactblock) ["
+            << authority() << "] ";
+
+        message->to_inventory(response->inventories(), inventory::type_id::compact_block);
+    } else {
+
+        LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_headers (block) ["
+            << authority() << "] ";
+
+        message->to_inventory(response->inventories(), inventory::type_id::block);
+    }
+   
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -208,8 +223,23 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
         return false;
 
     const auto response = std::make_shared<get_data>();
-    message->reduce(response->inventories(), inventory::type_id::block);
+    
+    if (compact_from_peer_) {
 
+         LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_inventory (compactblock) ["
+            << authority() << "] ";
+
+        message->reduce(response->inventories(), inventory::type_id::compact_block);
+    } else {
+
+          LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_inventory (block) ["
+            << authority() << "] ";
+
+        message->reduce(response->inventories(), inventory::type_id::block);
+    }
+    
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;

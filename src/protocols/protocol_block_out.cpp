@@ -49,6 +49,8 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
 
     // TODO: move send_compact to a derived class protocol_block_out_70014.
     compact_to_peer_(false),
+    compact_high_bandwidth_(true),
+    compact_version_(1),
 
     // TODO: move send_headers to a derived class protocol_block_out_70012.
     headers_to_peer_(false),
@@ -98,10 +100,9 @@ bool protocol_block_out::handle_receive_send_compact(const code& ec,
     if (stopped(ec))
         return false;
 
-    // Block annoucements will be headers messages instead of inventory.
     compact_to_peer_ = true;
-    //compact_high_bandwidth = message->high_bandwidth_mode();
-    //compact_version = message->version();
+    compact_high_bandwidth_ = message->high_bandwidth_mode();
+    compact_version_ = message->version();
     return false;
 }
 

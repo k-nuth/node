@@ -492,7 +492,7 @@ options_metadata parser::load_settings()
         /* Internally this is network, but it is conceptually a node setting. */
         "node.relay_transactions",
         value<bool>(&configured.network.relay_transactions),
-        "Request that peers relay transactions, defaults to false."
+        "Request that peers relay transactions, defaults to true."
     )
     (
         "node.refresh_transactions",
