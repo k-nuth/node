@@ -154,10 +154,10 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
     message->set_stop_hash(stop_hash);
 
     
-    LOG_INFO(LOG_NODE)
+   /* LOG_INFO(LOG_NODE)
             << "protocol_block_in::handle_fetch_block_locator "
             << authority() << "] ";
-
+*/
 
     if (use_headers)
         SEND2(*message, handle_send, _1, message->command);
@@ -193,16 +193,16 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 
     if (compact_from_peer_) {
 
-          LOG_INFO(LOG_NODE)
+         /* LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_headers (compactblock) ["
-            << authority() << "] ";
+            << authority() << "] ";*/
 
         message->to_inventory(response->inventories(), inventory::type_id::compact_block);
     } else {
 
-        LOG_INFO(LOG_NODE)
+        /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_headers (block) ["
-            << authority() << "] ";
+            << authority() << "] ";*/
 
         message->to_inventory(response->inventories(), inventory::type_id::block);
     }
@@ -224,16 +224,16 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
     
     if (compact_from_peer_) {
 
-         LOG_INFO(LOG_NODE)
+   /*      LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_inventory (compactblock) ["
             << authority() << "] ";
-
+*/
         message->reduce(response->inventories(), inventory::type_id::compact_block);
     } else {
 
-          LOG_INFO(LOG_NODE)
+          /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_inventory (block) ["
-            << authority() << "] ";
+            << authority() << "] ";*/
 
         message->reduce(response->inventories(), inventory::type_id::block);
     }
@@ -279,10 +279,9 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     if (fresh)
         reset_timer();
 
-    LOG_INFO(LOG_NODE)
-            << "protocol_block_in::send_get_data "
-            << authority() << "] ";
-
+    //LOG_INFO(LOG_NODE)
+    //        << "protocol_block_in::send_get_data "
+    //        << authority() << "] ";
 
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
