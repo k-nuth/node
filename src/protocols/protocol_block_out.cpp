@@ -87,6 +87,8 @@ void protocol_block_out::start()
     SUBSCRIBE2(get_blocks, handle_receive_get_blocks, _1, _2);
     SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
 
+    SUBSCRIBE2(get_block_transactions, handle_receive_get_block_transactions, _1, _2);
+
     // Subscribe to block acceptance notifications (the block-out heartbeat).
     chain_.subscribe_blockchain(BIND4(handle_reorganized, _1, _2, _3, _4));
 }
@@ -193,6 +195,95 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     last_locator_top_.store(message->elements().front().hash());
 }
 
+
+
+bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, get_block_transactions_const_ptr message) {
+
+    if (stopped(ec))
+        return false;
+
+    auto block_hash = message->block_hash();
+
+    LOG_INFO(LOG_NODE)
+    << "protocol_block_out::handle_receive_get_block_transactions "
+    << " block hash -> " << encode_hash(block_hash)
+    << " from [" << authority() << "]";
+
+
+    chain_.fetch_block(block_hash,[&](const code& ec, block_const_ptr block,uint64_t) {
+            
+        if (ec == error::success) {
+                    
+            auto indexes = message->indexes();
+
+            LOG_INFO(LOG_NODE)
+            << "protocol_block_out::handle_receive_get_block_transactions 2 "
+            << " block hash -> " << encode_hash(block_hash)
+            << " tx requested count " << indexes.size()
+            << " from [" << authority() << "]";
+            
+            /*if (it->second->nHeight < chainActive.Height() - MAX_BLOCKTXN_DEPTH) {
+                // If an older block is requested (should never happen in practice,
+                // but can happen in tests) send a block response instead of a
+                // blocktxn response. Sending a full block response instead of a
+                // small blocktxn response is preferable in the case where a peer
+                // might maliciously send lots of getblocktxn requests to trigger
+                // expensive disk reads, because it will require the peer to
+                // actually receive all the data read from disk over the network.
+            }*/
+       
+
+            uint16_t offset = 0;
+            for (size_t j = 0; j < indexes.size(); j++) {
+                /*if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
+                    throw std::ios_base::failure("indexes overflowed 16 bits");
+                }*/
+                    
+                indexes[j] = indexes[j] + offset;
+                offset = indexes[j] + 1;
+            }
+            
+            chain::transaction::list txs_list(indexes.size());
+
+            for (size_t i = 0; i < indexes.size(); i++) {
+                
+                /*if (indexes[i] >= block->transactions().size()) {
+                   //todo misbehaving node
+                   return;
+                }*/
+
+                LOG_INFO(LOG_NODE)
+                << "protocol_block_out::handle_receive_get_block_transactions 3 "
+                << " tx hash -> " << encode_hash(block->transactions()[indexes[i]].hash())
+                << " from [" << authority() << "]";
+            
+                txs_list[i] = block->transactions()[indexes[i]];
+            }
+
+            block_transactions response(message->block_hash(),txs_list);
+            SEND2(response, handle_send, _1, block_transactions::command);
+
+
+            LOG_INFO(LOG_NODE)
+            << "protocol_block_out::handle_receive_get_block_transactions 4 "
+            << " block hash -> " << encode_hash(block_hash)
+            << " tx requested count " << indexes.size()
+            << " from [" << authority() << "]";
+            
+        }
+        else {
+            //todo    
+              LOG_INFO(LOG_NODE)
+            << "protocol_block_out::handle_receive_get_block_transactions 5 "
+            << " block hash -> " << encode_hash(block_hash)
+            << " from [" << authority() << "]";  
+        }
+    });
+    
+    return true;
+}
+
+
 // Receive get_blocks sequence.
 //-----------------------------------------------------------------------------
 
@@ -260,6 +351,8 @@ void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
     // Save the locator top to limit an overlapping future request.
     last_locator_top_.store(message->inventories().front().hash());
 }
+
+
 
 // Receive get_data sequence.
 //-----------------------------------------------------------------------------
@@ -402,7 +495,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-// TODO: move merkle_block to derived class protocol_block_out_70014.
+// TODO: move compact_block to derived class protocol_block_out_70014.
 void protocol_block_out::send_compact_block(const code& ec,
     compact_block_const_ptr message, uint64_t, inventory_ptr inventory)
 {
@@ -412,7 +505,7 @@ void protocol_block_out::send_compact_block(const code& ec,
     if (ec == error::not_found)
     {
         LOG_DEBUG(LOG_NODE)
-            << "Merkle block requested by [" << authority() << "] not found.";
+            << "Compact block requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
         BITCOIN_ASSERT(!inventory->inventories().empty());
@@ -425,7 +518,7 @@ void protocol_block_out::send_compact_block(const code& ec,
     if (ec)
     {
         LOG_ERROR(LOG_NODE)
-            << "Internal failure locating merkle block requested by ["
+            << "Internal failure locating compact block requested by ["
             << authority() << "] " << ec.message();
         stop(ec);
         return;
@@ -490,7 +583,9 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
             ////compact_block announce(block, pseudo_random(1, max_uint64));
             //compact_block announce{ block->header(), 42, {}, {} };
 
-            uint64_t temp_nonce = pseudo_random(1, max_uint64);
+            compact_block announce = compact_block::factory_from_block(*block);
+
+            /*uint64_t temp_nonce = pseudo_random(1, max_uint64);
             
             prefilled_transaction::list prefilled_list {
                 prefilled_transaction{0, block->transactions()[0]}
@@ -508,8 +603,13 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
                 short_ids_list.push_back(shortid);
             }
             
-            compact_block announce{ block->header(), temp_nonce, std::move(short_ids_list), std::move(prefilled_list) };
+            compact_block announce{ block->header(), temp_nonce, std::move(short_ids_list), std::move(prefilled_list) };*/
+
             SEND2(announce, handle_send, _1, announce.command);
+
+            LOG_DEBUG(LOG_NODE)
+            << "protocol_block_out::handle_reorganized 5 ["
+            << "] to [" << authority() << "].";
         }
 
         return true;

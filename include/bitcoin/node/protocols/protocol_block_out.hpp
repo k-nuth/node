@@ -67,6 +67,9 @@ private:
     bool handle_receive_send_compact(const code& ec,
         send_compact_const_ptr message);
 
+    bool handle_receive_get_block_transactions(const code& ec, 
+        get_block_transactions_const_ptr message);
+
     void handle_fetch_locator_hashes(const code& ec, inventory_ptr message);
     void handle_fetch_locator_headers(const code& ec, headers_ptr message);
 
