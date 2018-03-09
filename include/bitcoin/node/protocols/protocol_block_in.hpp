@@ -33,7 +33,6 @@ namespace node {
 struct temp_compact_block {
      chain::header header;
      std::vector<chain::transaction> transactions;
-     size_t mempool_count;
  };
 
 class full_node;
@@ -44,6 +43,7 @@ class BCN_API protocol_block_in
 public:
     typedef std::shared_ptr<protocol_block_in> ptr;
 
+    using compact_block_map = std::unordered_map<hash_digest,temp_compact_block>;
     /// Construct a block protocol instance.
     protocol_block_in(full_node& network, network::channel::ptr channel,
         blockchain::safe_chain& chain);
@@ -86,7 +86,7 @@ private:
     hash_queue backlog_;
     mutable upgrade_mutex mutex;
 
-    temp_compact_block temp_compact_block_;
+    compact_block_map compact_blocks_map_;
 };
 
 } // namespace node

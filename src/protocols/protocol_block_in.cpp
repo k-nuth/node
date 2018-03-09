@@ -45,8 +45,6 @@ using namespace std::chrono;
 using namespace std::placeholders;
 
  
-
-    
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     safe_chain& chain)
   : protocol_timer(node, channel, false, NAME),
@@ -394,17 +392,18 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
 {
     if (stopped(ec))
         return false;
+      
+    auto it = compact_blocks_map_.find(message->block_hash());
+    if (it == compact_blocks_map_.end()) {
        
-    //todo: find the temp block by hash
-    // complete the missing transactions and publish the block
-    
-    LOG_DEBUG(LOG_NODE)
-        << "*************************message blocktxn -> hash " << encode_hash(message->block_hash()) ;
-
-    if (!temp_compact_block_.header.is_valid() || temp_compact_block_.header.hash() != message->block_hash()) {
-        //todo
-        return true;
+        LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(message->block_hash())
+            << "] The blocktxn received doesn't match with any temporal compact block [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
     }
+
+    auto temp_compact_block_ = it->second;
 
     auto const& vtx_missing = message->transactions();
     
@@ -415,59 +414,42 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
 
     for (size_t i = 0; i < txn_available.size(); i++) {
         
-        
         if ( ! txn_available[i].is_valid()) {
             if (vtx_missing.size() <= tx_missing_offset) {
-                //return READ_STATUS_INVALID;
-                //todo
-               
                 
-            LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  1.5 " << authority();
+                LOG_DEBUG(LOG_NODE)
+                    << "Compact Block [" << encode_hash(message->block_hash())
+                    << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+                stop(error::channel_stopped);
 
-                return true;
+                //todo:verify if necesary mutual exclusion
+                compact_blocks_map_.erase(it);
+                return false;
             }
-            txn_available[i] = std::move(vtx_missing[tx_missing_offset++]);
-            
-            LOG_DEBUG(LOG_NODE)
-            << "tx -> hash " << encode_hash(txn_available[i].hash());
-        
-            
-            //block.vtx[i] = vtx_missing[tx_missing_offset++];
-        } else {
-            //block.vtx[i] = std::move(txn_available[i]);
 
-            LOG_DEBUG(LOG_NODE)
-            << "tx -> hash " << encode_hash(txn_available[i].hash());
-        
-        }
+            txn_available[i] = std::move(vtx_missing[tx_missing_offset]);
+            ++tx_missing_offset;
+        } 
     }
-
-
-    LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  2 " << authority();
-        
+  
     if (vtx_missing.size() != tx_missing_offset) {
-        //todo:
-        //return READ_STATUS_INVALID;
-        
-        LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  2.5 " << " " << vtx_missing.size() << " " << tx_missing_offset << authority();
-        
-        return true;
+       LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(message->block_hash())
+            << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+        stop(error::channel_stopped);
+
+        //todo:verify if necesary mutual exclusion
+        compact_blocks_map_.erase(it);
+        return false;
     }
-
-    //todo validate block
-
-    LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  3 " << authority();
 
     auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
         
     organize_block(tempblock);
 
-    LOG_DEBUG(LOG_NODE)
-            << "tx -> blocktxn  4 " << authority();
+    //todo:verify if necesary mutual exclusion
+    compact_blocks_map_.erase(it);
+
     return true;
 }
 
@@ -478,21 +460,32 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
     
     //todo: validate we have the parent block already, if not, send a get_header message
-    //todo:validate header 
-
-    //TODO: validate duplicate compact block
+   
     //TODO: purge old compact blocks
 
     //the header of the compact block is the header of the block
     auto const& header_temp = message->header();
+
+    if (compact_blocks_map_.count(header_temp.hash()) > 0) {
+        return true;
+    }
+   
+    if (!header_temp.is_valid()) {
+        LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The compact block header is invalid [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
+    }
+
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
 
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
     
-    LOG_INFO(LOG_NODE) << "compact block [*******************************************************************].";
-    LOG_DEBUG(LOG_NODE) << "compact block -> block hash " << encode_hash(header_temp.hash());
+    //LOG_INFO(LOG_NODE) << "compact block [*******************************************************************].";
+    //LOG_DEBUG(LOG_NODE) << "compact block -> block hash " << encode_hash(header_temp.hash());
     
     std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
     int32_t lastprefilledindex = -1;
@@ -501,8 +494,11 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
        
         if (!prefiled_txs[i].is_valid()) {
             
-            //todo:check if neccesary ban the peer
-            return true;
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled transaction is invalid [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
         }
 
         //encoded = (current_index - prev_index) - 1
@@ -512,8 +508,11 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
         
         if (lastprefilledindex > std::numeric_limits<uint16_t>::max()) {
-            //todo:check if neccesary ban the peer
-            return true;
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
         }
           
         if ((uint32_t)lastprefilledindex > short_ids.size() + i) {
@@ -522,17 +521,18 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             // then we have txn for which we have neither a prefilled txn or a
             // shorttxid!
 
-
-            //todo:check if neccesary ban the peer
-            return true;
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
         }
 
         txs_available[lastprefilledindex] = prefiled_txs[i].transaction();
     }
 
-    LOG_INFO(LOG_NODE) << "compact block 1 [*******************************************************************].";
-    //size_t prefilled_count = prefiled_txs.size();
-
+    //LOG_INFO(LOG_NODE) << "compact block 1 [*******************************************************************].";
+    
     // Calculate map of txids -> positions and check mempool to see what we have
     // (or don't). Because well-formed cmpctblock messages will have a
     // (relatively) uniform distribution of short IDs, any highly-uneven
@@ -541,13 +541,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     uint16_t index_offset = 0;
     
     for (size_t i = 0; i < short_ids.size(); ++i) {
-        
-            
-        LOG_INFO(LOG_NODE)
-            << "shortid ->  " << short_ids[i] << " - "
-            << authority() << "] ";
-
-        
+                
         while (txs_available[i + index_offset].is_valid()) {
             ++index_offset;
         }
@@ -572,12 +566,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             //send getdata message
             return true;
         }
-
-
-
     }
     
-    LOG_INFO(LOG_NODE) << "compact block 2 [*******************************************************************].";
+    //LOG_INFO(LOG_NODE) << "compact block 2 [*******************************************************************].";
     
     // TODO: in the shortid-collision case, we should instead request both
     // transactions which collided. Falling back to full-block-request here is
@@ -592,15 +583,15 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     size_t mempool_count = 0;
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
 
-    LOG_INFO(LOG_NODE) << "compact block 3 [*******************************************************************].";
+    //LOG_INFO(LOG_NODE) << "compact block 3 [*******************************************************************].";
 
-    LOG_INFO(LOG_NODE) << "compact mempool count" << mempool_count;
+    //LOG_INFO(LOG_NODE) << "compact mempool count" << mempool_count;
     
-    LOG_INFO(LOG_NODE) << "compact txs count" << txs_available.size();
+    //LOG_INFO(LOG_NODE) << "compact txs count" << txs_available.size();
 
-    LOG_INFO(LOG_NODE) << "compact prefil count" << prefiled_txs.size();
+    //LOG_INFO(LOG_NODE) << "compact prefil count" << prefiled_txs.size();
     
-    LOG_INFO(LOG_NODE) << "compact short id count" << short_ids.size();
+    //LOG_INFO(LOG_NODE) << "compact short id count" << short_ids.size();
     
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;
@@ -612,34 +603,29 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             prev_idx = i;
             txs.push_back(diff_enc);
 
-            LOG_DEBUG(LOG_NODE)
-            << "compact block -> missing tx idx " << i;
+            //LOG_DEBUG(LOG_NODE)
+            //<< "compact block -> missing tx idx " << i;
 
-            LOG_DEBUG(LOG_NODE)
-            << "compact block -> missing tx idx " << diff_enc;
+            //LOG_DEBUG(LOG_NODE)
+            //<< "compact block -> missing tx idx " << diff_enc;
         }
     }
 
     if (txs.empty()) {
 
-        LOG_DEBUG(LOG_NODE)
-        << "compact block -> complete " << encode_hash(header_temp.hash());
+        //LOG_DEBUG(LOG_NODE)
+        //<< "compact block -> complete " << encode_hash(header_temp.hash());
    
-        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available));
-        
-        //return handle_receive_block(ec,tempblock);
-        
+        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
 
     } else {
         
-        LOG_DEBUG(LOG_NODE)
-         << "compact block -> getblocktxn " << encode_hash(header_temp.hash());
-   
-        temp_compact_block_.header = std::move(header_temp);
-        temp_compact_block_.transactions = std::move(txs_available);
-        temp_compact_block_.mempool_count = mempool_count;
+        //LOG_DEBUG(LOG_NODE)
+        // << "compact block -> getblocktxn " << encode_hash(header_temp.hash());
+ 
+        compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
 
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
@@ -651,16 +637,8 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 // The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block
 // to be announced to non-originating peers.
-void protocol_block_in::handle_store_block(const code& ec,
-    block_const_ptr message)
-{
-
-    LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 1 - [" << authority()  << "]";
-
-
+void protocol_block_in::handle_store_block(const code& ec, block_const_ptr message) {
     if (stopped(ec)) {
-            LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 2 - [" << authority()  << "]";
-
         return;
     }
 
@@ -668,8 +646,6 @@ void protocol_block_in::handle_store_block(const code& ec,
 
     // Ask the peer for blocks from the chain top up to this orphan.
     if (ec == error::orphan_block) {
-            LOG_DEBUG(LOG_NODE) << "***** protocol_block_in::handle_store_block - 3 - [" << authority()  << "]";
-
         send_get_blocks(hash);
     }
 

@@ -195,8 +195,6 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     last_locator_top_.store(message->elements().front().hash());
 }
 
-
-
 bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, get_block_transactions_const_ptr message) {
 
     if (stopped(ec))
@@ -204,24 +202,24 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     auto block_hash = message->block_hash();
 
-    LOG_INFO(LOG_NODE)
-    << "protocol_block_out::handle_receive_get_block_transactions "
-    << " block hash -> " << encode_hash(block_hash)
-    << " from [" << authority() << "]";
+    // LOG_INFO(LOG_NODE)
+    //  << "protocol_block_out::handle_receive_get_block_transactions "
+    // << " block hash -> " << encode_hash(block_hash)
+    //<< " from [" << authority() << "]";
 
-
-    chain_.fetch_block(block_hash,[&](const code& ec, block_const_ptr block,uint64_t) {
+    chain_.fetch_block(block_hash, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
                     
             auto indexes = message->indexes();
 
-            LOG_INFO(LOG_NODE)
-            << "protocol_block_out::handle_receive_get_block_transactions 2 "
-            << " block hash -> " << encode_hash(block_hash)
-            << " tx requested count " << indexes.size()
-            << " from [" << authority() << "]";
+            //LOG_INFO(LOG_NODE)
+            //<< "protocol_block_out::handle_receive_get_block_transactions 2 "
+            //<< " block hash -> " << encode_hash(block_hash)
+            //<< " tx requested count " << indexes.size()
+            //<< " from [" << authority() << "]";
             
+            //TODO
             /*if (it->second->nHeight < chainActive.Height() - MAX_BLOCKTXN_DEPTH) {
                 // If an older block is requested (should never happen in practice,
                 // but can happen in tests) send a block response instead of a
@@ -235,9 +233,10 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
             uint16_t offset = 0;
             for (size_t j = 0; j < indexes.size(); j++) {
-                /*if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
-                    throw std::ios_base::failure("indexes overflowed 16 bits");
-                }*/
+                if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
+                    
+                    //todo ban the peer
+                }
                     
                 indexes[j] = indexes[j] + offset;
                 offset = indexes[j] + 1;
@@ -252,10 +251,10 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
                    return;
                 }*/
 
-                LOG_INFO(LOG_NODE)
-                << "protocol_block_out::handle_receive_get_block_transactions 3 "
-                << " tx hash -> " << encode_hash(block->transactions()[indexes[i]].hash())
-                << " from [" << authority() << "]";
+                //LOG_INFO(LOG_NODE)
+                //<< "protocol_block_out::handle_receive_get_block_transactions 3 "
+                //<< " tx hash -> " << encode_hash(block->transactions()[indexes[i]].hash())
+                //<< " from [" << authority() << "]";
             
                 txs_list[i] = block->transactions()[indexes[i]];
             }
@@ -264,19 +263,18 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             SEND2(response, handle_send, _1, block_transactions::command);
 
 
-            LOG_INFO(LOG_NODE)
-            << "protocol_block_out::handle_receive_get_block_transactions 4 "
-            << " block hash -> " << encode_hash(block_hash)
-            << " tx requested count " << indexes.size()
-            << " from [" << authority() << "]";
+            //LOG_INFO(LOG_NODE)
+            //<< "protocol_block_out::handle_receive_get_block_transactions 4 "
+            //<< " block hash -> " << encode_hash(block_hash)
+            //<< " tx requested count " << indexes.size()
+            //<< " from [" << authority() << "]";
             
-        }
-        else {
+        } else {
             //todo    
-              LOG_INFO(LOG_NODE)
-            << "protocol_block_out::handle_receive_get_block_transactions 5 "
-            << " block hash -> " << encode_hash(block_hash)
-            << " from [" << authority() << "]";  
+            //  LOG_INFO(LOG_NODE)
+            //<< "protocol_block_out::handle_receive_get_block_transactions 5 "
+            //<< " block hash -> " << encode_hash(block_hash)
+            //<< " from [" << authority() << "]";  
         }
     });
     
@@ -567,9 +565,9 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     if (chain_.is_stale())
         return true;
 
-    LOG_DEBUG(LOG_NODE)
-    << "protocol_block_out::handle_reorganized ["
-    << "] to [" << authority() << "].";
+    //LOG_DEBUG(LOG_NODE)
+    //<< "protocol_block_out::handle_reorganized ["
+    //<< "] to [" << authority() << "].";
 
     // TODO: consider always sending the last block as compact if enabled.
     if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1)
@@ -579,37 +577,13 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
 
         if (block->validation.originator != nonce())
         {
-            // TODO: construct a compact block from a block and a nonce.
-            ////compact_block announce(block, pseudo_random(1, max_uint64));
-            //compact_block announce{ block->header(), 42, {}, {} };
-
-            compact_block announce = compact_block::factory_from_block(*block);
-
-            /*uint64_t temp_nonce = pseudo_random(1, max_uint64);
+            compact_block announce = compact_block::factory_from_block(*block);  
             
-            prefilled_transaction::list prefilled_list {
-                prefilled_transaction{0, block->transactions()[0]}
-            };
-
-            auto header_hash = hash(*block, temp_nonce);
-            
-            auto k0 = from_little_endian_unsafe<uint64_t>(header_hash.begin());
-            auto k1 = from_little_endian_unsafe<uint64_t>(header_hash.begin() + sizeof(uint64_t));
-
-            compact_block::short_id_list short_ids_list;
-            short_ids_list.reserve(block->transactions().size() - 1);
-            for (size_t i = 1; i < block->transactions().size(); ++i) {
-                uint64_t shortid = sip_hash_uint256(k0, k1, block->transactions()[i].hash()) & uint64_t(0xffffffffffff); 
-                short_ids_list.push_back(shortid);
-            }
-            
-            compact_block announce{ block->header(), temp_nonce, std::move(short_ids_list), std::move(prefilled_list) };*/
-
             SEND2(announce, handle_send, _1, announce.command);
 
-            LOG_DEBUG(LOG_NODE)
-            << "protocol_block_out::handle_reorganized 5 ["
-            << "] to [" << authority() << "].";
+            //LOG_DEBUG(LOG_NODE)
+            //<< "protocol_block_out::handle_reorganized 5 ["
+            //<< "] to [" << authority() << "].";
         }
 
         return true;
@@ -626,16 +600,16 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (!announce.elements().empty())
         {
             
-             LOG_DEBUG(LOG_NODE)
-             << "protocol_block_out::handle_reorganized 1 [ " << announce.command
-                << " ] to [" << authority() << "].";
+             //LOG_DEBUG(LOG_NODE)
+             //<< "protocol_block_out::handle_reorganized 1 [ " << announce.command
+             //   << " ] to [" << authority() << "].";
             
             SEND2(announce, handle_send, _1, announce.command);
 
 
-             LOG_DEBUG(LOG_NODE)
-             << "protocol_block_out::handle_reorganized 2 [ " << announce.command
-                << " ] to [" << authority() << "].";
+             //LOG_DEBUG(LOG_NODE)
+             //<< "protocol_block_out::handle_reorganized 2 [ " << announce.command
+             //   << " ] to [" << authority() << "].";
             
 
             ////const auto hash = announce.elements().front().hash();
@@ -659,9 +633,9 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         {
             SEND2(announce, handle_send, _1, announce.command);
 
-            LOG_DEBUG(LOG_NODE)
-             << "protocol_block_out::handle_reorganized 3 [ " << announce.command
-                << " ] to [" << authority() << "].";
+            //LOG_DEBUG(LOG_NODE)
+            // << "protocol_block_out::handle_reorganized 3 [ " << announce.command
+            //    << " ] to [" << authority() << "].";
             
 
             ////const auto hash = announce.inventories().front().hash();
