@@ -62,7 +62,7 @@ class BitprimNodeConan(ConanFile):
 
     requires = (("boost/1.66.0@bitprim/stable"),
                 ("bitprim-blockchain/0.8@bitprim/testing"),
-                ("bitprim-network/0.7@bitprim/testing"))
+                ("bitprim-network/0.8@bitprim/testing"))
 
     @property
     def msvc_mt_build(self):
