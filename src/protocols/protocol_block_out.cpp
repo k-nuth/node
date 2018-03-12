@@ -182,9 +182,9 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     ////    return;
 
 
-      LOG_INFO(LOG_NODE)
+     /* LOG_INFO(LOG_NODE)
             << "protocol_block_out::handle_fetch_locator_headers "
-            << authority() << "] ";
+            << authority() << "] ";*/
 
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);
