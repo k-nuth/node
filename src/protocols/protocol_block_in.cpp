@@ -153,12 +153,6 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
 
     message->set_stop_hash(stop_hash);
 
-    
-   /* LOG_INFO(LOG_NODE)
-            << "protocol_block_in::handle_fetch_block_locator "
-            << authority() << "] ";
-*/
-
     if (use_headers)
         SEND2(*message, handle_send, _1, message->command);
     else
@@ -278,10 +272,6 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     // There was no backlog so the timer must be started now.
     if (fresh)
         reset_timer();
-
-    //LOG_INFO(LOG_NODE)
-    //        << "protocol_block_in::send_get_data "
-    //        << authority() << "] ";
 
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
@@ -421,7 +411,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
                     << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
                 stop(error::channel_stopped);
 
-                //todo:verify if necesary mutual exclusion
+                //TODO(Mario) verify if necesary mutual exclusion
                 compact_blocks_map_.erase(it);
                 return false;
             }
@@ -437,7 +427,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
             << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
         stop(error::channel_stopped);
 
-        //todo:verify if necesary mutual exclusion
+        //TODO(Mario) verify if necesary mutual exclusion
         compact_blocks_map_.erase(it);
         return false;
     }
@@ -446,7 +436,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
         
     organize_block(tempblock);
 
-    //todo:verify if necesary mutual exclusion
+    //TODO(Mario) verify if necesary mutual exclusion
     compact_blocks_map_.erase(it);
 
     return true;
@@ -472,6 +462,12 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec,
     
     message->set_stop_hash(stop_hash);  
     SEND2(*message, handle_send, _1, message->command);
+
+
+    LOG_DEBUG(LOG_NODE)
+        << "sended get header message compact blocks"
+        << authority() << "] ";
+
 }
 
 bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
@@ -502,11 +498,19 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
         
+        LOG_INFO(LOG_NODE)
+            << "Compact Block parent block not exists [ " << encode_hash(header_temp.previous_block_hash())
+            << " [" << authority() << "]";
+        
         if ( ! chain_.is_stale() ) {
+            
+            LOG_DEBUG(LOG_NODE)
+            << "The chain isn't stale sending getheaders message [" << authority() << "]";
+            
             const auto heights = block::locator_heights(node_.top_block().height());
             chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
-            return true;
         } 
+        return true;
     } 
    
     //the nonce used to calculate the short id
@@ -593,7 +597,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             // Duplicate txindexes, the block is now in-flight, so
             // just request it.
             
-            //todo:
+            //TODO(Mario)
             //send getdata message
             return true;
         }
@@ -606,7 +610,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     // overkill.
     if (shorttxids.size() != short_ids.size()) {
         // Short ID collision
-        //todo:
+        //TODO(Mario)
         //send getdata message
         return true;
     }

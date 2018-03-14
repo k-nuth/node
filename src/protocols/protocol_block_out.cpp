@@ -181,15 +181,8 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     ////if (chain_.is_stale())
     ////    return;
 
-
-     /* LOG_INFO(LOG_NODE)
-            << "protocol_block_out::handle_fetch_locator_headers "
-            << authority() << "] ";*/
-
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);
-
-
 
     // Save the locator top to limit an overlapping future request.
     last_locator_top_.store(message->elements().front().hash());
@@ -202,24 +195,13 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     auto block_hash = message->block_hash();
 
-    // LOG_INFO(LOG_NODE)
-    //  << "protocol_block_out::handle_receive_get_block_transactions "
-    // << " block hash -> " << encode_hash(block_hash)
-    //<< " from [" << authority() << "]";
-
     chain_.fetch_block(block_hash, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
                     
             auto indexes = message->indexes();
 
-            //LOG_INFO(LOG_NODE)
-            //<< "protocol_block_out::handle_receive_get_block_transactions 2 "
-            //<< " block hash -> " << encode_hash(block_hash)
-            //<< " tx requested count " << indexes.size()
-            //<< " from [" << authority() << "]";
-            
-            //TODO
+            //TODO(Mario)
             /*if (it->second->nHeight < chainActive.Height() - MAX_BLOCKTXN_DEPTH) {
                 // If an older block is requested (should never happen in practice,
                 // but can happen in tests) send a block response instead of a
@@ -229,13 +211,15 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
                 // expensive disk reads, because it will require the peer to
                 // actually receive all the data read from disk over the network.
             }*/
-       
-
+      
             uint16_t offset = 0;
             for (size_t j = 0; j < indexes.size(); j++) {
                 if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
-                    
-                    //TODO(Mario) ban the peer
+                    LOG_WARNING(LOG_NODE)
+                        << "Compact Blocks index offset is invalid"
+                        << " from [" << authority() << "]";
+                    stop(error::channel_stopped);
+                    return;
                 }
                     
                 indexes[j] = indexes[j] + offset;
@@ -246,36 +230,19 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
             for (size_t i = 0; i < indexes.size(); i++) {
                 
-                /*if (indexes[i] >= block->transactions().size()) {
-                   //TODO(Mario) misbehaving node
-                   return;
-                }*/
-
-                //LOG_INFO(LOG_NODE)
-                //<< "protocol_block_out::handle_receive_get_block_transactions 3 "
-                //<< " tx hash -> " << encode_hash(block->transactions()[indexes[i]].hash())
-                //<< " from [" << authority() << "]";
-            
+                if (indexes[i] >= block->transactions().size()) {
+                   LOG_WARNING(LOG_NODE)
+                        << "Compact Blocks index is greater than transactions size"
+                        << " from [" << authority() << "]";
+                    stop(error::channel_stopped);
+                    return;
+                }
                 txs_list[i] = block->transactions()[indexes[i]];
             }
 
             block_transactions response(message->block_hash(),txs_list);
             SEND2(response, handle_send, _1, block_transactions::command);
-
-
-            //LOG_INFO(LOG_NODE)
-            //<< "protocol_block_out::handle_receive_get_block_transactions 4 "
-            //<< " block hash -> " << encode_hash(block_hash)
-            //<< " tx requested count " << indexes.size()
-            //<< " from [" << authority() << "]";
-            
-        } else {
-            //todo    
-            //  LOG_INFO(LOG_NODE)
-            //<< "protocol_block_out::handle_receive_get_block_transactions 5 "
-            //<< " block hash -> " << encode_hash(block_hash)
-            //<< " from [" << authority() << "]";  
-        }
+        } 
     });
     
     return true;
@@ -565,10 +532,6 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     if (chain_.is_stale())
         return true;
 
-    //LOG_DEBUG(LOG_NODE)
-    //<< "protocol_block_out::handle_reorganized ["
-    //<< "] to [" << authority() << "].";
-
     // TODO: consider always sending the last block as compact if enabled.
     if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1)
     {
@@ -578,12 +541,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (block->validation.originator != nonce())
         {
             compact_block announce = compact_block::factory_from_block(*block);  
-            
             SEND2(announce, handle_send, _1, announce.command);
-
-            //LOG_DEBUG(LOG_NODE)
-            //<< "protocol_block_out::handle_reorganized 5 ["
-            //<< "] to [" << authority() << "].";
         }
 
         return true;
@@ -599,19 +557,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
 
         if (!announce.elements().empty())
         {
-            
-             //LOG_DEBUG(LOG_NODE)
-             //<< "protocol_block_out::handle_reorganized 1 [ " << announce.command
-             //   << " ] to [" << authority() << "].";
-            
             SEND2(announce, handle_send, _1, announce.command);
-
-
-             //LOG_DEBUG(LOG_NODE)
-             //<< "protocol_block_out::handle_reorganized 2 [ " << announce.command
-             //   << " ] to [" << authority() << "].";
-            
-
             ////const auto hash = announce.elements().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block header [" << encode_hash(hash)
@@ -632,12 +578,6 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (!announce.inventories().empty())
         {
             SEND2(announce, handle_send, _1, announce.command);
-
-            //LOG_DEBUG(LOG_NODE)
-            // << "protocol_block_out::handle_reorganized 3 [ " << announce.command
-            //    << " ] to [" << authority() << "].";
-            
-
             ////const auto hash = announce.inventories().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block inventory [" << encode_hash(hash)
