@@ -235,7 +235,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             for (size_t j = 0; j < indexes.size(); j++) {
                 if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
                     
-                    //todo ban the peer
+                    //TODO(Mario) ban the peer
                 }
                     
                 indexes[j] = indexes[j] + offset;
@@ -247,7 +247,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             for (size_t i = 0; i < indexes.size(); i++) {
                 
                 /*if (indexes[i] >= block->transactions().size()) {
-                   //todo misbehaving node
+                   //TODO(Mario) misbehaving node
                    return;
                 }*/
 

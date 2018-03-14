@@ -452,22 +452,38 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
     return true;
 }
 
+void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec, get_headers_ptr message, const hash_digest& stop_hash) {
+    
+    if (stopped(ec))
+        return;
+
+    if (ec)
+    {
+        LOG_ERROR(LOG_NODE)
+        << "Internal failure generating block locator (compact block) for ["
+        << authority() << "] " << ec.message();
+        stop(ec);
+        return;
+    }
+
+    if (message->start_hashes().empty()) {
+        return;
+    }
+    
+    message->set_stop_hash(stop_hash);  
+    SEND2(*message, handle_send, _1, message->command);
+}
+
 bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
     
     if (stopped(ec)) {
         return false;
     }
-    
-    //todo: validate we have the parent block already, if not, send a get_header message
    
-    //TODO: purge old compact blocks
+    //TODO(Mario): purge old compact blocks
 
     //the header of the compact block is the header of the block
-    auto const& header_temp = message->header();
-
-    if (compact_blocks_map_.count(header_temp.hash()) > 0) {
-        return true;
-    }
+    auto const& header_temp = message->header();    
    
     if (!header_temp.is_valid()) {
         LOG_DEBUG(LOG_NODE)
@@ -477,6 +493,22 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return false;
     }
 
+    //if the compact block exists in the map, is already in process
+    if (compact_blocks_map_.count(header_temp.hash()) > 0) {
+        return true;
+    }
+
+    //if we haven't the parent block already, send a get_header message
+    // and return
+    if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
+        
+        if ( ! chain_.is_stale() ) {
+            const auto heights = block::locator_heights(node_.top_block().height());
+            chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
+            return true;
+        } 
+    } 
+   
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
 
@@ -629,7 +661,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
         return true;
-    }
+    } 
 }
 
 
