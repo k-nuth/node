@@ -19,23 +19,50 @@
 
 import os
 from conans import ConanFile, CMake
+from conans import __version__ as conan_version
+from conans.model.version import Version
 
 def option_on_off(option):
     return "ON" if option else "OFF"
 
+
+def get_content(file_name):
+    # print(os.path.dirname(os.path.abspath(__file__)))
+    # print(os.getcwd())
+    # with open(path, 'r') as f:
+    #     return f.read()
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_name)
+    with open(file_path, 'r') as f:
+        return f.read()
+
+def get_version():
+    return get_content('conan_version')
+
+def get_channel():
+    return get_content('conan_channel')
+
+def get_conan_req_version():
+    return get_content('conan_req_version')
+
+
 class BitprimNodeConan(ConanFile):
     name = "bitprim-node"
-    version = "0.8"
+    version = get_version()
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
     settings = "os", "compiler", "build_type", "arch"
 
+    if conan_version < Version(get_conan_req_version()):
+        raise Exception ("Conan version should be greater or equal than %s" % (get_conan_req_version(), ))
+
     options = {"shared": [True, False],
                "fPIC": [True, False],
-               "with_litecoin": [True, False],
                "with_tests": [True, False],
+               "currency": ['BCH', 'BTC', 'LTC'],
+               "verbose": [True, False],
     }
+    #    "with_litecoin": [True, False],
 
     # "with_remote_blockchain": [True, False],
     # "with_remote_database": [True, False],
@@ -43,8 +70,12 @@ class BitprimNodeConan(ConanFile):
 
     default_options = "shared=False", \
         "fPIC=True", \
-        "with_litecoin=False", \
-        "with_tests=False"
+        "with_tests=False", \
+        "currency=BCH", \
+        "verbose=False"
+        
+
+    # "with_litecoin=False", \
 
     # "with_remote_blockchain=False", \
     # "with_remote_database=False", \
@@ -53,16 +84,17 @@ class BitprimNodeConan(ConanFile):
 
     with_remote_blockchain = False
     with_remote_database = False
-    with_console = False
+    # with_console = False
 
     generators = "cmake"
+    exports = "conan_channel", "conan_version", "conan_req_version"
     exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "bitprimbuildinfo.cmake", "include/*", "test/*", "console/*"
     package_files = "build/lbitprim-node.a"
     build_policy = "missing"
 
     requires = (("boost/1.66.0@bitprim/stable"),
-                ("bitprim-blockchain/0.8@bitprim/testing"),
-                ("bitprim-network/0.7@bitprim/testing"))
+                ("bitprim-blockchain/0.8@bitprim/%s" % get_channel()),
+                ("bitprim-network/0.8@bitprim/%s" % get_channel()))
 
     @property
     def msvc_mt_build(self):
@@ -93,6 +125,7 @@ class BitprimNodeConan(ConanFile):
 
     def package_id(self):
         self.info.options.with_tests = "ANY"
+        self.info.options.verbose = "ANY"
 
         #For Bitprim Packages libstdc++ and libstdc++11 are the same
         if self.settings.compiler == "gcc" or self.settings.compiler == "clang":
@@ -106,7 +139,9 @@ class BitprimNodeConan(ConanFile):
         cmake.definitions["NO_CONAN_AT_ALL"] = option_on_off(False)
 
         # cmake.definitions["CMAKE_VERBOSE_MAKEFILE"] = option_on_off(False)
-        cmake.verbose = False
+        # cmake.verbose = False
+        cmake.verbose = self.options.verbose
+        
 
         cmake.definitions["ENABLE_SHARED"] = option_on_off(self.is_shared)
         cmake.definitions["ENABLE_POSITION_INDEPENDENT_CODE"] = option_on_off(self.fPIC_enabled)
@@ -115,12 +150,14 @@ class BitprimNodeConan(ConanFile):
         cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.with_remote_database)
 
         cmake.definitions["WITH_TESTS"] = option_on_off(self.options.with_tests)
-        cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
+        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
 
         # cmake.definitions["WITH_TESTS"] = option_on_off(self.with_tests)
         # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.options.with_console)
 
-        cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
+        # cmake.definitions["WITH_LITECOIN"] = option_on_off(self.options.with_litecoin)
+
+        cmake.definitions["CURRENCY"] = self.options.currency
 
 
         if self.settings.compiler != "Visual Studio":

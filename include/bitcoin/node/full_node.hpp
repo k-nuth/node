@@ -33,48 +33,50 @@
 namespace libbitcoin {
 namespace node {
 
-struct bitcoin_cash_setter {
-    bitcoin_cash_setter(network::settings const& net_settings) {
-#ifndef BITPRIM_LITECOIN
-        // set_bitcoin_cash(net_settings.bitcoin_cash);
-        // if (net_settings.bitcoin_cash) {
-        //     // const auto testnet = (metadata_.configured.network.identifier == 118034699u);  //Bitcoin
-        //     // const auto testnet = (metadata_.configured.network.identifier == 0x0709110bu);  //Bitcoin
-        //     // bool const testnet = (net_settings.identifier == 0xf4f3e5f4u);  //Bitcoin Cash
-        //     bool const testnet = is_testnet(net_settings.identifier, true);
-        //     set_cashaddr_prefix(!testnet ? "bitcoincash" : "bchtest");
+struct multi_crypto_setter {
+    multi_crypto_setter(network::settings const& net_settings) {
+#if defined(BITPRIM_CURRENCY_BCH)
+        // set_network(net_settings.identifier);
+        // switch (get_network()) {
+        //     case config::settings::mainnet:
+        //         set_cashaddr_prefix("bitcoincash");
+        //         break;
+        //     case config::settings::testnet:
+        //         set_cashaddr_prefix("bchtest");
+        //         break;
+        //     case config::settings::regtest:
+        //         set_cashaddr_prefix("bchreg");
+        //         break;
         // }
 
-        if (net_settings.bitcoin_cash) {
-            set_currency(config::currency::bitcoin_cash);
-            set_network(net_settings.identifier, true);
-            switch (get_network()) {
-                case config::settings::mainnet:
-                    set_cashaddr_prefix("bitcoincash");
-                    break;
-                case config::settings::testnet:
-                    set_cashaddr_prefix("bchtest");
-                    break;
-                case config::settings::regtest:
-                    set_cashaddr_prefix("bchreg");
-                    break;
-            }
-        } else {
-            set_currency(config::currency::bitcoin);
-            set_network(net_settings.identifier, false);
-            set_cashaddr_prefix("");
+        switch (net_settings.identifier) {
+            case netmagic::bch_mainnet:
+                set_cashaddr_prefix("bitcoincash");
+                break;
+            case netmagic::bch_testnet: 
+                set_cashaddr_prefix("bchtest");
+                break;
+            case netmagic::bch_regtest: 
+                set_cashaddr_prefix("bchreg");
+                break;
+            default: 
+                set_cashaddr_prefix("");
         }
-#else //BITPRIM_LITECOIN
-        set_currency(config::currency::litecoin);
-        set_network(net_settings.identifier, false);
-        set_cashaddr_prefix("");
-#endif //BITPRIM_LITECOIN
+
+
+#elif defined(BITPRIM_CURRENCY_BTC)
+        // set_network(net_settings.identifier);
+        // set_cashaddr_prefix("");
+#else //BITPRIM_CURRENCY_BCH
+        // set_network(net_settings.identifier);
+        // set_cashaddr_prefix("");
+#endif //BITPRIM_CURRENCY_BCH
     }
 };
 
 /// A full node on the Bitcoin P2P network.
 class BCN_API full_node
-  : public bitcoin_cash_setter
+  : public multi_crypto_setter
   , public network::p2p
 {
 public:
