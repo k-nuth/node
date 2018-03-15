@@ -372,11 +372,11 @@ options_metadata parser::load_settings()
         value<bool>(&configured.chain.priority),
         "Use high thread priority for block validation, defaults to true."
     )
-    (
-        "blockchain.use_libconsensus",
-        value<bool>(&configured.chain.use_libconsensus),
-        "Use libconsensus for script validation if integrated, defaults to false."
-    )
+    // (
+    //     "blockchain.use_libconsensus",
+    //     value<bool>(&configured.chain.use_libconsensus),
+    //     "Use libconsensus for script validation if integrated, defaults to false."
+    // )
     (
         "blockchain.reorganization_limit",
         value<uint32_t>(&configured.chain.reorganization_limit),
