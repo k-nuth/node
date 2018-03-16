@@ -57,6 +57,8 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     compact_from_peer_(negotiated_version() >= version::level::bip152),
+    
+    compact_blocks_high_bandwidth_set_(false),
 
     // This patch is treated as integral to basic block handling.
     blocks_from_peer_(
@@ -95,8 +97,18 @@ void protocol_block_in::start()
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     if (compact_from_peer_)
     {
-        // TODO: set relay mode in setting, now is high bandwith (true) and version 1 hardcoded
-        SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, 1}), handle_send, _1, send_compact::command);
+        if (chain_.is_stale()) {
+        
+            //forze low bandwidth    
+            LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
+            SEND2((send_compact{false, 1}), handle_send, _1, send_compact::command);
+        }
+        else {
+            
+            LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
+            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, 1}), handle_send, _1, send_compact::command);
+            compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
+        } 
     }
 
     send_get_blocks(null_hash);
@@ -253,6 +265,19 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
 
     if (message->inventories().empty())
         return;
+
+
+    if (compact_from_peer_) {
+        
+        if (node_.node_settings().compact_blocks_high_bandwidth) {
+            
+            if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
+                LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
+                SEND2((send_compact{true, 1}), handle_send, _1, send_compact::command);
+                compact_blocks_high_bandwidth_set_ = true;
+            }
+        }
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
@@ -465,7 +490,7 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec,
 
 
     LOG_DEBUG(LOG_NODE)
-        << "sended get header message compact blocks"
+        << "Sended get header message compact blocks"
         << authority() << "] ";
 
 }

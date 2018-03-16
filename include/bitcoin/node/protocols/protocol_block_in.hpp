@@ -92,7 +92,13 @@ private:
     mutable upgrade_mutex mutex;
 
     compact_block_map compact_blocks_map_;
+
+    bool compact_blocks_high_bandwidth_set_;
+
+    // TODO(Mario) compact blocks version 1 hardcoded, change to 2 when segwit is implemented
+    
 };
+
 
 } // namespace node
 } // namespace libbitcoin
