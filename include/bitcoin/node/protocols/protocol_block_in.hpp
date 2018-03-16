@@ -72,6 +72,8 @@ private:
     void handle_fetch_block_locator_compact_block(const code& ec, get_headers_ptr message,
         const hash_digest& stop_hash);
 
+    void send_get_data_compact_block(const code& ec, const hash_digest& hash);
+
     void handle_timeout(const code& ec);
     void handle_stop(const code& ec);
 

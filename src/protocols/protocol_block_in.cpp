@@ -475,12 +475,12 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     if (stopped(ec)) {
         return false;
     }
-   
+
     //TODO(Mario): purge old compact blocks
 
     //the header of the compact block is the header of the block
     auto const& header_temp = message->header();    
-   
+
     if (!header_temp.is_valid()) {
         LOG_DEBUG(LOG_NODE)
             << "Compact Block [" << encode_hash(header_temp.hash())
@@ -518,10 +518,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
-    
-    //LOG_INFO(LOG_NODE) << "compact block [*******************************************************************].";
-    //LOG_DEBUG(LOG_NODE) << "compact block -> block hash " << encode_hash(header_temp.hash());
-    
+        
     std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
     int32_t lastprefilledindex = -1;
     
@@ -565,9 +562,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
         txs_available[lastprefilledindex] = prefiled_txs[i].transaction();
     }
-
-    //LOG_INFO(LOG_NODE) << "compact block 1 [*******************************************************************].";
-    
+ 
     // Calculate map of txids -> positions and check mempool to see what we have
     // (or don't). Because well-formed cmpctblock messages will have a
     // (relatively) uniform distribution of short IDs, any highly-uneven
@@ -597,37 +592,27 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             // Duplicate txindexes, the block is now in-flight, so
             // just request it.
             
-            //TODO(Mario)
-            //send getdata message
+            LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+            send_get_data_compact_block(ec, header_temp.hash());
+            
             return true;
         }
     }
-    
-    //LOG_INFO(LOG_NODE) << "compact block 2 [*******************************************************************].";
+   
     
     // TODO: in the shortid-collision case, we should instead request both
     // transactions which collided. Falling back to full-block-request here is
     // overkill.
     if (shorttxids.size() != short_ids.size()) {
         // Short ID collision
-        //TODO(Mario)
-        //send getdata message
+        LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+        send_get_data_compact_block(ec, header_temp.hash());
         return true;
     }
         
     size_t mempool_count = 0;
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
 
-    //LOG_INFO(LOG_NODE) << "compact block 3 [*******************************************************************].";
-
-    //LOG_INFO(LOG_NODE) << "compact mempool count" << mempool_count;
-    
-    //LOG_INFO(LOG_NODE) << "compact txs count" << txs_available.size();
-
-    //LOG_INFO(LOG_NODE) << "compact prefil count" << prefiled_txs.size();
-    
-    //LOG_INFO(LOG_NODE) << "compact short id count" << short_ids.size();
-    
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;
 
@@ -637,29 +622,17 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             size_t diff_enc = i - prev_idx - (txs.size() > 0 ? 1 : 0);
             prev_idx = i;
             txs.push_back(diff_enc);
-
-            //LOG_DEBUG(LOG_NODE)
-            //<< "compact block -> missing tx idx " << i;
-
-            //LOG_DEBUG(LOG_NODE)
-            //<< "compact block -> missing tx idx " << diff_enc;
         }
     }
 
     if (txs.empty()) {
 
-        //LOG_DEBUG(LOG_NODE)
-        //<< "compact block -> complete " << encode_hash(header_temp.hash());
-   
         auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
 
     } else {
-        
-        //LOG_DEBUG(LOG_NODE)
-        // << "compact block -> getblocktxn " << encode_hash(header_temp.hash());
- 
+       
         compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
 
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
@@ -668,6 +641,15 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     } 
 }
 
+void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_digest& hash) {
+
+    hash_list hashes;
+    hashes.push_back(hash);
+             
+    const auto request = std::make_shared<get_data>(hashes, inventory::type_id::block);
+
+    send_get_data(ec,request);
+}
 
 // The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block
