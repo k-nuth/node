@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.4)
 # bitprim-node
 #==============================================================================
 project(bitprim-node
-        VERSION 0.7.0
+        VERSION 0.8.0
         LANGUAGES CXX C)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -64,17 +64,29 @@ option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
 
-# # Implement --with-console and declare WITH_CONSOLE.
-# #------------------------------------------------------------------------------
-# option(WITH_CONSOLE "Compile console application." OFF)
-
 # Implement --with-litecoin.
 #------------------------------------------------------------------------------
-option(WITH_LITECOIN "Compile with Litecoin support." OFF)
+# option(WITH_LITECOIN "Compile with Litecoin support." OFF)
 
 
 set(BITPRIM_BUILD_NUMBER "-" CACHE STRING "Specify the Bitprim Build Number.")
 # message(${BITPRIM_BUILD_NUMBER})
+
+
+set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")
+
+if (${CURRENCY} STREQUAL "BCH")
+  add_definitions(-DBITPRIM_CURRENCY_BCH)
+elseif (${CURRENCY} STREQUAL "BTC")
+  add_definitions(-DBITPRIM_CURRENCY_BTC)
+elseif (${CURRENCY} STREQUAL "LTC")
+  add_definitions(-DBITPRIM_CURRENCY_LTC)
+else()
+  message(FATAL_ERROR "Invalid Cryptocurrency: ${CURRENCY}")
+endif()
+
+message(STATUS "Bitprim: Cryptocurrency: ${CURRENCY}")
+
 
 
 # Conan infrastructure.
@@ -112,33 +124,33 @@ endif()
 
 
 if (NOT USE_CONAN)
-  # Require bitprim-blockchain of at least version 0.7.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-blockchain of at least version 0.8.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if(WITH_REMOTE_BLOCKCHAIN)
     if (NOT TARGET bitprim-blockchain-requester)
-      find_package(bitprim-blockchain-requester 0.7.0 REQUIRED)
+      find_package(bitprim-blockchain-requester 0.8.0 REQUIRED)
     endif()
   else()
     if (NOT TARGET bitprim-blockchain)
-      find_package(bitprim-blockchain 0.7.0 REQUIRED)
+      find_package(bitprim-blockchain 0.8.0 REQUIRED)
     endif()
   endif()
 
   if (NOT TARGET bitprim-blockchain)
-    find_package(bitprim-blockchain 0.7.0 REQUIRED)
+    find_package(bitprim-blockchain 0.8.0 REQUIRED)
   endif()
 
-  # Require bitprim-network of at least version 0.7.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-network of at least version 0.8.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if (NOT TARGET bitprim-network)
-    find_package(bitprim-network 0.7.0 REQUIRED)
+    find_package(bitprim-network 0.8.0 REQUIRED)
   endif()
 endif()
 
 
-if (WITH_LITECOIN)
-  add_definitions(-DBITPRIM_LITECOIN)
-endif()
+# if (WITH_LITECOIN)
+#   add_definitions(-DBITPRIM_LITECOIN)
+# endif()
 
 # Set flags.
 #==============================================================================
@@ -394,62 +406,6 @@ if (WITH_TESTS)
           settings_tests)
 endif()
 
-# # console/bn => ${bindir}
-# #------------------------------------------------------------------------------
-# if (WITH_CONSOLE)
-#   add_executable(console.bn
-#           console/executor.cpp
-#           console/executor.hpp
-#           console/main.cpp)
-
-#   # target_link_libraries(console.bn secp256k1 bitprim-node)
-#   target_link_libraries(console.bn bitprim-node)
-
-# #  if (MSVC)
-# #    target_link_libraries(console.bn ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
-# #  endif()
-  
-#   if (WITH_REMOTE_BLOCKCHAIN)
-#       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-#   endif()
-
-#   if (WITH_REMOTE_DATABASE)
-#       target_compile_definitions(console.bn PUBLIC -DWITH_REMOTE_DATABASE)
-#   endif()
-
-
-#   set_target_properties(
-#           console.bn PROPERTIES
-#           FOLDER "node"
-#           OUTPUT_NAME bn)
-# endif()
-
-# # console/bnr => ${bindir}
-# #------------------------------------------------------------------------------
-# if (WITH_CONSOLE)
-#   if(WITH_REMOTE_BLOCKCHAIN)
-#     add_executable(console.bnr
-#       console/executor.cpp
-#       console/executor.hpp
-#       console/main.cpp)
-#     target_link_libraries(console.bn bitprim-node)
-
-#     if (WITH_REMOTE_BLOCKCHAIN)
-#         target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-#     endif()
-
-#     if (WITH_REMOTE_DATABASE)
-#         target_compile_definitions(console.bnr PUBLIC -DWITH_REMOTE_DATABASE)
-#     endif()
-
-
-#     set_target_properties(
-#       console.bnr PROPERTIES
-#       FOLDER "node"
-#       OUTPUT_NAME bnr)
-#     target_link_libraries(console.bnr bitprim-node-requester)
-#   endif()
-# endif()
 
 # Install
 #==============================================================================
@@ -463,10 +419,6 @@ else()
           ARCHIVE DESTINATION lib)
 endif()
 
-# if (WITH_CONSOLE)
-#   install(TARGETS console.bn
-#           RUNTIME DESTINATION bin)
-# endif()
 
 set(_bitprim_headers
         # include_bitcoin_HEADERS =
