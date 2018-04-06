@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.4)
 # bitprim-node
 #==============================================================================
 project(bitprim-node
-        VERSION 0.8.0
+        VERSION 0.9.0
         LANGUAGES CXX C)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -124,26 +124,26 @@ endif()
 
 
 if (NOT USE_CONAN)
-  # Require bitprim-blockchain of at least version 0.8.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-blockchain of at least version 0.9.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if(WITH_REMOTE_BLOCKCHAIN)
     if (NOT TARGET bitprim-blockchain-requester)
-      find_package(bitprim-blockchain-requester 0.8.0 REQUIRED)
+      find_package(bitprim-blockchain-requester 0.9.0 REQUIRED)
     endif()
   else()
     if (NOT TARGET bitprim-blockchain)
-      find_package(bitprim-blockchain 0.8.0 REQUIRED)
+      find_package(bitprim-blockchain 0.9.0 REQUIRED)
     endif()
   endif()
 
   if (NOT TARGET bitprim-blockchain)
-    find_package(bitprim-blockchain 0.8.0 REQUIRED)
+    find_package(bitprim-blockchain 0.9.0 REQUIRED)
   endif()
 
-  # Require bitprim-network of at least version 0.8.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-network of at least version 0.9.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if (NOT TARGET bitprim-network)
-    find_package(bitprim-network 0.8.0 REQUIRED)
+    find_package(bitprim-network 0.9.0 REQUIRED)
   endif()
 endif()
 

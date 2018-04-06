@@ -36,19 +36,6 @@ namespace node {
 struct multi_crypto_setter {
     multi_crypto_setter(network::settings const& net_settings) {
 #if defined(BITPRIM_CURRENCY_BCH)
-        // set_network(net_settings.identifier);
-        // switch (get_network()) {
-        //     case config::settings::mainnet:
-        //         set_cashaddr_prefix("bitcoincash");
-        //         break;
-        //     case config::settings::testnet:
-        //         set_cashaddr_prefix("bchtest");
-        //         break;
-        //     case config::settings::regtest:
-        //         set_cashaddr_prefix("bchreg");
-        //         break;
-        // }
-
         switch (net_settings.identifier) {
             case netmagic::bch_mainnet:
                 set_cashaddr_prefix("bitcoincash");
@@ -76,8 +63,8 @@ struct multi_crypto_setter {
 
 /// A full node on the Bitcoin P2P network.
 class BCN_API full_node
-  : public multi_crypto_setter
-  , public network::p2p
+    : public multi_crypto_setter
+    , public network::p2p
 {
 public:
     typedef std::shared_ptr<full_node> ptr;

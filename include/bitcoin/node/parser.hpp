@@ -24,44 +24,44 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/configuration.hpp>
 
-namespace libbitcoin {
-namespace node {
+namespace libbitcoin { namespace node {
 
 /// Parse configurable values from environment variables, settings file, and
 /// command line positional and non-positional options.
 class BCN_API parser
-  : public config::parser
+    : public config::parser
 {
 public:
     parser(config::settings context);
-    parser(const configuration& defaults);
-
+    parser(configuration const& defaults);
 
     /// Parse all configuration into member settings.
-    virtual bool parse(int argc, const char* argv[], std::ostream& error);
+    virtual 
+    bool parse(int argc, char const* argv[], std::ostream& error);
 
+    virtual 
+    bool parse_from_file(boost::filesystem::path const& config_path, std::ostream& error);
+    
     /// Load command line options (named).
-    virtual options_metadata load_options();
+    virtual 
+    options_metadata load_options();
 
     /// Load command line arguments (positional).
-    virtual arguments_metadata load_arguments();
+    virtual 
+    arguments_metadata load_arguments();
 
     /// Load configuration file settings.
-    virtual options_metadata load_settings();
+    virtual 
+    options_metadata load_settings();
 
     /// Load environment variable settings.
-    virtual options_metadata load_environment();
+    virtual 
+    options_metadata load_environment();
 
     /// The populated configuration settings values.
     configuration configured;
-
-private:
-    config::checkpoint::list default_checkpoints();
-    void fix_checkpoints();
-
 };
 
-} // namespace node
-} // namespace libbitcoin
+}} // namespace libbitcoin::node
 
 #endif
