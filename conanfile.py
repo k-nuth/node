@@ -96,7 +96,7 @@ class BitprimNodeConan(ConanFile):
     build_policy = "missing"
 
     requires = (("boost/1.66.0@bitprim/stable"),
-                ("bitprim-blockchain/0.9@bitprim/%s" % get_channel()),
+                ("bitprim-blockchain/0.10@bitprim/%s" % get_channel()),
                 ("bitprim-network/0.9@bitprim/%s" % get_channel()))
 
     @property
