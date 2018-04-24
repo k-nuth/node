@@ -580,10 +580,6 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         // Update bound variables in metadata.settings.
         notify(variables);
         
-        if ( ! version_sett_help) {
-            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
-        }
-        
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {
             configured.file.clear();
@@ -611,8 +607,6 @@ bool parser::parse_from_file(boost::filesystem::path const& config_path, std::os
 
         // Update bound variables in metadata.settings.
         notify(variables);
-
-        fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {
