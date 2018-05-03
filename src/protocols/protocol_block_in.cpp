@@ -369,6 +369,8 @@ void protocol_block_in::handle_store_block(const code& ec,
     // Show that diplayed forks may be missing activations due to checkpoints.
     const auto checked = state->is_under_checkpoint() ? "*" : "";
 
+    chain_.remove_mined_txs_from_mempool(message);
+
     LOG_DEBUG(LOG_NODE)
         << "Connected block [" << encoded << "] at height [" << state->height()
         << "] from [" << authority() << "] (" << state->enabled_forks()
