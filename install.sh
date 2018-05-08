@@ -36,223 +36,14 @@ BOOST_URL="http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_5
 BOOST_ARCHIVE="boost_1_57_0.tar.bz2"
 
 
-# Initialize the build environment.
-#==============================================================================
-# Exit this script on the first build error.
-#------------------------------------------------------------------------------
-set -e
-
-# Configure build parallelism.
-#------------------------------------------------------------------------------
-SEQUENTIAL=1
-OS=`uname -s`
-if [[ $PARALLEL ]]; then
-    echo "Using shell-defined PARALLEL value."
-elif [[ $OS == Linux ]]; then
-    PARALLEL=`nproc`
-elif [[ ($OS == Darwin) || ($OS == OpenBSD) ]]; then
-    PARALLEL=`sysctl -n hw.ncpu`
-else
-    echo "Unsupported system: $OS"
-    exit 1
-fi
-
-# Define operating system specific settings.
-#------------------------------------------------------------------------------
-if [[ $OS == Darwin ]]; then
-    export CC="clang"
-    export CXX="clang++"
-    STDLIB="c++"
-elif [[ $OS == OpenBSD ]]; then
-    make() { gmake "$@"; }
-    export CC="egcc"
-    export CXX="eg++"
-    STDLIB="estdc++"
-else # Linux
-    STDLIB="stdc++"
-fi
-
-# Link to appropriate standard library in non-default scnearios.
-#------------------------------------------------------------------------------
-if [[ ($OS == Linux && $CC == "clang") || ($OS == OpenBSD) ]]; then
-    export LDLIBS="-l$STDLIB $LDLIBS"
-    export CXXFLAGS="-stdlib=lib$STDLIB $CXXFLAGS"
-fi
-
-# Parse command line options that are handled by this script.
-#------------------------------------------------------------------------------
-for OPTION in "$@"; do
-    case $OPTION in
-        # Custom build options (in the form of --build-<option>).
-        (--build-icu)      BUILD_ICU="yes";;
-        (--build-zlib)     BUILD_ZLIB="yes";;
-        (--build-png)      BUILD_PNG="yes";;
-        (--build-qrencode) BUILD_QRENCODE="yes";;
-        (--build-boost)    BUILD_BOOST="yes";;
-        (--build-dir=*)    BUILD_DIR="${OPTION#*=}";;
-
-        # Standard build options.
-        (--prefix=*)       PREFIX="${OPTION#*=}";;
-        (--disable-shared) DISABLE_SHARED="yes";;
-        (--disable-static) DISABLE_STATIC="yes";;
-        (--with-icu)       WITH_ICU="yes";;
-        (--with-png)       WITH_PNG="yes";;
-        (--with-qrencode)  WITH_QRENCODE="yes";;
-    esac
-done
-
-# Normalize of static and shared options.
-#------------------------------------------------------------------------------
-if [[ $DISABLE_SHARED ]]; then
-    CONFIGURE_OPTIONS=("$@" "--enable-static")
-elif [[ $DISABLE_STATIC ]]; then
-    CONFIGURE_OPTIONS=("$@" "--enable-shared")
-else
-    CONFIGURE_OPTIONS=("$@" "--enable-shared")
-    CONFIGURE_OPTIONS=("$@" "--enable-static")
-fi
-
-# Purge custom build options so they don't break configure.
-#------------------------------------------------------------------------------
-CONFIGURE_OPTIONS=("${CONFIGURE_OPTIONS[@]/--build-*/}")
-
-# Always set a prefix (required on OSX and for lib detection).
-#------------------------------------------------------------------------------
-if [[ !($PREFIX) ]]; then
-    PREFIX="/usr/local"
-    CONFIGURE_OPTIONS=( "${CONFIGURE_OPTIONS[@]}" "--prefix=$PREFIX")
-else
-    # Incorporate the custom libdir into each object, for runtime resolution.
-    export LD_RUN_PATH="$PREFIX/lib"
-fi
-
-# Incorporate the prefix.
-#------------------------------------------------------------------------------
-# Set the prefix-based package config directory.
-PREFIX_PKG_CONFIG_DIR="$PREFIX/lib/pkgconfig"
-
-# Augment PKG_CONFIG_PATH search path with our prefix.
-export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_PKG_CONFIG_DIR"
-
-# Set a package config save path that can be passed via our builds.
-with_pkgconfigdir="--with-pkgconfigdir=$PREFIX_PKG_CONFIG_DIR"
-
-if [[ $BUILD_BOOST ]]; then
-    # Boost has no pkg-config, m4 searches in the following order:
-    # --with-boost=<path>, /usr, /usr/local, /opt, /opt/local, $BOOST_ROOT.
-    # We use --with-boost to prioritize the --prefix path when we build it.
-    # Otherwise standard paths suffice for Linux, Homebrew and MacPorts.
-    # ax_boost_base.m4 appends /include and adds to BOOST_CPPFLAGS
-    # ax_boost_base.m4 searches for /lib /lib64 and adds to BOOST_LDFLAGS
-    with_boost="--with-boost=$PREFIX"
-fi
-
-# Echo generated values.
-#------------------------------------------------------------------------------
-echo "Libbitcoin installer configuration."
-echo "--------------------------------------------------------------------"
-echo "OS                    : $OS"
-echo "PARALLEL              : $PARALLEL"
-echo "CC                    : $CC"
-echo "CXX                   : $CXX"
-echo "CPPFLAGS              : $CPPFLAGS"
-echo "CFLAGS                : $CFLAGS"
-echo "CXXFLAGS              : $CXXFLAGS"
-echo "LDFLAGS               : $LDFLAGS"
-echo "LDLIBS                : $LDLIBS"
-echo "WITH_ICU              : $WITH_ICU"
-echo "WITH_PNG              : $WITH_PNG"
-echo "WITH_QRENCODE         : $WITH_QRENCODE"
-echo "BUILD_ICU             : $BUILD_ICU"
-echo "BUILD_ZLIB            : $BUILD_ZLIB"
-echo "BUILD_PNG             : $BUILD_PNG"
-echo "BUILD_QRENCODE        : $BUILD_QRENCODE"
-echo "BUILD_BOOST           : $BUILD_BOOST"
-echo "PREFIX                : $PREFIX"
-echo "BUILD_DIR             : $BUILD_DIR"
-echo "DISABLE_SHARED        : $DISABLE_SHARED"
-echo "DISABLE_STATIC        : $DISABLE_STATIC"
-echo "with_boost            : ${with_boost}"
-echo "with_pkgconfigdir     : ${with_pkgconfigdir}"
-echo "--------------------------------------------------------------------"
-
-
-# Define build options.
-#==============================================================================
-# Define boost options.
-#------------------------------------------------------------------------------
-BOOST_OPTIONS=(
-"--with-chrono" \
-"--with-date_time" \
-"--with-filesystem" \
-"--with-iostreams" \
-"--with-locale" \
-"--with-log" \
-"--with-program_options" \
-"--with-regex" \
-"--with-system" \
-"--with-thread" \
-"--with-test")
-
-# Define secp256k1 options.
-#------------------------------------------------------------------------------
-SECP256K1_OPTIONS=(
-"--disable-tests" \
-"--enable-module-recovery")
-
-# Define bitcoin options.
-#------------------------------------------------------------------------------
-BITCOIN_OPTIONS=(
-"--without-tests" \
-"--without-examples" \
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-# Define bitcoin-consensus options.
-#------------------------------------------------------------------------------
-BITCOIN_CONSENSUS_OPTIONS=(
-"--without-tests" \
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-# Define bitcoin-database options.
-#------------------------------------------------------------------------------
-BITCOIN_DATABASE_OPTIONS=(
-"--without-tests" \
-"--without-tools" \
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-# Define bitcoin-blockchain options.
-#------------------------------------------------------------------------------
-BITCOIN_BLOCKCHAIN_OPTIONS=(
-"--without-tests" \
-"--without-tools" \
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-# Define bitcoin-network options.
-#------------------------------------------------------------------------------
-BITCOIN_NETWORK_OPTIONS=(
-"--without-tests" \
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-# Define bitcoin-node options.
-#------------------------------------------------------------------------------
-BITCOIN_NODE_OPTIONS=(
-"${with_boost}" \
-"${with_pkgconfigdir}")
-
-
 # Define utility functions.
 #==============================================================================
 configure_options()
 {
-    echo "configure options:"
+    display_message "configure options:"
     for OPTION in "$@"; do
         if [[ $OPTION ]]; then
-            echo $OPTION
+            display_message $OPTION
         fi
     done
 
@@ -275,13 +66,21 @@ create_directory()
     mkdir "$DIRECTORY"
 }
 
+display_heading_message()
+{
+    echo
+    echo "********************** $@ **********************"
+    echo
+}
+
 display_message()
 {
-    local MESSAGE="$1"
+    echo "$@"
+}
 
-    echo
-    echo "********************** $MESSAGE **********************"
-    echo
+display_error()
+{
+    >&2 echo "$@"
 }
 
 initialize_git()
@@ -357,6 +156,258 @@ push_directory()
 }
 
 
+# Initialize the build environment.
+#==============================================================================
+# Exit this script on the first build error.
+#------------------------------------------------------------------------------
+set -e
+
+# Configure build parallelism.
+#------------------------------------------------------------------------------
+SEQUENTIAL=1
+OS=`uname -s`
+if [[ $PARALLEL ]]; then
+    display_message "Using shell-defined PARALLEL value."
+elif [[ $OS == Linux ]]; then
+    PARALLEL=`nproc`
+elif [[ ($OS == Darwin) || ($OS == OpenBSD) ]]; then
+    PARALLEL=`sysctl -n hw.ncpu`
+else
+    display_error "Unsupported system: $OS"
+    exit 1
+fi
+
+# Define operating system specific settings.
+#------------------------------------------------------------------------------
+if [[ $OS == Darwin ]]; then
+    export CC="clang"
+    export CXX="clang++"
+    STDLIB="c++"
+elif [[ $OS == OpenBSD ]]; then
+    make() { gmake "$@"; }
+    export CC="egcc"
+    export CXX="eg++"
+    STDLIB="estdc++"
+else # Linux
+    STDLIB="stdc++"
+fi
+
+# Link to appropriate standard library in non-default scnearios.
+#------------------------------------------------------------------------------
+if [[ ($OS == Linux && $CC == "clang") || ($OS == OpenBSD) ]]; then
+    export LDLIBS="-l$STDLIB $LDLIBS"
+    export CXXFLAGS="-stdlib=lib$STDLIB $CXXFLAGS"
+fi
+
+# Parse command line options that are handled by this script.
+#------------------------------------------------------------------------------
+for OPTION in "$@"; do
+    case $OPTION in
+        # Custom build options (in the form of --build-<option>).
+        (--build-icu)      BUILD_ICU="yes";;
+        (--build-zlib)     BUILD_ZLIB="yes";;
+        (--build-png)      BUILD_PNG="yes";;
+        (--build-qrencode) BUILD_QRENCODE="yes";;
+        (--build-zmq)      BUILD_ZMQ="yes";;
+        (--build-boost)    BUILD_BOOST="yes";;
+        (--build-dir=*)    BUILD_DIR="${OPTION#*=}";;
+
+        # Standard build options.
+        (--prefix=*)       PREFIX="${OPTION#*=}";;
+        (--disable-shared) DISABLE_SHARED="yes";;
+        (--disable-static) DISABLE_STATIC="yes";;
+        (--with-icu)       WITH_ICU="yes";;
+        (--with-png)       WITH_PNG="yes";;
+        (--with-qrencode)  WITH_QRENCODE="yes";;
+
+        # Standard script options.
+        (--help)           DISPLAY_HELP="yes";;
+    esac
+done
+
+# Normalize of static and shared options.
+#------------------------------------------------------------------------------
+if [[ $DISABLE_SHARED ]]; then
+    CONFIGURE_OPTIONS=("$@" "--enable-static")
+elif [[ $DISABLE_STATIC ]]; then
+    CONFIGURE_OPTIONS=("$@" "--enable-shared")
+else
+    CONFIGURE_OPTIONS=("$@" "--enable-shared")
+    CONFIGURE_OPTIONS=("$@" "--enable-static")
+fi
+
+# Purge custom build options so they don't break configure.
+#------------------------------------------------------------------------------
+CONFIGURE_OPTIONS=("${CONFIGURE_OPTIONS[@]/--build-*/}")
+
+# Always set a prefix (required on OSX and for lib detection).
+#------------------------------------------------------------------------------
+if [[ !($PREFIX) ]]; then
+    PREFIX="/usr/local"
+    CONFIGURE_OPTIONS=( "${CONFIGURE_OPTIONS[@]}" "--prefix=$PREFIX")
+else
+    # Incorporate the custom libdir into each object, for runtime resolution.
+    export LD_RUN_PATH="$PREFIX/lib"
+fi
+
+# Incorporate the prefix.
+#------------------------------------------------------------------------------
+# Set the prefix-based package config directory.
+PREFIX_PKG_CONFIG_DIR="$PREFIX/lib/pkgconfig"
+
+# Augment PKG_CONFIG_PATH search path with our prefix.
+export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$PREFIX_PKG_CONFIG_DIR"
+
+# Set a package config save path that can be passed via our builds.
+with_pkgconfigdir="--with-pkgconfigdir=$PREFIX_PKG_CONFIG_DIR"
+
+if [[ $BUILD_BOOST ]]; then
+    # Boost has no pkg-config, m4 searches in the following order:
+    # --with-boost=<path>, /usr, /usr/local, /opt, /opt/local, $BOOST_ROOT.
+    # We use --with-boost to prioritize the --prefix path when we build it.
+    # Otherwise standard paths suffice for Linux, Homebrew and MacPorts.
+    # ax_boost_base.m4 appends /include and adds to BOOST_CPPFLAGS
+    # ax_boost_base.m4 searches for /lib /lib64 and adds to BOOST_LDFLAGS
+    with_boost="--with-boost=$PREFIX"
+fi
+
+display_configuration()
+{
+    display_message "Libbitcoin installer configuration."
+    display_message "--------------------------------------------------------------------"
+    display_message "OS                    : $OS"
+    display_message "PARALLEL              : $PARALLEL"
+    display_message "CC                    : $CC"
+    display_message "CXX                   : $CXX"
+    display_message "CPPFLAGS              : $CPPFLAGS"
+    display_message "CFLAGS                : $CFLAGS"
+    display_message "CXXFLAGS              : $CXXFLAGS"
+    display_message "LDFLAGS               : $LDFLAGS"
+    display_message "LDLIBS                : $LDLIBS"
+    display_message "WITH_ICU              : $WITH_ICU"
+    display_message "WITH_PNG              : $WITH_PNG"
+    display_message "WITH_QRENCODE         : $WITH_QRENCODE"
+    display_message "BUILD_ICU             : $BUILD_ICU"
+    display_message "BUILD_ZLIB            : $BUILD_ZLIB"
+    display_message "BUILD_PNG             : $BUILD_PNG"
+    display_message "BUILD_QRENCODE        : $BUILD_QRENCODE"
+    display_message "BUILD_ZMQ             : $BUILD_ZMQ"
+    display_message "BUILD_BOOST           : $BUILD_BOOST"
+    display_message "PREFIX                : $PREFIX"
+    display_message "BUILD_DIR             : $BUILD_DIR"
+    display_message "DISABLE_SHARED        : $DISABLE_SHARED"
+    display_message "DISABLE_STATIC        : $DISABLE_STATIC"
+    display_message "with_boost            : ${with_boost}"
+    display_message "with_pkgconfigdir     : ${with_pkgconfigdir}"
+    display_message "--------------------------------------------------------------------"
+}
+display_install_help()
+{
+    display_message "Usage: ./install.sh [OPTION]..."
+    display_message "Manage the installation of libbitcoin-node."
+    display_message "Script options:"
+    display_message "  --with-icu               Compile with International Components for Unicode."
+    display_message "                             Since the addition of BIP-39 and later BIP-38 "
+    display_message "                             support, libbitcoin conditionally incorporates ICU "
+    display_message "                              to provide BIP-38 and BIP-39 passphrase "
+    display_message "                             normalization features. Currently "
+    display_message "                             libbitcoin-explorer is the only other library that "
+    display_message "                             accesses this feature, so if you do not intend to "
+    display_message "                             use passphrase normalization this dependency can "
+    display_message "                             be avoided."
+    display_message "  --with-qrencode          Compile with QR Code Support"
+    display_message "                             Since the addition of qrcode support, libbitcoin "
+    display_message "                             conditionally incorporates qrencode. Currently "
+    display_message "                             libbitcoin-explorer is the only other library that "
+    display_message "                             accesses this feature, so if you do not intend to "
+    display_message "                             use qrcode this dependency can be avoided."
+    display_message "  --with-png               Compile with QR Code PNG Output Support"
+    display_message "                             Since the addition of png support, libbitcoin "
+    display_message "                             conditionally incorporates libpng (which in turn "
+    display_message "                             requires zlib). Currently libbitcoin-explorer is "
+    display_message "                             the only other library that accesses this feature, "
+    display_message "                             so if you do not intend to use png this dependency "
+    display_message "                             can be avoided."
+    display_message "  --build-boost            Builds Boost libraries."
+    display_message "  --build-dir=<path>       Location of downloaded and intermediate files."
+    display_message "  --prefix=<absolute-path> Library install location (defaults to /usr/local)."
+    display_message "  --disable-shared         Disables shared library builds."
+    display_message "  --disable-static         Disables static library builds."
+    display_message "  --help                   Display usage, overriding script execution."
+    display_message ""
+    display_message "All unrecognized options provided shall be passed as configuration options for "
+    display_message "all dependencies."
+}
+
+# Define build options.
+#==============================================================================
+# Define boost options.
+#------------------------------------------------------------------------------
+BOOST_OPTIONS=(
+"--with-atomic" \
+"--with-chrono" \
+"--with-date_time" \
+"--with-filesystem" \
+"--with-iostreams" \
+"--with-locale" \
+"--with-log" \
+"--with-program_options" \
+"--with-regex" \
+"--with-system" \
+"--with-thread" \
+"--with-test")
+
+# Define secp256k1 options.
+#------------------------------------------------------------------------------
+SECP256K1_OPTIONS=(
+"--disable-tests" \
+"--enable-module-recovery")
+
+# Define bitcoin options.
+#------------------------------------------------------------------------------
+BITCOIN_OPTIONS=(
+"--without-tests" \
+"--without-examples" \
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+# Define bitcoin-consensus options.
+#------------------------------------------------------------------------------
+BITCOIN_CONSENSUS_OPTIONS=(
+"--without-tests" \
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+# Define bitcoin-database options.
+#------------------------------------------------------------------------------
+BITCOIN_DATABASE_OPTIONS=(
+"--without-tests" \
+"--without-tools" \
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+# Define bitcoin-blockchain options.
+#------------------------------------------------------------------------------
+BITCOIN_BLOCKCHAIN_OPTIONS=(
+"--without-tests" \
+"--without-tools" \
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+# Define bitcoin-network options.
+#------------------------------------------------------------------------------
+BITCOIN_NETWORK_OPTIONS=(
+"--without-tests" \
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+# Define bitcoin-node options.
+#------------------------------------------------------------------------------
+BITCOIN_NODE_OPTIONS=(
+"${with_boost}" \
+"${with_pkgconfigdir}")
+
+
 # Define build functions.
 #==============================================================================
 
@@ -387,7 +438,7 @@ patch_zlib_configuration()
     sed -i.tmp "/unknown option/d" configure
     sed -i.tmp "/help for help/d" configure
 
-    # echo "Hack: ZLIB configuration options modified."
+    # display_message "Hack: ZLIB configuration options modified."
 }
 
 # Because ZLIB can't build shared only.
@@ -431,7 +482,7 @@ build_from_tarball()
         export CPPFLAGS="-I$PREFIX/include $CPPFLAGS"
     fi
 
-    display_message "Download $ARCHIVE"
+    display_heading_message "Download $ARCHIVE"
 
     # Use the suffixed archive name as the extraction directory.
     local EXTRACT="build-$ARCHIVE"
@@ -486,7 +537,7 @@ circumvent_boost_icu_detection()
     echo $SUCCESS > $REGEX_TEST
     echo $SUCCESS > $LOCALE_TEST
 
-    # echo "Hack: ICU detection modified, will always indicate found."
+    # display_message "Hack: ICU detection modified, will always indicate found."
 }
 
 # Because boost doesn't support autoconfig and doesn't like empty settings.
@@ -551,7 +602,7 @@ build_from_tarball_boost()
         return
     fi
 
-    display_message "Download $ARCHIVE"
+    display_heading_message "Download $ARCHIVE"
 
     # Use the suffixed archive name as the extraction directory.
     local EXTRACT="build-$ARCHIVE"
@@ -566,28 +617,28 @@ build_from_tarball_boost()
     initialize_boost_configuration
     initialize_boost_icu_configuration
 
-    echo "Libbitcoin boost configuration."
-    echo "--------------------------------------------------------------------"
-    echo "variant               : release"
-    echo "threading             : multi"
-    echo "toolset               : $CC"
-    echo "cxxflags              : $STDLIB_FLAG"
-    echo "linkflags             : $STDLIB_FLAG"
-    echo "link                  : $BOOST_LINK"
-    echo "boost.locale.iconv    : $BOOST_ICU_ICONV"
-    echo "boost.locale.posix    : $BOOST_ICU_POSIX"
-    echo "-sNO_BZIP2            : 1" 
-    echo "-sICU_PATH            : $ICU_PREFIX"
-    echo "-sICU_LINK            : ${ICU_LIBS[@]}"
-    echo "-sZLIB_LIBPATH        : $PREFIX/lib"
-    echo "-sZLIB_INCLUDE        : $PREFIX/include"
-    echo "-j                    : $JOBS"
-    echo "-d0                   : [supress informational messages]"
-    echo "-q                    : [stop at the first error]"
-    echo "--reconfigure         : [ignore cached configuration]"
-    echo "--prefix              : $PREFIX"
-    echo "BOOST_OPTIONS         : $@"
-    echo "--------------------------------------------------------------------"
+    display_message "Libbitcoin boost configuration."
+    display_message "--------------------------------------------------------------------"
+    display_message "variant               : release"
+    display_message "threading             : multi"
+    display_message "toolset               : $CC"
+    display_message "cxxflags              : $STDLIB_FLAG"
+    display_message "linkflags             : $STDLIB_FLAG"
+    display_message "link                  : $BOOST_LINK"
+    display_message "boost.locale.iconv    : $BOOST_ICU_ICONV"
+    display_message "boost.locale.posix    : $BOOST_ICU_POSIX"
+    display_message "-sNO_BZIP2            : 1"
+    display_message "-sICU_PATH            : $ICU_PREFIX"
+    display_message "-sICU_LINK            : ${ICU_LIBS[@]}"
+    display_message "-sZLIB_LIBPATH        : $PREFIX/lib"
+    display_message "-sZLIB_INCLUDE        : $PREFIX/include"
+    display_message "-j                    : $JOBS"
+    display_message "-d0                   : [supress informational messages]"
+    display_message "-q                    : [stop at the first error]"
+    display_message "--reconfigure         : [ignore cached configuration]"
+    display_message "--prefix              : $PREFIX"
+    display_message "BOOST_OPTIONS         : $@"
+    display_message "--------------------------------------------------------------------"
 
     # boost_iostreams
     # The zlib options prevent boost linkage to system libs in the case where
@@ -637,7 +688,7 @@ build_from_github()
     shift 5
 
     FORK="$ACCOUNT/$REPO"
-    display_message "Download $FORK/$BRANCH"
+    display_heading_message "Download $FORK/$BRANCH"
 
     # Clone the repository locally.
     git clone --depth 1 --branch $BRANCH --single-branch "https://github.com/$FORK"
@@ -660,7 +711,7 @@ build_from_local()
     local OPTIONS=$3
     shift 3
 
-    display_message "$MESSAGE"
+    display_heading_message "$MESSAGE"
 
     # Join generated and command line options.
     local CONFIGURATION=("${OPTIONS[@]}" "$@")
@@ -699,7 +750,7 @@ build_from_travis()
 build_all()
 {
     build_from_tarball_boost $BOOST_URL $BOOST_ARCHIVE bzip2 . $PARALLEL "$BUILD_BOOST" "${BOOST_OPTIONS[@]}"
-    build_from_github libbitcoin secp256k1 version4 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
+    build_from_github libbitcoin secp256k1 version5 $PARALLEL ${SECP256K1_OPTIONS[@]} "$@"
     build_from_github libbitcoin libbitcoin version3 $PARALLEL ${BITCOIN_OPTIONS[@]} "$@"
     build_from_github libbitcoin libbitcoin-consensus version3 $PARALLEL ${BITCOIN_CONSENSUS_OPTIONS[@]} "$@"
     build_from_github libbitcoin libbitcoin-database version3 $PARALLEL ${BITCOIN_DATABASE_OPTIONS[@]} "$@"
@@ -711,8 +762,13 @@ build_all()
 
 # Build the primary library and all dependencies.
 #==============================================================================
-create_directory "$BUILD_DIR"
-push_directory "$BUILD_DIR"
-initialize_git
-pop_directory
-time build_all "${CONFIGURE_OPTIONS[@]}"
+if [[ $DISPLAY_HELP ]]; then
+    display_install_help
+else
+    display_configuration
+    create_directory "$BUILD_DIR"
+    push_directory "$BUILD_DIR"
+    initialize_git
+    pop_directory
+    time build_all "${CONFIGURE_OPTIONS[@]}"
+fi
