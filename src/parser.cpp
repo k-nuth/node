@@ -73,9 +73,13 @@ parser::parser(config::settings context)
 
     // A node allows 1000 host names by default.
     configured.network.host_pool_capacity = 1000;
-
+#ifdef BITPRIM_CURRENCY_BCH
+    // Expose full node (1) services by default.
+    configured.network.services = serve::node_network;
+#else
     // Expose full node (1) and witness (8) network services by default.
     configured.network.services = serve::node_network | serve::node_witness;
+#endif
 }
 
 options_metadata parser::load_options()
@@ -212,12 +216,12 @@ options_metadata parser::load_settings()
     (
         "network.services",
         value<uint64_t>(&configured.network.services),
-        "The services exposed by network connections, defaults to 9 (full node, witness)."
+        "The services exposed by network connections, defaults to 9 BTC (full node, witness). and 1 (full node BCH)"
     )
     (
         "network.invalid_services",
         value<uint64_t>(&configured.network.invalid_services),
-        "The advertised services that cause a peer to be dropped, defaults to 176."
+        "The advertised services that cause a peer to be dropped, defaults to 176 (BTC) and 0 (BCH)."
     )
     (
         "network.validate_checksum",

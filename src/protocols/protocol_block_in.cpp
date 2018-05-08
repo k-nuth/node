@@ -46,7 +46,11 @@ using namespace std::placeholders;
 
 inline bool is_witness(uint64_t services)
 {
+#ifdef BITPRIM_CURRENCY_BCH
+    return false;
+#else
     return (services & version::service::node_witness) != 0;
+#endif
 }
 
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
