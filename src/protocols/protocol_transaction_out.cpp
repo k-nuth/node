@@ -291,7 +291,16 @@ bool protocol_transaction_out::handle_transaction_pool(const code& ec,
     if (message->fees() < minimum_peer_fee_)
         return true;
 
-    static const auto id = inventory::type_id::transaction;
+    inventory::type_id id;
+#ifdef BITPRIM_CURRENCY_BCH
+    id = inventory::type_id::transaction;
+#else
+    if (message->is_segregated()){
+        id = inventory::type_id::witness_transaction;
+    } else {
+        id = inventory::type_id::transaction;
+    }
+#endif
     const inventory announce{ { id, message->hash() } };
     SEND2(announce, handle_send, _1, announce.command);
 

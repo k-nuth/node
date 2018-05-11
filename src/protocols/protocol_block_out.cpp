@@ -532,6 +532,9 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
             if (block->validation.originator != nonce())
                 announce.inventories().push_back(
                     { inventory::type_id::block, block->header().hash() });
+        // TODO: witness for BTC and LTC should send the type as witness
+        //// block->is_segregated() ? inventory::type_id::witness_block : inventory::type_id::block
+
 
         if (!announce.inventories().empty())
         {
