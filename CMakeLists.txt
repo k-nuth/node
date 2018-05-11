@@ -399,10 +399,10 @@ if (WITH_TESTS)
   _add_tests(bitprim_node_test
           configuration_tests
           node_tests
-          header_queue_tests
+          #header_queue_tests
           performance_tests
-          reservation_tests
-          reservations_tests
+          #reservation_tests
+          #reservations_tests
           settings_tests)
 endif()
 
