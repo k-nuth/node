@@ -114,16 +114,22 @@ void protocol_block_in::start()
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     if (compact_from_peer_)
     {
+#ifdef BITPRIM_CURRENCY_BCH
+        uint64_t compact_version = 1;
+#else
+        uint64_t compact_version = 2;
+#endif
+
         if (chain_.is_stale()) {
         
             //forze low bandwidth    
             LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
-            SEND2((send_compact{false, 1}), handle_send, _1, send_compact::command);
+            SEND2((send_compact{false, compact_version}), handle_send, _1, send_compact::command);
         }
         else {
             
             LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
-            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, 1}), handle_send, _1, send_compact::command);
+            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, compact_version}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
         } 
     }
@@ -287,10 +293,15 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     if (compact_from_peer_) {
         
         if (node_.node_settings().compact_blocks_high_bandwidth) {
+#ifdef BITPRIM_CURRENCY_BCH
+            uint64_t compact_version = 1;
+#else
+            uint64_t compact_version = 2;
+#endif
             
             if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
                 LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
-                SEND2((send_compact{true, 1}), handle_send, _1, send_compact::command);
+                SEND2((send_compact{true, compact_version}), handle_send, _1, send_compact::command);
                 compact_blocks_high_bandwidth_set_ = true;
             }
         }

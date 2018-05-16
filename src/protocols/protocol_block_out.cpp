@@ -62,8 +62,11 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
     // TODO: move send_compact to a derived class protocol_block_out_70014.
     compact_to_peer_(false),
     compact_high_bandwidth_(true),
-    compact_version_(1),
-
+#ifdef BITPRIM_CURRENCY_BCH
+        compact_version_(1),
+#else
+        compact_version_(2),
+#endif
     // TODO: move send_headers to a derived class protocol_block_out_70012.
     headers_to_peer_(false),
 
