@@ -546,7 +546,7 @@ options_metadata parser::load_settings()
         /* Internally this is network, but it is conceptually a node setting. */
         "node.relay_transactions",
         value<bool>(&configured.network.relay_transactions),
-        "Request that peers relay transactions, defaults to false."
+        "Request that peers relay transactions, defaults to true."
     )
     (
         "node.refresh_transactions",
@@ -574,8 +574,12 @@ options_metadata parser::load_settings()
         "node.rpc_allow_ip",
         value<std::vector<std::string>>(&configured.node.rpc_allow_ip),
         "RPC allowed ip defaults to 127.0.0.1."
+    )
+    (
+        "node.compact_blocks_high_bandwidth",
+        value<bool>(&configured.node.compact_blocks_high_bandwidth),
+        "Compact Blocks High-Bandwidth mode, default to true."
     );
-
 
     return description;
 }

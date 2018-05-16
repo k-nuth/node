@@ -32,7 +32,8 @@ settings::settings()
     refresh_transactions(true),
     rpc_port(8332),
     testnet(false),
-    subscriber_port(5556)
+    subscriber_port(5556),
+    compact_blocks_high_bandwidth(true)
 {
     rpc_allow_ip.push_back("127.0.0.1");
 }

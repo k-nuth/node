@@ -29,6 +29,7 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/full_node.hpp>
+#include <bitcoin/bitcoin/math/sip_hash.hpp>
 
 namespace libbitcoin {
 namespace node {
@@ -60,6 +61,8 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
 
     // TODO: move send_compact to a derived class protocol_block_out_70014.
     compact_to_peer_(false),
+    compact_high_bandwidth_(true),
+    compact_version_(1),
 
     // TODO: move send_headers to a derived class protocol_block_out_70012.
     headers_to_peer_(false),
@@ -97,6 +100,8 @@ void protocol_block_out::start()
     SUBSCRIBE2(get_blocks, handle_receive_get_blocks, _1, _2);
     SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
 
+    SUBSCRIBE2(get_block_transactions, handle_receive_get_block_transactions, _1, _2);
+
     // Subscribe to block acceptance notifications (the block-out heartbeat).
     chain_.subscribe_blockchain(BIND4(handle_reorganized, _1, _2, _3, _4));
 }
@@ -111,8 +116,9 @@ bool protocol_block_out::handle_receive_send_compact(const code& ec,
     if (stopped(ec))
         return false;
 
-    // Block annoucements will be headers messages instead of inventory.
     compact_to_peer_ = true;
+    compact_high_bandwidth_ = message->high_bandwidth_mode();
+    compact_version_ = message->version();
     return false;
 }
 
@@ -195,6 +201,71 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     last_locator_top_.store(message->elements().front().hash());
 }
 
+bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, get_block_transactions_const_ptr message) {
+#ifdef BITPRIM_CURRENCY_BCH
+    bool witness = false;
+#else
+    bool witness = true;
+#endif
+    if (stopped(ec))
+        return false;
+
+    auto block_hash = message->block_hash();
+
+    chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
+            
+        if (ec == error::success) {
+                    
+            auto indexes = message->indexes();
+
+            //TODO(Mario)
+            /*if (it->second->nHeight < chainActive.Height() - MAX_BLOCKTXN_DEPTH) {
+                // If an older block is requested (should never happen in practice,
+                // but can happen in tests) send a block response instead of a
+                // blocktxn response. Sending a full block response instead of a
+                // small blocktxn response is preferable in the case where a peer
+                // might maliciously send lots of getblocktxn requests to trigger
+                // expensive disk reads, because it will require the peer to
+                // actually receive all the data read from disk over the network.
+            }*/
+      
+            uint16_t offset = 0;
+            for (size_t j = 0; j < indexes.size(); j++) {
+                if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
+                    LOG_WARNING(LOG_NODE)
+                        << "Compact Blocks index offset is invalid"
+                        << " from [" << authority() << "]";
+                    stop(error::channel_stopped);
+                    return;
+                }
+                    
+                indexes[j] = indexes[j] + offset;
+                offset = indexes[j] + 1;
+            }
+            
+            chain::transaction::list txs_list(indexes.size());
+
+            for (size_t i = 0; i < indexes.size(); i++) {
+                
+                if (indexes[i] >= block->transactions().size()) {
+                   LOG_WARNING(LOG_NODE)
+                        << "Compact Blocks index is greater than transactions size"
+                        << " from [" << authority() << "]";
+                    stop(error::channel_stopped);
+                    return;
+                }
+                txs_list[i] = block->transactions()[indexes[i]];
+            }
+
+            block_transactions response(message->block_hash(),txs_list);
+            SEND2(response, handle_send, _1, block_transactions::command);
+        } 
+    });
+    
+    return true;
+}
+
+
 // Receive get_blocks sequence.
 //-----------------------------------------------------------------------------
 
@@ -262,6 +333,8 @@ void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
     // Save the locator top to limit an overlapping future request.
     last_locator_top_.store(message->inventories().front().hash());
 }
+
+
 
 // Receive get_data sequence.
 //-----------------------------------------------------------------------------
@@ -415,7 +488,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-// TODO: move merkle_block to derived class protocol_block_out_70014.
+// TODO: move compact_block to derived class protocol_block_out_70014.
 void protocol_block_out::send_compact_block(const code& ec,
     compact_block_const_ptr message, size_t, inventory_ptr inventory)
 {
@@ -425,7 +498,7 @@ void protocol_block_out::send_compact_block(const code& ec,
     if (ec == error::not_found)
     {
         LOG_DEBUG(LOG_NODE)
-            << "Merkle block requested by [" << authority() << "] not found.";
+            << "Compact block requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
         BITCOIN_ASSERT(!inventory->inventories().empty());
@@ -438,7 +511,7 @@ void protocol_block_out::send_compact_block(const code& ec,
     if (ec)
     {
         LOG_ERROR(LOG_NODE)
-            << "Internal failure locating merkle block requested by ["
+            << "Internal failure locating compact block requested by ["
             << authority() << "] " << ec.message();
         stop(ec);
         return;
@@ -488,16 +561,14 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         return true;
 
     // TODO: consider always sending the last block as compact if enabled.
-    if (false && compact_to_peer_ && incoming->size() == 1)
+    if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1)
     {
         // TODO: move compact_block to a derived class protocol_block_in_70014.
         const auto block = incoming->front();
 
         if (block->validation.originator != nonce())
         {
-            // TODO: construct a compact block from a block and a nonce.
-            ////compact_block announce(block, pseudo_random(1, max_uint64));
-            compact_block announce{ block->header(), 42, {}, {} };
+            compact_block announce = compact_block::factory_from_block(*block);  
             SEND2(announce, handle_send, _1, announce.command);
         }
 
@@ -515,7 +586,6 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (!announce.elements().empty())
         {
             SEND2(announce, handle_send, _1, announce.command);
-
             ////const auto hash = announce.elements().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block header [" << encode_hash(hash)
@@ -539,7 +609,6 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (!announce.inventories().empty())
         {
             SEND2(announce, handle_send, _1, announce.command);
-
             ////const auto hash = announce.inventories().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block inventory [" << encode_hash(hash)
