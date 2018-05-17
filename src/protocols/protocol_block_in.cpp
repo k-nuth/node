@@ -315,9 +315,15 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // Enqueue the block inventory behind the preceding block inventory.
-    for (const auto& inventory: message->inventories())
-        if (inventory.type() == inventory::type_id::block)
+    for (const auto& inventory: message->inventories()){
+        if (inventory.type() == inventory::type_id::block) {
             backlog_.push(inventory.hash());
+        } else if (inventory.type() == inventory::type_id::witness_block) {
+            backlog_.push(inventory.hash());
+        } else if (inventory.type() == inventory::type_id::compact_block) {
+            backlog_.push(inventory.hash());
+        }
+    }
 
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
