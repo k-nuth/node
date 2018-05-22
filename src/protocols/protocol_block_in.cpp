@@ -232,8 +232,12 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
         /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_headers (block) ["
             << authority() << "] ";*/
-
-        message->to_inventory(response->inventories(), inventory::type_id::block);
+#ifdef BITPRIM_CURRENCY_BCH
+    message->to_inventory(response->inventories(), inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->to_inventory(response->inventories(), inventory::type_id::witness_block);
+#endif
     }
    
     // Remove hashes of blocks that we already have.
@@ -263,8 +267,12 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
           /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_inventory (block) ["
             << authority() << "] ";*/
-
-        message->reduce(response->inventories(), inventory::type_id::block);
+#ifdef BITPRIM_CURRENCY_BCH
+    message->reduce(response->inventories(), inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->reduce(response->inventories(), inventory::type_id::witness_block);
+#endif
     }
     
     // Remove hashes of blocks that we already have.
@@ -360,7 +368,12 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     }
 
     hash_list hashes;
+#ifdef BITPRIM_CURRENCY_BCH
     message->to_hashes(hashes, inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->to_hashes(hashes, inventory::type_id::witness_block);
+#endif
 
     for (const auto& hash: hashes)
     {
@@ -466,7 +479,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
     auto temp_compact_block_ = it->second;
 
     auto const& vtx_missing = message->transactions();
-    
+
     auto& txn_available = temp_compact_block_.transactions;
     auto const& header_temp = temp_compact_block_.header;
 
@@ -582,7 +595,12 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
         } 
         return true;
-    } 
+    }
+    //  else {
+    //     LOG_INFO(LOG_NODE)
+    //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
+    //         << " [" << authority() << "]";
+    // }
    
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
@@ -716,8 +734,14 @@ void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_d
 
     hash_list hashes;
     hashes.push_back(hash);
-             
-    const auto request = std::make_shared<get_data>(hashes, inventory::type_id::block);
+
+    get_data_ptr request;
+#ifdef BITPRIM_CURRENCY_BCH
+    request = std::make_shared<get_data>(hashes, inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    request = std::make_shared<get_data>(hashes, inventory::type_id::witness_block);
+#endif
 
     send_get_data(ec,request);
 }

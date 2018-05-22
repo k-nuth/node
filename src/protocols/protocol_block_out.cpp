@@ -602,11 +602,23 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         inventory announce;
 
         for (const auto block: *incoming)
-            if (block->validation.originator != nonce())
+            if (block->validation.originator != nonce()) {
+#ifdef BITPRIM_CURRENCY_BCH
                 announce.inventories().push_back(
                     { inventory::type_id::block, block->header().hash() });
-        // TODO: witness for BTC and LTC should send the type as witness
+#else
+        // TODO: the witness flag should only be set if the block is segregated?
         //// block->is_segregated() ? inventory::type_id::witness_block : inventory::type_id::block
+                if (enable_witness_){
+                    announce.inventories().push_back(
+                            { inventory::type_id::witness_block, block->header().hash() });
+                } else {
+                    announce.inventories().push_back(
+                            { inventory::type_id::block, block->header().hash() });
+                }
+#endif
+            }
+
 
 
         if (!announce.inventories().empty())
