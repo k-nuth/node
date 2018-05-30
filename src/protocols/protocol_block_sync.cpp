@@ -106,6 +106,10 @@ bool protocol_block_sync::handle_receive_block(const code& ec,
     if (stopped(ec))
         return false;
 
+    LOG_INFO(LOG_NODE)
+            << "protocol_block_sync::handle_receive_block ***********************************************************";
+
+
     // Add the block to the blockchain store.
     reservation_->import(message);
 

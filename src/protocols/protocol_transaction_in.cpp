@@ -125,7 +125,12 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     const auto response = std::make_shared<get_data>();
 
     // Copy the transaction inventories into a get_data instance.
+#ifdef BITPRIM_CURRENCY_BCH
     message->reduce(response->inventories(), inventory::type_id::transaction);
+#else    
+    // Witness: only request/accept witness txns for complete validation
+    message->reduce(response->inventories(), inventory::type_id::witness_transaction);
+#endif    
 
     // TODO: move relay to a derived class protocol_transaction_in_70001.
     // Prior to this level transaction relay is not configurable.
@@ -258,7 +263,13 @@ void protocol_transaction_in::handle_store_transaction(const code& ec,
 void protocol_transaction_in::send_get_transactions(
     transaction_const_ptr message)
 {
-    static const auto type = inventory::type_id::transaction;
+#ifdef BITPRIM_CURRENCY_BCH
+    inventory::type_id type = inventory::type_id::transaction;
+#else    
+    // Witness: only request/accept witness txns for complete validation
+    inventory::type_id type = inventory::type_id::witness_transaction;
+#endif    
+
     auto missing = message->missing_previous_transactions();
 
     if (missing.empty())
