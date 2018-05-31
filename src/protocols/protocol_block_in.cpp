@@ -44,6 +44,15 @@ using namespace bc::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
+inline bool is_witness(uint64_t services)
+{
+#ifdef BITPRIM_CURRENCY_BCH
+    return false;
+#else
+    return (services & version::service::node_witness) != 0;
+#endif
+}
+
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     safe_chain& chain)
   : protocol_timer(node, channel, false, NAME),
@@ -54,10 +63,19 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     headers_from_peer_(negotiated_version() >= version::level::bip130),
 
+    // TODO: move send_compact to a derived class protocol_block_in_70014.
+    compact_from_peer_(negotiated_version() >= version::level::bip152),
+    
+    compact_blocks_high_bandwidth_set_(false),
+
     // This patch is treated as integral to basic block handling.
     blocks_from_peer_(
         negotiated_version() > version::level::no_blocks_end ||
         negotiated_version() < version::level::no_blocks_start),
+
+    // Witness must be requested if possibly enforced.
+    require_witness_(is_witness(node.network_settings().services)),
+    peer_witness_(is_witness(channel->peer_version()->services())),
     CONSTRUCT_TRACK(protocol_block_in)
 {
 }
@@ -70,6 +88,11 @@ void protocol_block_in::start()
     // Use timer to drop slow peers.
     protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
 
+    // Do not process incoming blocks if required witness is unavailable.
+    // The channel will remain active outbound unless node becomes stale.
+    if (require_witness_ && !peer_witness_)
+        return;
+
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
 
@@ -78,11 +101,37 @@ void protocol_block_in::start()
     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
     SUBSCRIBE2(block, handle_receive_block, _1, _2);
 
+    SUBSCRIBE2(compact_block, handle_receive_compact_block, _1, _2);
+    SUBSCRIBE2(block_transactions, handle_receive_block_transactions, _1, _2);
+
     // TODO: move send_headers to a derived class protocol_block_in_70012.
     if (headers_from_peer_)
     {
         // Ask peer to send headers vs. inventory block announcements.
         SEND2(send_headers{}, handle_send, _1, send_headers::command);
+    }
+
+    // TODO: move send_compact to a derived class protocol_block_in_70014.
+    if (compact_from_peer_)
+    {
+#ifdef BITPRIM_CURRENCY_BCH
+        uint64_t compact_version = 1;
+#else
+        uint64_t compact_version = 2;
+#endif
+
+        if (chain_.is_stale()) {
+        
+            //forze low bandwidth    
+            LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
+            SEND2((send_compact{false, compact_version}), handle_send, _1, send_compact::command);
+        }
+        else {
+            
+            LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
+            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, compact_version}), handle_send, _1, send_compact::command);
+            compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
+        } 
     }
 
     send_get_blocks(null_hash);
@@ -170,8 +219,27 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     // There is no benefit to this use of headers, in fact it is suboptimal.
     // In v3 headers will be used to build block tree before getting blocks.
     const auto response = std::make_shared<get_data>();
-    message->to_inventory(response->inventories(), inventory::type_id::block);
 
+    if (compact_from_peer_) {
+
+         /* LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_headers (compactblock) ["
+            << authority() << "] ";*/
+
+        message->to_inventory(response->inventories(), inventory::type_id::compact_block);
+    } else {
+
+        /*LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_headers (block) ["
+            << authority() << "] ";*/
+#ifdef BITPRIM_CURRENCY_BCH
+    message->to_inventory(response->inventories(), inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->to_inventory(response->inventories(), inventory::type_id::witness_block);
+#endif
+    }
+   
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -186,8 +254,27 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
         return false;
 
     const auto response = std::make_shared<get_data>();
-    message->reduce(response->inventories(), inventory::type_id::block);
+    
+    if (compact_from_peer_) {
 
+   /*      LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_inventory (compactblock) ["
+            << authority() << "] ";
+*/
+        message->reduce(response->inventories(), inventory::type_id::compact_block);
+    } else {
+
+          /*LOG_INFO(LOG_NODE)
+            << " protocol_block_in::handle_receive_inventory (block) ["
+            << authority() << "] ";*/
+#ifdef BITPRIM_CURRENCY_BCH
+    message->reduce(response->inventories(), inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->reduce(response->inventories(), inventory::type_id::witness_block);
+#endif
+    }
+    
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -210,6 +297,24 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     if (message->inventories().empty())
         return;
 
+
+    if (compact_from_peer_) {
+        
+        if (node_.node_settings().compact_blocks_high_bandwidth) {
+#ifdef BITPRIM_CURRENCY_BCH
+            uint64_t compact_version = 1;
+#else
+            uint64_t compact_version = 2;
+#endif
+            
+            if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
+                LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
+                SEND2((send_compact{true, compact_version}), handle_send, _1, send_compact::command);
+                compact_blocks_high_bandwidth_set_ = true;
+            }
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex.lock_upgrade();
@@ -218,12 +323,22 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // Enqueue the block inventory behind the preceding block inventory.
-    for (const auto& inventory: message->inventories())
-        if (inventory.type() == inventory::type_id::block)
+    for (const auto& inventory: message->inventories()){
+        if (inventory.type() == inventory::type_id::block) {
             backlog_.push(inventory.hash());
+        } else if (inventory.type() == inventory::type_id::witness_block) {
+            backlog_.push(inventory.hash());
+        } else if (inventory.type() == inventory::type_id::compact_block) {
+            backlog_.push(inventory.hash());
+        }
+    }
 
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
+
+    // Convert requested message types to corresponding witness types.
+    if (require_witness_)
+        message->to_witness();
 
     // There was no backlog so the timer must be started now.
     if (fresh)
@@ -253,7 +368,12 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     }
 
     hash_list hashes;
+#ifdef BITPRIM_CURRENCY_BCH
     message->to_hashes(hashes, inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    message->to_hashes(hashes, inventory::type_id::witness_block);
+#endif
 
     for (const auto& hash: hashes)
     {
@@ -273,6 +393,11 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 
 // Receive block sequence.
 //-----------------------------------------------------------------------------
+
+void protocol_block_in::organize_block(block_const_ptr message) {
+    message->validation.originator = nonce();
+    chain_.organize(message, BIND2(handle_store_block, _1, message));
+}
 
 bool protocol_block_in::handle_receive_block(const code& ec,
     block_const_ptr message)
@@ -312,8 +437,18 @@ bool protocol_block_in::handle_receive_block(const code& ec,
         return false;
     }
 
-    message->validation.originator = nonce();
-    chain_.organize(message, BIND2(handle_store_block, _1, message));
+    if (!require_witness_ && message->is_segregated())
+    {
+        LOG_DEBUG(LOG_NODE)
+            << "Block [" << encode_hash(message->hash())
+            << "] contains unrequested witness from [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
+    }
+
+    // message->validation.originator = nonce();
+    // chain_.organize(message, BIND2(handle_store_block, _1, message));
+    organize_block(message);
 
     // Sending a new request will reset the timer upon inventory->get_data, but
     // we need to time out the lack of response to those requests when stale.
@@ -326,20 +461,305 @@ bool protocol_block_in::handle_receive_block(const code& ec,
     return true;
 }
 
+bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_transactions_const_ptr message)
+{
+    if (stopped(ec))
+        return false;
+      
+    auto it = compact_blocks_map_.find(message->block_hash());
+    if (it == compact_blocks_map_.end()) {
+       
+        LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(message->block_hash())
+            << "] The blocktxn received doesn't match with any temporal compact block [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
+    }
+
+    auto temp_compact_block_ = it->second;
+
+    auto const& vtx_missing = message->transactions();
+
+    auto& txn_available = temp_compact_block_.transactions;
+    auto const& header_temp = temp_compact_block_.header;
+
+    size_t tx_missing_offset = 0;
+
+    for (size_t i = 0; i < txn_available.size(); i++) {
+        
+        if ( ! txn_available[i].is_valid()) {
+            if (vtx_missing.size() <= tx_missing_offset) {
+                
+                LOG_DEBUG(LOG_NODE)
+                    << "Compact Block [" << encode_hash(message->block_hash())
+                    << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+                stop(error::channel_stopped);
+
+                //TODO(Mario) verify if necesary mutual exclusion
+                compact_blocks_map_.erase(it);
+                return false;
+            }
+
+            txn_available[i] = std::move(vtx_missing[tx_missing_offset]);
+            ++tx_missing_offset;
+        } 
+    }
+  
+    if (vtx_missing.size() != tx_missing_offset) {
+       LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(message->block_hash())
+            << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+        stop(error::channel_stopped);
+
+        //TODO(Mario) verify if necesary mutual exclusion
+        compact_blocks_map_.erase(it);
+        return false;
+    }
+
+    auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
+        
+    organize_block(tempblock);
+
+    //TODO(Mario) verify if necesary mutual exclusion
+    compact_blocks_map_.erase(it);
+
+    return true;
+}
+
+void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec, get_headers_ptr message, const hash_digest& stop_hash) {
+    
+    if (stopped(ec))
+        return;
+
+    if (ec)
+    {
+        LOG_ERROR(LOG_NODE)
+        << "Internal failure generating block locator (compact block) for ["
+        << authority() << "] " << ec.message();
+        stop(ec);
+        return;
+    }
+
+    if (message->start_hashes().empty()) {
+        return;
+    }
+    
+    message->set_stop_hash(stop_hash);  
+    SEND2(*message, handle_send, _1, message->command);
+
+
+    LOG_DEBUG(LOG_NODE)
+        << "Sended get header message compact blocks"
+        << authority() << "] ";
+
+}
+
+bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
+    
+    if (stopped(ec)) {
+        return false;
+    }
+
+    //TODO(Mario): purge old compact blocks
+
+    //the header of the compact block is the header of the block
+    auto const& header_temp = message->header();    
+
+    if (!header_temp.is_valid()) {
+        LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The compact block header is invalid [" << authority() << "]";
+        stop(error::channel_stopped);
+        return false;
+    }
+
+    //if the compact block exists in the map, is already in process
+    if (compact_blocks_map_.count(header_temp.hash()) > 0) {
+        return true;
+    }
+
+    //if we haven't the parent block already, send a get_header message
+    // and return
+    if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
+        
+        LOG_DEBUG(LOG_NODE)
+            << "Compact Block parent block not exists [ " << encode_hash(header_temp.previous_block_hash())
+            << " [" << authority() << "]";
+        
+        if ( ! chain_.is_stale() ) {
+            
+            LOG_DEBUG(LOG_NODE)
+            << "The chain isn't stale sending getheaders message [" << authority() << "]";
+            
+            const auto heights = block::locator_heights(node_.top_block().height());
+            chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
+        } 
+        return true;
+    }
+    //  else {
+    //     LOG_INFO(LOG_NODE)
+    //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
+    //         << " [" << authority() << "]";
+    // }
+   
+    //the nonce used to calculate the short id
+    auto const nonce = message->nonce();
+
+    auto const& prefiled_txs = message->transactions();
+    auto const& short_ids = message->short_ids();
+        
+    std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
+    int32_t lastprefilledindex = -1;
+    
+    for (size_t i = 0; i < prefiled_txs.size(); ++i) {
+       
+        if (!prefiled_txs[i].is_valid()) {
+            
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled transaction is invalid [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
+        }
+
+        //encoded = (current_index - prev_index) - 1
+        // current = +1 + prev
+        //       prev            current       
+        lastprefilledindex += prefiled_txs[i].index() + 1;
+
+        
+        if (lastprefilledindex > std::numeric_limits<uint16_t>::max()) {
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
+        }
+          
+        if ((uint32_t)lastprefilledindex > short_ids.size() + i) {
+            // If we are inserting a tx at an index greater than our full list
+            // of shorttxids plus the number of prefilled txn we've inserted,
+            // then we have txn for which we have neither a prefilled txn or a
+            // shorttxid!
+
+            LOG_DEBUG(LOG_NODE)
+            << "Compact Block [" << encode_hash(header_temp.hash())
+            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            stop(error::channel_stopped);
+            return false;
+        }
+
+        txs_available[lastprefilledindex] = prefiled_txs[i].transaction();
+    }
+ 
+    // Calculate map of txids -> positions and check mempool to see what we have
+    // (or don't). Because well-formed cmpctblock messages will have a
+    // (relatively) uniform distribution of short IDs, any highly-uneven
+    // distribution of elements can be safely treated as a READ_STATUS_FAILED.
+    std::unordered_map<uint64_t, uint16_t> shorttxids(short_ids.size());
+    uint16_t index_offset = 0;
+    
+    for (size_t i = 0; i < short_ids.size(); ++i) {
+                
+        while (txs_available[i + index_offset].is_valid()) {
+            ++index_offset;
+        }
+        shorttxids[short_ids[i]] = i + index_offset;
+        // To determine the chance that the number of entries in a bucket
+        // exceeds N, we use the fact that the number of elements in a single
+        // bucket is binomially distributed (with n = the number of shorttxids
+        // S, and p = 1 / the number of buckets), that in the worst case the
+        // number of buckets is equal to S (due to std::unordered_map having a
+        // default load factor of 1.0), and that the chance for any bucket to
+        // exceed N elements is at most buckets * (the chance that any given
+        // bucket is above N elements). Thus: P(max_elements_per_bucket > N) <=
+        // S * (1 - cdf(binomial(n=S,p=1/S), N)). If we assume blocks of up to
+        // 16000, allowing 12 elements per bucket should only fail once per ~1
+        // million block transfers (per peer and connection).
+        
+        if (shorttxids.bucket_size(shorttxids.bucket(short_ids[i])) > 12) {
+            // Duplicate txindexes, the block is now in-flight, so
+            // just request it.
+            
+            LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+            send_get_data_compact_block(ec, header_temp.hash());
+            
+            return true;
+        }
+    }
+   
+    
+    // TODO: in the shortid-collision case, we should instead request both
+    // transactions which collided. Falling back to full-block-request here is
+    // overkill.
+    if (shorttxids.size() != short_ids.size()) {
+        // Short ID collision
+        LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+        send_get_data_compact_block(ec, header_temp.hash());
+        return true;
+    }
+        
+    size_t mempool_count = 0;
+    chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
+
+    std::vector<uint64_t> txs;
+    size_t prev_idx = 0;
+
+    for (size_t i = 0; i < txs_available.size(); ++i) {
+        if ( ! txs_available[i].is_valid()) {
+            //diff_enc = (current_index - prev_index) - 1
+            size_t diff_enc = i - prev_idx - (txs.size() > 0 ? 1 : 0);
+            prev_idx = i;
+            txs.push_back(diff_enc);
+        }
+    }
+
+    if (txs.empty()) {
+
+        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
+        organize_block(tempblock);
+        return true;
+
+    } else {
+       
+        compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
+
+        auto req_tx = get_block_transactions(header_temp.hash(),txs);
+        SEND2(req_tx, handle_send, _1, get_block_transactions::command);
+        return true;
+    } 
+}
+
+void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_digest& hash) {
+
+    hash_list hashes;
+    hashes.push_back(hash);
+
+    get_data_ptr request;
+#ifdef BITPRIM_CURRENCY_BCH
+    request = std::make_shared<get_data>(hashes, inventory::type_id::block);
+#else
+    // Witness: only request/accept witness block to fully validate the txns
+    request = std::make_shared<get_data>(hashes, inventory::type_id::witness_block);
+#endif
+
+    send_get_data(ec,request);
+}
+
 // The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block
 // to be announced to non-originating peers.
-void protocol_block_in::handle_store_block(const code& ec,
-    block_const_ptr message)
-{
-    if (stopped(ec))
+void protocol_block_in::handle_store_block(const code& ec, block_const_ptr message) {
+    if (stopped(ec)) {
         return;
+    }
 
     const auto hash = message->header().hash();
 
     // Ask the peer for blocks from the chain top up to this orphan.
-    if (ec == error::orphan_block)
+    if (ec == error::orphan_block) {
         send_get_blocks(hash);
+    }
 
     const auto encoded = encode_hash(hash);
 
@@ -432,6 +852,9 @@ void protocol_block_in::handle_timeout(const code& ec)
     // an announcement. There is no sense pinging a broken peer, so we either
     // drop the peer after a certain mount of time (above 10 minutes) or rely
     // on other peers to keep us moving and periodically age out connections.
+    // Note that this allows a non-witness peer to hang on indefinately to our
+    // witness-requiring node until the node becomes stale. Allowing this then
+    // depends on requiring witness peers for explicitly outbound connections.
 }
 
 void protocol_block_in::handle_stop(const code&)

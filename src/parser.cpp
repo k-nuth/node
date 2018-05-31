@@ -56,6 +56,7 @@ parser::parser(config::settings context)
     // libbitcoin_node doesn't use history, and history is expensive.
     // configured.database.index_start_height = libbitcoin::max_uint32;
 
+    using serve = message::version::service;
 
 #if WITH_NODE_REQUESTER
     // Default endpoint for blockchain replier.
@@ -72,9 +73,13 @@ parser::parser(config::settings context)
 
     // A node allows 1000 host names by default.
     configured.network.host_pool_capacity = 1000;
-
-    // A node exposes full node (1) network services by default.
-    configured.network.services = message::version::service::node_network;
+#ifdef BITPRIM_CURRENCY_BCH
+    // Expose full node (1) services by default.
+    configured.network.services = serve::node_network;
+#else
+    // Expose full node (1) and witness (8) network services by default.
+    configured.network.services = serve::node_network | serve::node_witness;
+#endif
 }
 
 options_metadata parser::load_options()
@@ -211,12 +216,12 @@ options_metadata parser::load_settings()
     (
         "network.services",
         value<uint64_t>(&configured.network.services),
-        "The services exposed by network connections, defaults to 1 (full node)."
+        "The services exposed by network connections, defaults to 9 BTC (full node, witness). and 1 (full node BCH)"
     )
     (
         "network.invalid_services",
         value<uint64_t>(&configured.network.invalid_services),
-        "The advertised services that cause a peer to be dropped, defaults to 0 (none)."
+        "The advertised services that cause a peer to be dropped, defaults to 176 (BTC) and 0 (BCH)."
     )
     (
         "network.validate_checksum",
@@ -398,6 +403,11 @@ options_metadata parser::load_settings()
         "Allow minimum difficulty blocks, defaults to false."
     )
     (
+        "fork.retarget",
+        value<bool>(&configured.chain.retarget),
+        "Retarget difficulty, defaults to true."
+    )
+    (
         "fork.bip16",
         value<bool>(&configured.chain.bip16),
         "Add pay-to-script-hash processing, defaults to true (soft fork)."
@@ -405,7 +415,7 @@ options_metadata parser::load_settings()
     (
         "fork.bip30",
         value<bool>(&configured.chain.bip30),
-        "Disallow collision of unspent transaction hashes, defaults to true (hard fork)."
+        "Disallow collision of unspent transaction hashes, defaults to true (soft fork)."
     )
     (
         "fork.bip34",
@@ -449,6 +459,21 @@ options_metadata parser::load_settings()
         "fork.bip113",
         value<bool>(&configured.chain.bip113),
         "Use median time past for locktime, defaults to true (soft fork)."
+    )
+    (
+        "fork.bip141",
+        value<bool>(&configured.chain.bip141),
+        "Segregated witness consensus layer, defaults to true (soft fork)."
+    )
+    (
+        "fork.bip143",
+        value<bool>(&configured.chain.bip143),
+        "Version 0 transaction digest, defaults to true (soft fork)."
+    )
+    (
+        "fork.bip147",
+        value<bool>(&configured.chain.bip147),
+        "Prevent dummy value malleability, defaults to true (soft fork)."
     )
 
 #ifdef BITPRIM_CURRENCY_BCH
@@ -521,7 +546,7 @@ options_metadata parser::load_settings()
         /* Internally this is network, but it is conceptually a node setting. */
         "node.relay_transactions",
         value<bool>(&configured.network.relay_transactions),
-        "Request that peers relay transactions, defaults to false."
+        "Request that peers relay transactions, defaults to true."
     )
     (
         "node.refresh_transactions",
@@ -549,8 +574,12 @@ options_metadata parser::load_settings()
         "node.rpc_allow_ip",
         value<std::vector<std::string>>(&configured.node.rpc_allow_ip),
         "RPC allowed ip defaults to 127.0.0.1."
+    )
+    (
+        "node.compact_blocks_high_bandwidth",
+        value<bool>(&configured.node.compact_blocks_high_bandwidth),
+        "Compact Blocks High-Bandwidth mode, default to true."
     );
-
 
     return description;
 }
