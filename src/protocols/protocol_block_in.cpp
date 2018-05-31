@@ -582,7 +582,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
         
-        LOG_INFO(LOG_NODE)
+        LOG_DEBUG(LOG_NODE)
             << "Compact Block parent block not exists [ " << encode_hash(header_temp.previous_block_hash())
             << " [" << authority() << "]";
         
