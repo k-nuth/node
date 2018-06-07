@@ -87,6 +87,9 @@ void protocol_header_sync::send_get_headers(event_handler complete)
         headers_->stop_hash()
     };
 
+    LOG_INFO(LOG_NODE)
+            << "protocol_header_sync::send_get_headers [" << authority() << "]";
+
     SEND2(request, handle_send, _1, request.command);
 }
 
