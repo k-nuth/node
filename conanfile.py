@@ -47,7 +47,10 @@ class BitprimNodeConan(ConanFile):
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
+
     settings = "os", "compiler", "build_type", "arch"
+    # settings = "os", "compiler", "build_type", "arch", "os_build", "arch_build"
+
 
     if conan_version < Version(get_conan_req_version()):
         raise Exception ("Conan version should be greater or equal than %s" % (get_conan_req_version(), ))
@@ -201,6 +204,7 @@ class BitprimNodeConan(ConanFile):
         self.copy("*.dylib*", dst="lib", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
+
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']
