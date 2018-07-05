@@ -30,7 +30,7 @@ class BitprimNodeConan(ConanFile):
     license = "http://www.boost.org/users/license.html"
     url = "https://github.com/bitprim/bitprim-node"
     description = "Bitcoin full node"
-    settings = "os", "compiler", "build_type", "arch""
+    settings = "os", "compiler", "build_type", "arch"
 
     if Version(conan_version) < Version(get_conan_req_version()):
         raise Exception ("Conan version should be greater or equal than %s. Detected: %s." % (get_conan_req_version(), conan_version))
