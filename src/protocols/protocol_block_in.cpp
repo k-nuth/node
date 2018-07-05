@@ -232,12 +232,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
         /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_headers (block) ["
             << authority() << "] ";*/
-#ifdef BITPRIM_CURRENCY_BCH
     message->to_inventory(response->inventories(), inventory::type_id::block);
-#else
-    // Witness: only request/accept witness block to fully validate the txns
-    message->to_inventory(response->inventories(), inventory::type_id::witness_block);
-#endif
     }
    
     // Remove hashes of blocks that we already have.
@@ -267,12 +262,7 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
           /*LOG_INFO(LOG_NODE)
             << " protocol_block_in::handle_receive_inventory (block) ["
             << authority() << "] ";*/
-#ifdef BITPRIM_CURRENCY_BCH
     message->reduce(response->inventories(), inventory::type_id::block);
-#else
-    // Witness: only request/accept witness block to fully validate the txns
-    message->reduce(response->inventories(), inventory::type_id::witness_block);
-#endif
     }
     
     // Remove hashes of blocks that we already have.
@@ -299,14 +289,14 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
 
 
     if (compact_from_peer_) {
-        
+
         if (node_.node_settings().compact_blocks_high_bandwidth) {
 #ifdef BITPRIM_CURRENCY_BCH
             uint64_t compact_version = 1;
 #else
             uint64_t compact_version = 2;
 #endif
-            
+
             if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
                 LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
                 SEND2((send_compact{true, compact_version}), handle_send, _1, send_compact::command);
@@ -325,8 +315,6 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     // Enqueue the block inventory behind the preceding block inventory.
     for (const auto& inventory: message->inventories()){
         if (inventory.type() == inventory::type_id::block) {
-            backlog_.push(inventory.hash());
-        } else if (inventory.type() == inventory::type_id::witness_block) {
             backlog_.push(inventory.hash());
         } else if (inventory.type() == inventory::type_id::compact_block) {
             backlog_.push(inventory.hash());
@@ -368,12 +356,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     }
 
     hash_list hashes;
-#ifdef BITPRIM_CURRENCY_BCH
     message->to_hashes(hashes, inventory::type_id::block);
-#else
-    // Witness: only request/accept witness block to fully validate the txns
-    message->to_hashes(hashes, inventory::type_id::witness_block);
-#endif
 
     for (const auto& hash: hashes)
     {
@@ -736,12 +719,7 @@ void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_d
     hashes.push_back(hash);
 
     get_data_ptr request;
-#ifdef BITPRIM_CURRENCY_BCH
     request = std::make_shared<get_data>(hashes, inventory::type_id::block);
-#else
-    // Witness: only request/accept witness block to fully validate the txns
-    request = std::make_shared<get_data>(hashes, inventory::type_id::witness_block);
-#endif
 
     send_get_data(ec,request);
 }
