@@ -22,7 +22,7 @@ cmake_minimum_required(VERSION 3.4)
 # bitprim-node
 #==============================================================================
 project(bitprim-node
-        VERSION 0.11.0
+        VERSION 0
         LANGUAGES CXX C)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -64,13 +64,15 @@ option(WITH_REMOTE_DATABASE "Compile with remote bitprim-database (aka. bitprim-
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
 
-# Implement --with-litecoin.
-#------------------------------------------------------------------------------
-# option(WITH_LITECOIN "Compile with Litecoin support." OFF)
+
+set(BITPRIM_PROJECT_VERSION "-" CACHE STRING "Specify the Bitprim Project Version.")
+# message(${BITPRIM_PROJECT_VERSION})
 
 
-set(BITPRIM_BUILD_NUMBER "-" CACHE STRING "Specify the Bitprim Build Number.")
-# message(${BITPRIM_BUILD_NUMBER})
+set(MICROARCHITECTURE "x86_64" CACHE STRING "Specify the Cryptocurrency (x86_64|...).")
+message( STATUS "Bitprim: Compiling for ${MICROARCHITECTURE}")
+# add_definitions(-DBITPRIM_MICROARCHITECTURE=${MICROARCHITECTURE})
+# add_definitions(-DBITPRIM_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
 
 
 set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")
@@ -88,11 +90,10 @@ endif()
 message(STATUS "Bitprim: Cryptocurrency: ${CURRENCY}")
 
 
-
-# Conan infrastructure.
+# Conan infrastructure
 #==============================================================================
-if (EXISTS ${CMAKE_SOURCE_DIR}/bitprimbuildinfo.cmake)
-    include(${CMAKE_SOURCE_DIR}/bitprimbuildinfo.cmake)
+if(EXISTS ${CMAKE_SOURCE_DIR}/ci_utils/cmake/bitprimbuildinfo.cmake)
+    include(${CMAKE_SOURCE_DIR}/ci_utils/cmake/bitprimbuildinfo.cmake)
 else()
     message( STATUS "bitprimbuildinfo doent exists")
 endif()
@@ -122,35 +123,30 @@ if (NO_CONAN_AT_ALL)
   endif()
 endif()
 
-
 if (NOT USE_CONAN)
-  # Require bitprim-blockchain of at least version 0.11.0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-blockchain of at least version 0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if(WITH_REMOTE_BLOCKCHAIN)
     if (NOT TARGET bitprim-blockchain-requester)
-      find_package(bitprim-blockchain-requester 0.11.0 REQUIRED)
+      find_package(bitprim-blockchain-requester 0 REQUIRED)
     endif()
   else()
     if (NOT TARGET bitprim-blockchain)
-      find_package(bitprim-blockchain 0.11.0 REQUIRED)
+      find_package(bitprim-blockchain 0 REQUIRED)
     endif()
   endif()
 
   if (NOT TARGET bitprim-blockchain)
-    find_package(bitprim-blockchain 0.11.0 REQUIRED)
+    find_package(bitprim-blockchain 0 REQUIRED)
   endif()
 
-  # Require bitprim-network of at least version 0.11.0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
+  # Require bitprim-network of at least version 0 and output ${bitprim_network_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if (NOT TARGET bitprim-network)
-    find_package(bitprim-network 0.11.0 REQUIRED)
+    find_package(bitprim-network 0 REQUIRED)
   endif()
 endif()
 
-
-# if (WITH_LITECOIN)
-#   add_definitions(-DBITPRIM_LITECOIN)
-# endif()
 
 # Set flags.
 #==============================================================================
@@ -158,7 +154,8 @@ include(CheckCXXCompilerFlag)
 
 # Including common functions
 #------------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/ci_utils/cmake)
+
 include(BitprimTools)
 
 
@@ -216,7 +213,7 @@ _add_cxx_compile_flag(-fvisibility-inlines-hidden _has_visibility_inlines_hidden
 # Target Windows Vista. Enabled in msvc only.
 #------------------------------------------------------------------------------
 if (MSVC) # OR MINGW)
-    add_definitions(-D_WIN32_WINNT=0x0600)
+  add_definitions(-D_WIN32_WINNT=0x0600)
 endif()
 
 # Build
@@ -226,7 +223,7 @@ endif()
 #------------------------------------------------------------------------------
 set(MODE STATIC)
 if (ENABLE_SHARED)
-  set(MODE SHARED)
+    set(MODE SHARED)
 endif()
 
 add_library(bitprim-node ${MODE}
@@ -268,7 +265,7 @@ target_include_directories(bitprim-node PUBLIC
         $<INSTALL_INTERFACE:include>)
 
 
-target_compile_definitions(bitprim-node PUBLIC -DBITPRIM_BUILD_NUMBER="\\"${BITPRIM_BUILD_NUMBER}\\"")
+target_compile_definitions(bitprim-database PUBLIC -DBITPRIM_PROJECT_VERSION="\\"${BITPRIM_PROJECT_VERSION}\\"") #TODO(fernando): manage with Conan????
 
 if (NOT ENABLE_SHARED)
   target_compile_definitions(bitprim-node PUBLIC -DBCN_STATIC -DBCB_STATIC -DBCD_STATIC -DBCT_STATIC -DBC_STATIC)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017 Bitprim developers (see AUTHORS)
+# Copyright (c) 2017-2018 Bitprim Inc.
 #
 # This file is part of Bitprim.
 #
@@ -20,9 +20,14 @@
 branches:
   only:
     - master
+    # - /^v\d+\.\d+\.\d+$/
     - dev
-    - /^v\d+\.\d+\.\d+$/
-    - feature_2018_may_hardfork
+    - /^release-\d+\.\d+\.\d+$/
+    - /^hotfix-\d+\.\d+\.\d+$/
+    - /^feature-ci-.+$/
+    - /^feature_ci_.+$/
+    - /^feature-appveyor-.+$/
+    - /^feature_appveyor_.+$/
 
 build: false
 
@@ -31,35 +36,104 @@ environment:
     PYTHON_VERSION: "2.7.8"
     PYTHON_ARCH: "32"
 
-    matrix:
-        #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-        #  CONAN_VISUAL_VERSIONS: 12
-        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-          CONAN_VISUAL_VERSIONS: 14
-        - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-          CONAN_VISUAL_VERSIONS: 15
-          BITPRIM_RUN_TESTS: true
-          VS150COMNTOOLS: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\"
-          
+# init:
+#   - ps: Write-Host "common init script"
 
+#   - ps: |
+#       if ($Env:APPVEYOR_REPO_BRANCH -ceq "master" -And [string]::IsNullOrEmpty($Env:APPVEYOR_REPO_TAG_NAME)) {
+#         Write-Host "branch is master without tags, exiting"
+#         Exit-AppveyorBuild
+#       }
 
-        # - MINGW_CONFIGURATIONS: "5.4@x86_64@seh@posix" # 5.4@x86_64@sjlj@posix
-        # - MINGW_CONFIGURATIONS: "7.2@x86_64@seh@posix" # 7.2@x86_64@sjlj@posix
-        - MINGW_CONFIGURATIONS: "7@x86_64@seh@posix, 6@x86_64@seh@posix, 5@x86_64@seh@posix, 4.9@x86_64@seh@posix"
+#       Note(fernando): It is implemented natively in Appveyor...
+#       if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -like "*\[skip appveyor\]*") {
+#         Write-Host "[skip appveyor] detected in commit message, exiting"
+#         Exit-AppveyorBuild
+#       }
 
 install:
   - set PATH=%PATH%;%PYTHON%/Scripts/
-
   - pip.exe install conan --upgrade
   # - pip.exe install conan==1.0.0b5   #Fixed Beta version...
-  
   - pip.exe install conan_package_tools
+  - pip.exe install cpuid --upgrade
   - conan user # It creates the conan data directory
 
 test_script:
+  - git submodule init
+  # - git submodule update --remote
+  - git submodule update
   # - git fetch --unshallow
-  # - export BITPRIM_BUILD_NUMBER="$(git describe)"
-  - for /f %%i in ('git describe') do set BITPRIM_BUILD_NUMBER=%%i
-  - echo %BITPRIM_BUILD_NUMBER%
+
+  - ps: |
+      $a = python ci_utils/set_envvars_and_files.py
+      Write-Host $a
+      Invoke-Expression $a
 
   - python build.py
+
+
+for:
+  -
+    environment:
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CONAN_VISUAL_VERSIONS: 15
+      CONAN_VISUAL_RUNTIMES: MT
+      BITPRIM_RUN_TESTS: true
+      VS150COMNTOOLS: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\"
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CONAN_VISUAL_VERSIONS: 15
+      CONAN_VISUAL_RUNTIMES: MD
+      BITPRIM_RUN_TESTS: true
+      VS150COMNTOOLS: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\Common7\\Tools\\"
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CONAN_VISUAL_VERSIONS: 14
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      MINGW_CONFIGURATIONS: "8@x86_64@seh@posix"
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      MINGW_CONFIGURATIONS: "7@x86_64@seh@posix"
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      MINGW_CONFIGURATIONS: "6@x86_64@seh@posix"
+  -
+    branches:
+      only:
+        - /^(release|hotfix).+$/
+    environment:
+      MINGW_CONFIGURATIONS: "5@x86_64@seh@posix"
+  -
+    branches:
+      only:
+        - master
+    test_script:
+      - echo "Stable packages are published in Release branches"
+    install: 
+      - echo "Stable packages are published in Release branches"
+
+
+# MINGW_CONFIGURATIONS: "4.9@x86_64@seh@posix" 
+
+# matrix:
+#   fast_finish: true     # set this flag to immediately finish build once one of the jobs fails.
+
