@@ -164,7 +164,6 @@ private:
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
     const blockchain::settings& chain_settings_;
-    mutable std::mutex gbt_mutex_;
 };
 
 } // namespace node

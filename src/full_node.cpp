@@ -43,7 +43,7 @@ using namespace std::placeholders;
 full_node::full_node(const configuration& configuration)
   : multi_crypto_setter(configuration.network),
     p2p(configuration.network),
-    chain_(thread_pool(), configuration.chain, configuration.database,  gbt_mutex_,
+    chain_(thread_pool(), configuration.chain, configuration.database,
         configuration.network.relay_transactions),
     protocol_maximum_(configuration.network.protocol_maximum),
     chain_settings_(configuration.chain),
