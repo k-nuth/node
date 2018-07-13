@@ -23,11 +23,17 @@ branches:
   # - /^v\d+\.\d+\.\d+$/
   - dev
   - /^release-\d+\.\d+\.\d+$/
+  - /^release_\d+\.\d+\.\d+$/
   - /^hotfix-\d+\.\d+\.\d+$/
+  - /^hotfix_\d+\.\d+\.\d+$/
   - /^feature-ci-.+$/
   - /^feature_ci_.+$/
   - /^feature-travis-.+$/
   - /^feature_travis_.+$/
+
+env:
+   global:
+     - CONAN_STABLE_BRANCH_PATTERN: "master$" #"release/*"
 
 linux: &linux
    os: linux
@@ -74,6 +80,7 @@ script:
 
   - |
     if [[ "${CHECK_FORMATTING}" != "true" ]]; then
+      echo ${CONAN_STABLE_BRANCH_PATTERN}
       cd ${TRAVIS_BUILD_DIR}
       chmod +x ci_utils/.travis/run.sh
       ./ci_utils/.travis/run.sh
@@ -201,17 +208,23 @@ jobs:
     - stage: build and upload binaries
       os: osx
       language: generic
-      osx_image: xcode9
-      env: CONAN_APPLE_CLANG_VERSIONS=9.0 
+      osx_image: xcode9.3
+      env: CONAN_APPLE_CLANG_VERSIONS=9.1
            BITPRIM_RUN_TESTS=true
       if: branch =~ /^(release|hotfix).+$/    #Just releases
+    - stage: build and upload binaries
+      os: osx
+      language: generic
+      osx_image: xcode9.3
+      env: CONAN_APPLE_CLANG_VERSIONS=9.1
+      if: branch =~ /^(feature|dev).*$/    #Just development
 
     - stage: build and upload binaries
       os: osx
       language: generic
-      osx_image: xcode9
-      env: CONAN_APPLE_CLANG_VERSIONS=9.0 
-      if: branch =~ /^(feature|dev).*$/    #Just development
+      osx_image: xcode9        
+      env: CONAN_APPLE_CLANG_VERSIONS=9.0
+      if: branch =~ /^(release|hotfix).+$/    #Just releases
 
     - stage: build and upload binaries
       os: osx
@@ -220,12 +233,12 @@ jobs:
       env: CONAN_APPLE_CLANG_VERSIONS=8.1
       if: branch =~ /^(release|hotfix).+$/    #Just releases
 
-    - stage: build and upload binaries
-      os: osx
-      language: generic
-      osx_image: xcode7.3
-      env: CONAN_APPLE_CLANG_VERSIONS=7.3
-      if: branch =~ /^(release|hotfix).+$/    #Just releases
+    # - stage: build and upload binaries
+    #   os: osx
+    #   language: generic
+    #   osx_image: xcode7.3
+    #   env: CONAN_APPLE_CLANG_VERSIONS=7.3
+    #   if: branch =~ /^(release|hotfix).+$/    #Just releases
 
 # Upload Aliases -----------------------------------------------------
     - stage: upload aliases
