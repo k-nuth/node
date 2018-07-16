@@ -244,6 +244,8 @@ void protocol_transaction_in::handle_store_transaction(const code& ec,
         return;
     }
 
+
+    chain_.add_to_chosen_list(message);
     LOG_DEBUG(LOG_NODE)
         << "Stored transaction [" << encoded << "] from [" << authority()
         << "].";
