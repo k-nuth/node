@@ -325,5 +325,23 @@ void full_node::subscribe_transaction(transaction_handler&& handler)
     chain().subscribe_transaction(std::move(handler));
 }
 
+// Init node utils.
+// ------------------------------------------------------------------------
+chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
+//    bool const testnet = libbitcoin::get_network(metadata_.configured.network.identifier) == libbitcoin::config::settings::testnet;
+
+    bool const testnet_blocks = settings.easy_blocks;
+    bool const retarget = settings.retarget;
+    const auto mainnet = retarget && !testnet_blocks;
+
+    if (!mainnet && !testnet_blocks) {
+        ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
+        return chain::block::genesis_regtest();
+    }
+
+    return testnet_blocks ? chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+
+}
+
 } // namespace node
 } // namespace libbitcoin

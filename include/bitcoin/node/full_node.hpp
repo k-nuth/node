@@ -124,6 +124,11 @@ public:
     /// Subscribe to transaction pool acceptance and stop events.
     virtual void subscribe_transaction(transaction_handler&& handler);
 
+    // Init node utils.
+    // ------------------------------------------------------------------------
+    static chain::block get_genesis_block(blockchain::settings const& settings);
+
+
 protected:
     /// Attach a node::session to the network, caller must start the session.
     template <class Session, typename... Args>
