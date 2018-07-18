@@ -52,6 +52,7 @@ test_script:
   # - git submodule update --remote
   - git submodule update
   # - git fetch --unshallow
+  - git fetch origin master:master
 
   - ps: |
       $a = python ci_utils/set_envvars_and_files.py
