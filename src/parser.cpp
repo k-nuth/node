@@ -318,6 +318,11 @@ options_metadata parser::load_settings()
         value<config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )
+    (
+        "network.use_ipv6",
+        value<bool>(&configured.network.use_ipv6),
+        "Node use ipv6."
+    )
     // (
     //     "network.bitcoin_cash",
     //     value<bool>(&configured.network.bitcoin_cash),
