@@ -41,13 +41,15 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 full_node::full_node(const configuration& configuration)
-  : multi_crypto_setter(configuration.network),
-    p2p(configuration.network),
-    chain_(thread_pool(), configuration.chain, configuration.database,
-        configuration.network.relay_transactions),
-    protocol_maximum_(configuration.network.protocol_maximum),
-    chain_settings_(configuration.chain),
-    node_settings_(configuration.node)
+    : multi_crypto_setter(configuration.network)
+    , p2p(configuration.network)
+    , chain_(thread_pool(), configuration.chain, configuration.database, configuration.network.relay_transactions)
+    , protocol_maximum_(configuration.network.protocol_maximum)
+    , chain_settings_(configuration.chain)
+    , node_settings_(configuration.node)
+#ifdef WITH_KEOKEN
+    , keoken_manager_(chain_, node_settings().keoken_genesis_height)
+#endif
 {}
 
 full_node::~full_node()
@@ -312,6 +314,13 @@ block_chain& full_node::chain_bitprim()
 {
     return chain_;
 }
+
+#ifdef WITH_KEOKEN
+bitprim::keoken::manager& full_node::keoken_manager() {
+    return keoken_manager_;
+}
+#endif
+
 // Subscriptions.
 // ----------------------------------------------------------------------------
 

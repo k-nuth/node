@@ -49,6 +49,10 @@ public:
     //Compact Blocks
     bool compact_blocks_high_bandwidth;
 
+#ifdef WITH_KEOKEN
+    size_t keoken_genesis_height;
+#endif
+
     /// Helpers.
     asio::duration block_latency() const;
 };

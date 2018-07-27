@@ -26,17 +26,48 @@ if __name__ == "__main__":
             else:
                 marchs = ["x86-64"]
 
-            opts_bch = copy.deepcopy(options)
-            opts_btc = copy.deepcopy(options)
-            # opts_ltc = copy.deepcopy(options)
+            # opts_bch = copy.deepcopy(options)
+            # opts_btc = copy.deepcopy(options)
+            # # opts_ltc = copy.deepcopy(options)
 
-            opts_bch["%s:currency" % name] = "BCH"
-            opts_btc["%s:currency" % name] = "BTC"
-            # opts_ltc["%s:currency" % name] = "LTC"
+            # opts_bch["%s:currency" % name] = "BCH"
+            # opts_btc["%s:currency" % name] = "BTC"
+            # # opts_ltc["%s:currency" % name] = "LTC"
 
-            handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch, env_vars, build_requires)
-            handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc, env_vars, build_requires)
-            # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_ltc, env_vars, build_requires)
+            # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch, env_vars, build_requires)
+            # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc, env_vars, build_requires)
+            # # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_ltc, env_vars, build_requires)
+
+            ci_currency = os.getenv('BITPRIM_CI_CURRENCY', None)
+            if ci_currency is None:
+                opts_bch_keoken = copy.deepcopy(options)
+                opts_bch_no_keoken = copy.deepcopy(options)
+                opts_btc = copy.deepcopy(options)
+                # opts_ltc = copy.deepcopy(options)
+
+                opts_bch_keoken["%s:currency" % name] = "BCH"
+                opts_bch_keoken["%s:keoken" % name] = True
+                opts_bch_no_keoken["%s:currency" % name] = "BCH"
+                opts_bch_no_keoken["%s:keoken" % name] = False
+
+                opts_btc["%s:currency" % name] = "BTC"
+                # opts_ltc["%s:currency" % name] = "LTC"
+
+                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_keoken, env_vars, build_requires)
+                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_no_keoken, env_vars, build_requires)
+                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc, env_vars, build_requires)
+                # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_ltc, env_vars, build_requires)
+            else:
+                options["%s:currency" % name] = ci_currency
+                if ci_currency == "BCH":
+                    options_keoken = copy.deepcopy(options)
+                    options_keoken["%s:keoken" % name] = True
+                    handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, options_keoken, env_vars, build_requires)
+
+                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, options, env_vars, build_requires)
+
+
+
             filter_marchs_tests(name, filtered_builds, ["%s:with_tests" % name])
 
 

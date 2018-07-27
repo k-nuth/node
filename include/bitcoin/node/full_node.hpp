@@ -30,6 +30,10 @@
 #include <bitcoin/node/sessions/session_header_sync.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
 
+#ifdef WITH_KEOKEN
+#include <bitprim/keoken/manager.hpp>
+#endif
+
 namespace libbitcoin {
 namespace node {
 
@@ -115,6 +119,10 @@ public:
     //TODO: remove this function and use safe_chain in the rpc lib
     virtual blockchain::block_chain& chain_bitprim();
 
+#ifdef WITH_KEOKEN
+    bitprim::keoken::manager& keoken_manager();
+#endif
+
     // Subscriptions.
     // ------------------------------------------------------------------------
 
@@ -169,6 +177,10 @@ private:
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
     const blockchain::settings& chain_settings_;
+
+#ifdef WITH_KEOKEN
+    bitprim::keoken::manager keoken_manager_;
+#endif
 };
 
 } // namespace node

@@ -75,6 +75,21 @@ message( STATUS "Bitprim: Compiling for ${MICROARCHITECTURE}")
 # add_definitions(-DBITPRIM_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
 
 
+# Implement --with-keoken and declare WITH_KEOKEN.
+#------------------------------------------------------------------------------
+option(WITH_KEOKEN "Keoken enabled." OFF)
+if (WITH_KEOKEN)
+  message(STATUS "Bitprim: Keoken enabled")
+  add_definitions(-DWITH_KEOKEN)
+endif()
+
+option(JUST_BITPRIM_SOURCES "Just Bitprim source code to be linted." OFF)
+if (JUST_BITPRIM_SOURCES)
+  message(STATUS "Bitprim: Just Bitprim source code to be linted: enabled")
+endif()
+
+
+
 set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")
 
 if (${CURRENCY} STREQUAL "BCH")
@@ -223,36 +238,56 @@ endif()
 #------------------------------------------------------------------------------
 set(MODE STATIC)
 if (ENABLE_SHARED)
-    set(MODE SHARED)
+  set(MODE SHARED)
 endif()
 
-add_library(bitprim-node ${MODE}
-        src/configuration.cpp
-        src/full_node.cpp
-        src/parser.cpp
-        src/settings.cpp
-        src/version.cpp
+set(bitprim_node_sources_just_libbitcoin
+  src/configuration.cpp
+  src/full_node.cpp
+  src/parser.cpp
+  src/settings.cpp
+  src/version.cpp
 
-        src/protocols/protocol_block_in.cpp
-        src/protocols/protocol_block_out.cpp
-        src/protocols/protocol_block_sync.cpp
-        src/protocols/protocol_header_sync.cpp
-        src/protocols/protocol_transaction_in.cpp
-        src/protocols/protocol_transaction_out.cpp
+  src/protocols/protocol_block_in.cpp
+  src/protocols/protocol_block_out.cpp
+  src/protocols/protocol_block_sync.cpp
+  src/protocols/protocol_header_sync.cpp
+  src/protocols/protocol_transaction_in.cpp
+  src/protocols/protocol_transaction_out.cpp
 
-        src/sessions/session_block_sync.cpp
-        src/sessions/session_header_sync.cpp
-        src/sessions/session_inbound.cpp
-        src/sessions/session_manual.cpp
-        src/sessions/session_outbound.cpp
+  src/sessions/session_block_sync.cpp
+  src/sessions/session_header_sync.cpp
+  src/sessions/session_inbound.cpp
+  src/sessions/session_manual.cpp
+  src/sessions/session_outbound.cpp
 
-
-        src/utility/check_list.cpp
-        src/utility/header_list.cpp
-        src/utility/performance.cpp
-        src/utility/reservation.cpp
-        src/utility/reservations.cpp
+  src/utility/check_list.cpp
+  src/utility/header_list.cpp
+  src/utility/performance.cpp
+  src/utility/reservation.cpp
+  src/utility/reservations.cpp
 )
+
+if (WITH_KEOKEN)
+  set(bitprim_node_sources_just_bitprim 
+    ${bitprim_node_sources_just_bitprim}         
+    src/bitprim/keoken/manager.cpp
+  )
+endif()
+
+if (NOT JUST_BITPRIM_SOURCES)
+  set(bitprim_node_sources 
+    ${bitprim_node_sources_just_libbitcoin}         
+  )
+endif()
+
+set(bitprim_node_sources 
+  ${bitprim_node_sources}   
+  ${bitprim_node_sources_just_bitprim}         
+)
+
+add_library(bitprim-node ${MODE} ${bitprim_node_sources})
+
 
 
 if (ENABLE_POSITION_INDEPENDENT_CODE) 

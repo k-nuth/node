@@ -26,21 +26,24 @@ namespace node {
 using namespace bc::asio;
 
 settings::settings()
-  : sync_peers(0),
-    sync_timeout_seconds(5),
-    block_latency_seconds(60),
-    refresh_transactions(true),
-    rpc_port(8332),
-    testnet(false),
-    subscriber_port(5556),
-    compact_blocks_high_bandwidth(true)
+    : sync_peers(0)
+    , sync_timeout_seconds(5)
+    , block_latency_seconds(60)
+    , refresh_transactions(true)
+    , rpc_port(8332)
+    , testnet(false)
+    , subscriber_port(5556)
+    , compact_blocks_high_bandwidth(true)
+#ifdef WITH_KEOKEN
+    , keoken_genesis_height(libbitcoin::max_size_t)
+#endif
 {
     rpc_allow_ip.push_back("127.0.0.1");
 }
 
 // There are no current distinctions spanning chain contexts.
 settings::settings(config::settings context)
-  : settings()
+    : settings()
 {
 }
 
