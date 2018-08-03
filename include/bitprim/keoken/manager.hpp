@@ -61,7 +61,7 @@ private:
     size_t keoken_genesis_height_;
     state state_;
     bc::blockchain::block_chain& chain_;
-    interpreter<libbitcoin::blockchain::block_chain> interpreter_;
+    interpreter<state, libbitcoin::blockchain::block_chain> interpreter_;
     bool initialized_;
     size_t processed_height_;
 };

@@ -35,7 +35,7 @@ manager::manager(bc::blockchain::block_chain& chain, size_t keoken_genesis_heigh
     : keoken_genesis_height_(keoken_genesis_height)
     , state_(asset_id_initial)
     , chain_(chain)
-    , interpreter_(chain_, state_)
+    , interpreter_(state_, chain_)
     , initialized_(false)
     , processed_height_(keoken_genesis_height - 1)
 {}
