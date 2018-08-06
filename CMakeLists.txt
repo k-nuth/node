@@ -271,7 +271,7 @@ set(bitprim_node_sources_just_libbitcoin
 if (WITH_KEOKEN)
   set(bitprim_node_sources_just_bitprim 
     ${bitprim_node_sources_just_bitprim}         
-    src/bitprim/keoken/manager.cpp
+    # src/bitprim/keoken/manager.cpp
   )
 endif()
 
