@@ -90,8 +90,9 @@ void protocol_block_in::start()
 
     // Do not process incoming blocks if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
-    if (require_witness_ && !peer_witness_)
+    if (require_witness_ && !peer_witness_) {
         return;
+    }
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -105,15 +106,13 @@ void protocol_block_in::start()
     SUBSCRIBE2(block_transactions, handle_receive_block_transactions, _1, _2);
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
-    if (headers_from_peer_)
-    {
+    if (headers_from_peer_) {
         // Ask peer to send headers vs. inventory block announcements.
         SEND2(send_headers{}, handle_send, _1, send_headers::command);
     }
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
-    if (compact_from_peer_)
-    {
+    if (compact_from_peer_) {
 #ifdef BITPRIM_CURRENCY_BCH
         uint64_t compact_version = 1;
 #else
@@ -121,14 +120,11 @@ void protocol_block_in::start()
 #endif
 
         if (chain_.is_stale()) {
-        
             //forze low bandwidth    
-            LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
+            LOG_DEBUG(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
             SEND2((send_compact{false, compact_version}), handle_send, _1, send_compact::command);
-        }
-        else {
-            
-            LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
+        } else {
+            LOG_DEBUG(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
             SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, compact_version}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
         } 
