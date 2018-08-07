@@ -327,7 +327,11 @@ void reservation::import(block_const_ptr block)
     bool success;
     const auto importer = [this, &block, &height, &success]()
     {
+#ifndef BITPRIM_READ_ONLY        
         success = reservations_.import(block, height);
+#else    
+        success = true;
+#endif // BITPRIM_READ_ONLY    
     };
 
     // Do the block import with timer.

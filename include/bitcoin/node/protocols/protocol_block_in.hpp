@@ -77,7 +77,9 @@ private:
     void handle_timeout(const code& ec);
     void handle_stop(const code& ec);
 
+#ifndef BITPRIM_READ_ONLY
     void organize_block(block_const_ptr message);
+#endif // BITPRIM_READ_ONLY
 
     // These are thread safe.
     full_node& node_;

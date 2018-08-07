@@ -377,10 +377,12 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
 // Receive block sequence.
 //-----------------------------------------------------------------------------
 
+#ifndef BITPRIM_READ_ONLY
 void protocol_block_in::organize_block(block_const_ptr message) {
     message->validation.originator = nonce();
     chain_.organize(message, BIND2(handle_store_block, _1, message));
 }
+#endif // BITPRIM_READ_ONLY
 
 bool protocol_block_in::handle_receive_block(const code& ec,
     block_const_ptr message)
@@ -429,9 +431,9 @@ bool protocol_block_in::handle_receive_block(const code& ec,
         return false;
     }
 
-    // message->validation.originator = nonce();
-    // chain_.organize(message, BIND2(handle_store_block, _1, message));
+#ifndef BITPRIM_READ_ONLY
     organize_block(message);
+#endif // BITPRIM_READ_ONLY
 
     // Sending a new request will reset the timer upon inventory->get_data, but
     // we need to time out the lack of response to those requests when stale.
@@ -501,7 +503,9 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
 
     auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
         
+#ifndef BITPRIM_READ_ONLY        
     organize_block(tempblock);
+#endif // BITPRIM_READ_ONLY
 
     //TODO(Mario) verify if necesary mutual exclusion
     compact_blocks_map_.erase(it);
@@ -698,15 +702,13 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-
         auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
+#ifndef BITPRIM_READ_ONLY        
         organize_block(tempblock);
+#endif // BITPRIM_READ_ONLY        
         return true;
-
     } else {
-       
         compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
-
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
         return true;

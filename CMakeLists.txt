@@ -89,9 +89,18 @@ if (JUST_BITPRIM_SOURCES)
 endif()
 
 
+# Implement --read-only and declare READ_ONLY.
+#------------------------------------------------------------------------------
+option(READ_ONLY "Read-only blockchain." OFF)
+if (READ_ONLY)
+  message(STATUS "Bitprim: Read-only blockchain")
+  add_definitions(-DBITPRIM_READ_ONLY)
+else()
+  message(STATUS "Bitprim: Writable blockchain")
+endif()
+
 
 set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")
-
 if (${CURRENCY} STREQUAL "BCH")
   add_definitions(-DBITPRIM_CURRENCY_BCH)
 elseif (${CURRENCY} STREQUAL "BTC")

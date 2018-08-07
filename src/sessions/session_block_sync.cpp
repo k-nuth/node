@@ -84,6 +84,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         return;
     }
 
+#ifndef BITPRIM_READ_ONLY
     if (!reservations_.start())
     {
         LOG_DEBUG(LOG_NODE)
@@ -91,6 +92,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         handler(error::operation_failed);
         return;
     }
+#endif // BITPRIM_READ_ONLY
 
     const auto complete = synchronize<result_handler>(
         BIND2(handle_complete, _1, handler), table.size(), NAME);
@@ -222,8 +224,12 @@ void session_block_sync::handle_channel_stop(const code& ec,
 void session_block_sync::handle_complete(const code& ec,
     result_handler handler)
 {
+#ifndef BITPRIM_READ_ONLY
     // Always stop but give sync priority over stop for reporting.
     const auto stop = reservations_.stop();
+#else
+    bool const stop = true;
+#endif // BITPRIM_READ_ONLY
 
     if (ec)
     {

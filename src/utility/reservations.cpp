@@ -47,6 +47,7 @@ reservations::reservations(check_list& hashes, fast_chain& chain,
     initialize(std::min(settings.sync_peers, 3u));
 }
 
+#ifndef BITPRIM_READ_ONLY
 bool reservations::start()
 {
     return chain_.begin_insert();
@@ -63,6 +64,7 @@ bool reservations::stop()
 {
     return chain_.end_insert();
 }
+#endif // BITPRIM_READ_ONLY
 
 // Rate methods.
 //-----------------------------------------------------------------------------

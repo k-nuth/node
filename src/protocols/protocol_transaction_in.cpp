@@ -205,8 +205,10 @@ bool protocol_transaction_in::handle_receive_transaction(const code& ec,
     if (chain_.is_stale())
         return true;
 
+#ifndef BITPRIM_READ_ONLY
     message->validation.originator = nonce();
     chain_.organize(message, BIND2(handle_store_transaction, _1, message));
+#endif
     return true;
 }
 

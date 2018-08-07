@@ -51,11 +51,13 @@ public:
     reservations(check_list& hashes, blockchain::fast_chain& chain,
         const settings& settings);
 
+#ifndef BITPRIM_READ_ONLY
     /// Set the flush lock guard.
     bool start();
 
     /// Clear the flush lock guard.
     bool stop();
+#endif // BITPRIM_READ_ONLY
 
     /// The average and standard deviation of block import rates.
     rate_statistics rates() const;
@@ -63,8 +65,9 @@ public:
     /// Return a copy of the reservation table.
     reservation::list table() const;
 
-    /// Import the given block to the blockchain at the specified height.
+#ifndef BITPRIM_READ_ONLY    /// Import the given block to the blockchain at the specified height.
     bool import(block_const_ptr block, size_t height);
+#endif // BITPRIM_READ_ONLY
 
     /// Populate a starved row by taking half of the hashes from a weak row.
     bool populate(reservation::ptr minimal);
