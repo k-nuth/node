@@ -270,15 +270,26 @@ bool full_node::stop()
 // This must be called from the thread that constructed this class (see join).
 bool full_node::close()
 {
-    // LOG_INFO(LOG_NODE) << "full_node::close()";
-    // std::cout << "full_node::close() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
-    
+    using clock_t = std::chrono::high_resolution_clock;
+
     // Invoke own stop to signal work suspension.
+    // auto const t0 = clock_t::now();    
     if (!full_node::stop())
         return false;
 
+    // auto const t1 = clock_t::now();    
+
     const auto p2p_close = p2p::close();
+
+    // auto const t2 = clock_t::now();    
+
     const auto chain_close = chain_.close();
+
+    // auto const t3 = clock_t::now();    
+
+    // LOG_INFO(LOG_NODE) << "t1 - t0: " << std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
+    // LOG_INFO(LOG_NODE) << "t2 - t1: " << std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+    // LOG_INFO(LOG_NODE) << "t3 - t2: " << std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t2).count();
 
     if (!p2p_close)
         LOG_ERROR(LOG_NODE)
