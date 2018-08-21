@@ -104,24 +104,24 @@ jobs:
         - |
           conan user
           conan remote add bitprim_temp https://api.bintray.com/conan/bitprim/bitprim
-          echo "waiting for bitprim-blockchain/0.X@bitprim/prerelease ..."
-          conan search bitprim-blockchain/0.X@bitprim/prerelease -r bitprim_temp > /dev/null
+          echo "waiting for bitprim-blockchain/0.X@bitprim/staging ..."
+          conan search bitprim-blockchain/0.X@bitprim/staging -r bitprim_temp > /dev/null
           while [ $? == 1 ]
           do
             printf "."
             sleep 10
-            conan search bitprim-blockchain/0.X@bitprim/prerelease -r bitprim_temp > /dev/null
+            conan search bitprim-blockchain/0.X@bitprim/staging -r bitprim_temp > /dev/null
           done
-          echo "bitprim-blockchain/0.X@bitprim/prerelease found"
-          echo "waiting for bitprim-network/0.X@bitprim/prerelease ..."
-          conan search bitprim-network/0.X@bitprim/prerelease -r bitprim_temp > /dev/null
+          echo "bitprim-blockchain/0.X@bitprim/staging found"
+          echo "waiting for bitprim-network/0.X@bitprim/staging ..."
+          conan search bitprim-network/0.X@bitprim/staging -r bitprim_temp > /dev/null
           while [ $? == 1 ]
           do
             printf "."
             sleep 10
-            conan search bitprim-network/0.X@bitprim/prerelease -r bitprim_temp > /dev/null
+            conan search bitprim-network/0.X@bitprim/staging -r bitprim_temp > /dev/null
           done
-          echo "bitprim-network/0.X@bitprim/prerelease found"
+          echo "bitprim-network/0.X@bitprim/staging found"
 
 # Static Checks ------------------------------------------------------
     - stage: static checks
