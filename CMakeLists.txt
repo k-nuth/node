@@ -83,6 +83,16 @@ if (WITH_KEOKEN)
   add_definitions(-DWITH_KEOKEN)
 endif()
 
+# Implement --with-mining and declare WITH_MINING.
+#------------------------------------------------------------------------------
+option(WITH_MINING "Mining enabled." OFF)
+if (WITH_MINING)
+  message(STATUS "Bitprim: Mining enabled")
+  add_definitions(-DWITH_MINING)
+endif()
+
+
+
 option(JUST_BITPRIM_SOURCES "Just Bitprim source code to be linted." OFF)
 if (JUST_BITPRIM_SOURCES)
   message(STATUS "Bitprim: Just Bitprim source code to be linted: enabled")
