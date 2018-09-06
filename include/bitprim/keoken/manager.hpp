@@ -143,7 +143,7 @@ private:
 
         if ( ! outgoing || ! outgoing->empty()) {
             //Reorg
-            state_.rollback_to(fork_height);
+            state_.remove_up_to(fork_height);
         }
 
         for (auto const& block_ptr: *incoming) {
@@ -182,7 +182,7 @@ class BCN_API manager<state_delegated> : public base_manager<state_delegated> {
 public:
     using set_initial_asset_id_func = typename state_delegated::set_initial_asset_id_func;
     using reset_func = typename state_delegated::reset_func;
-    using rollback_to_func = typename state_delegated::rollback_to_func;
+    using remove_up_to_func = typename state_delegated::remove_up_to_func;
     using create_asset_func = typename state_delegated::create_asset_func;
     using create_balance_entry_func = typename state_delegated::create_balance_entry_func;
     using asset_id_exists_func = typename state_delegated::asset_id_exists_func;
@@ -195,7 +195,7 @@ public:
 
     void configure_state(set_initial_asset_id_func set_initial_asset_id
                     , reset_func reset
-                    , rollback_to_func rollback_to
+                    , remove_up_to_func remove_up_to
                     , create_asset_func create_asset
                     , create_balance_entry_func create_balance_entry
                     , asset_id_exists_func asset_id_exists
@@ -206,7 +206,7 @@ public:
 
         state().set_initial_asset_id = set_initial_asset_id;
         state().reset = reset;
-        state().rollback_to = rollback_to;
+        state().remove_up_to = remove_up_to;
         state().create_asset = create_asset;
         state().create_balance_entry = create_balance_entry;
         state().asset_id_exists = asset_id_exists;
