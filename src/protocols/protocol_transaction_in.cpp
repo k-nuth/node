@@ -244,9 +244,9 @@ void protocol_transaction_in::handle_store_transaction(const code& ec,
         return;
     }
 
-#ifdef WITH_MINING
+#ifdef BITPRIM_WITH_MINING
     chain_.add_to_chosen_list(message);
-#endif // WITH_MINING
+#endif // BITPRIM_WITH_MINING
 
     LOG_DEBUG(LOG_NODE)
         << "Stored transaction [" << encoded << "] from [" << authority()

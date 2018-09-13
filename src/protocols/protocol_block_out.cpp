@@ -29,7 +29,12 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/full_node.hpp>
+
+#ifdef BITPRIM_USE_DOMAIN
+#include <bitcoin/infrastructure/math/sip_hash.hpp>
+#else
 #include <bitcoin/bitcoin/math/sip_hash.hpp>
+#endif // BITPRIM_USE_DOMAIN
 
 namespace libbitcoin {
 namespace node {
