@@ -39,9 +39,11 @@ public:
     /// The number of checkpoints in the queue.
     size_t size() const;
 
+#ifdef BITPRIM_DB_LEGACY
     /// Reserve the entries indicated by the given heights.
     /// Any entry not reserved here will be ignored upon enqueue.
     void reserve(const database::block_database::heights& heights);
+#endif // BITPRIM_DB_LEGACY
 
     /// Place a hash on the queue at the height if it has a reservation.
     void enqueue(hash_digest&& hash, size_t height);

@@ -144,8 +144,9 @@ void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
 {
     const auto heights = block::locator_heights(node_.top_block().height());
 
-    chain_.fetch_block_locator(heights,
-        BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+#ifdef BITPRIM_DB_LEGACY
+    chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+#endif // BITPRIM_DB_LEGACY
 }
 
 void protocol_block_in::handle_fetch_block_locator(const code& ec,
@@ -235,8 +236,10 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     message->to_inventory(response->inventories(), inventory::type_id::block);
     }
    
+#ifdef BITPRIM_DB_LEGACY   
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+#endif // BITPRIM_DB_LEGACY
     return true;
 }
 
@@ -265,8 +268,11 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
     message->reduce(response->inventories(), inventory::type_id::block);
     }
     
+#ifdef BITPRIM_DB_LEGACY    
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+#endif // BITPRIM_DB_LEGACY
+
     return true;
 }
 
@@ -561,6 +567,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
+#ifdef BITPRIM_DB_LEGACY            
     //if we haven't the parent block already, send a get_header message
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
@@ -584,6 +591,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
     //         << " [" << authority() << "]";
     // }
+#endif // BITPRIM_DB_LEGACY        
    
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
@@ -683,7 +691,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
         
     size_t mempool_count = 0;
+#ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
+#endif // BITPRIM_DB_TRANSACTION_UNCONFIRMED
 
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;
@@ -698,15 +708,11 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-
         auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
-
     } else {
-       
         compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
-
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
         return true;

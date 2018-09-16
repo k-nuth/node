@@ -241,14 +241,18 @@ bool session_header_sync::initialize()
         return false;
     }
 
+#ifdef BITPRIM_DB_LEGACY     
     block_database::heights gaps;
-
     // Populate hash buckets from full database empty height scan.
-    if (!chain_.get_gaps(gaps))
+    if ( ! chain_.get_gaps(gaps)) {
         return false;
-
+    }
     // TODO: consider populating this directly in the database.
     hashes_.reserve(gaps);
+#else
+    return false;
+#endif // BITPRIM_DB_LEGACY     
+
 
     //*************************************************************************
     // TODO: get top and pair up checkpoints into slots.

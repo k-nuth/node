@@ -173,8 +173,10 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 
     const auto threshold = last_locator_top_.load();
 
-    chain_.fetch_locator_block_headers(message, threshold, max_get_headers,
-        BIND2(handle_fetch_locator_headers, _1, _2));
+#ifdef BITPRIM_DB_LEGACY
+    chain_.fetch_locator_block_headers(message, threshold, max_get_headers, BIND2(handle_fetch_locator_headers, _1, _2));
+#endif // BITPRIM_DB_LEGACY
+
     return true;
 }
 
@@ -220,6 +222,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     auto block_hash = message->block_hash();
 
+#ifdef BITPRIM_DB_LEGACY
     chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
@@ -269,7 +272,8 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             SEND2(response, handle_send, _1, block_transactions::command);
         } 
     });
-    
+#endif // BITPRIM_DB_LEGACY
+
     return true;
 }
 
@@ -308,8 +312,9 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 
     const auto threshold = last_locator_top_.load();
 
-    chain_.fetch_locator_block_hashes(message, threshold, max_get_blocks,
-        BIND2(handle_fetch_locator_hashes, _1, _2));
+#ifdef BITPRIM_DB_LEGACY
+    chain_.fetch_locator_block_hashes(message, threshold, max_get_blocks, BIND2(handle_fetch_locator_hashes, _1, _2));
+#endif // BITPRIM_DB_LEGACY
     return true;
 }
 
@@ -394,40 +399,37 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
     // The order is reversed so that we can pop from the back.
     const auto& entry = inventory->inventories().back();
 
-    switch (entry.type())
-    {
-        case inventory::type_id::witness_block:
-        {
-            if (!enable_witness_)
-            {
+    switch (entry.type()) {
+        case inventory::type_id::witness_block: {
+            if (!enable_witness_) {
                 stop(error::channel_stopped);
                 return;
             }
 
-            chain_.fetch_block(entry.hash(), true,
-                BIND4(send_block, _1, _2, _3, inventory));
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        case inventory::type_id::block:
-        {
-            chain_.fetch_block(entry.hash(), false,
-                BIND4(send_block, _1, _2, _3, inventory));
+        case inventory::type_id::block: {
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        case inventory::type_id::filtered_block:
-        {
-            chain_.fetch_merkle_block(entry.hash(),
-                BIND4(send_merkle_block, _1, _2, _3, inventory));
+        case inventory::type_id::filtered_block: {
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        case inventory::type_id::compact_block:
-        {
-            chain_.fetch_compact_block(entry.hash(),
-                BIND4(send_compact_block, _1, _2, _3, inventory));
+        case inventory::type_id::compact_block: {
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_compact_block(entry.hash(), BIND4(send_compact_block, _1, _2, _3, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        default:
-        {
+        default: {
             BITCOIN_ASSERT_MSG(false, "improperly-filtered inventory");
         }
     }
