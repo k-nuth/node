@@ -47,21 +47,30 @@ reservations::reservations(check_list& hashes, fast_chain& chain,
     initialize(std::min(settings.sync_peers, 3u));
 }
 
-bool reservations::start()
-{
+bool reservations::start() {
+#if defined(BITPRIM_DB_LEGACY)
     return chain_.begin_insert();
+#elif defined(BITPRIM_DB_NEW)
+    return true;
+#else
+#error You must define BITPRIM_DB_LEGACY or BITPRIM_DB_NEW
+#endif
 }
 
-bool reservations::import(block_const_ptr block, size_t height)
-{
+bool reservations::import(block_const_ptr block, size_t height) {
     //#########################################################################
     return chain_.insert(block, height);
     //#########################################################################
 }
 
-bool reservations::stop()
-{
+bool reservations::stop() {
+#if defined(BITPRIM_DB_LEGACY)
     return chain_.end_insert();
+#elif defined(BITPRIM_DB_NEW)
+    return true;
+#else
+#error You must define BITPRIM_DB_LEGACY or BITPRIM_DB_NEW
+#endif
 }
 
 // Rate methods.
