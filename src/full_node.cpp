@@ -158,18 +158,12 @@ void full_node::handle_running(const code& ec, result_handler handler) {
     size_t top_height;
     hash_digest top_hash;
 
-#ifdef BITPRIM_DB_LEGACY
     if ( ! chain_.get_last_height(top_height) ||
          ! chain_.get_block_hash(top_hash, top_height)) {
         LOG_ERROR(LOG_NODE) << "The blockchain is corrupt.";
         handler(error::operation_failed);
         return;
     }
-#else
-    LOG_ERROR(LOG_NODE) << "The blockchain is corrupt.";
-    handler(error::operation_failed);
-    return;
-#endif // BITPRIM_DB_LEGACY    
 
     set_top_block({ std::move(top_hash), top_height });
 

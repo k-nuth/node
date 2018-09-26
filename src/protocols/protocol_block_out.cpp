@@ -173,6 +173,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 
     const auto threshold = last_locator_top_.load();
 
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
     chain_.fetch_locator_block_headers(message, threshold, max_get_headers, BIND2(handle_fetch_locator_headers, _1, _2));
 #endif // BITPRIM_DB_LEGACY
@@ -222,6 +223,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     auto block_hash = message->block_hash();
 
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
     chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
@@ -312,6 +314,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
 
     const auto threshold = last_locator_top_.load();
 
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
     chain_.fetch_locator_block_hashes(message, threshold, max_get_blocks, BIND2(handle_fetch_locator_hashes, _1, _2));
 #endif // BITPRIM_DB_LEGACY
@@ -405,25 +408,29 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
                 stop(error::channel_stopped);
                 return;
             }
-
+            asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
 #endif // BITPRIM_DB_LEGACY
             break;
         }
         case inventory::type_id::block: {
+
+            asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
 #endif // BITPRIM_DB_LEGACY
             break;
         }
         case inventory::type_id::filtered_block: {
+            asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
 #endif // BITPRIM_DB_LEGACY
             break;
         }
         case inventory::type_id::compact_block: {
+            asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_compact_block(entry.hash(), BIND4(send_compact_block, _1, _2, _3, inventory));
 #endif // BITPRIM_DB_LEGACY

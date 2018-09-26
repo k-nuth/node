@@ -234,13 +234,13 @@ void session_header_sync::handle_channel_stop(const code& ec,
 
 bool session_header_sync::initialize()
 {
-    if (!hashes_.empty())
-    {
+    if (!hashes_.empty()) {
         LOG_ERROR(LOG_NODE)
             << "Block hash list must not be initialized.";
         return false;
     }
 
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY     
     block_database::heights gaps;
     // Populate hash buckets from full database empty height scan.

@@ -140,13 +140,9 @@ void protocol_block_in::start()
 // Send get_[headers|blocks] sequence.
 //-----------------------------------------------------------------------------
 
-void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
-{
+void protocol_block_in::send_get_blocks(const hash_digest& stop_hash) {
     const auto heights = block::locator_heights(node_.top_block().height());
-
-#ifdef BITPRIM_DB_LEGACY
     chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
-#endif // BITPRIM_DB_LEGACY
 }
 
 void protocol_block_in::handle_fetch_block_locator(const code& ec,
@@ -236,6 +232,7 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
     message->to_inventory(response->inventories(), inventory::type_id::block);
     }
    
+   asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY   
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
@@ -268,6 +265,7 @@ bool protocol_block_in::handle_receive_inventory(const code& ec,
     message->reduce(response->inventories(), inventory::type_id::block);
     }
     
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY    
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
@@ -567,6 +565,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
+    asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY            
     //if we haven't the parent block already, send a get_header message
     // and return
