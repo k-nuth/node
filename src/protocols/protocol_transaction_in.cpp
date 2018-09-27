@@ -142,6 +142,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     if (chain_.is_stale())
         return true;
 
+    LOG_INFO(LOG_NODE) << "asm int $3 - 9";
     asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
     // Remove hashes of (unspent) transactions that we already have.
@@ -274,6 +275,7 @@ void protocol_transaction_in::send_get_transactions(
 
     const auto request = std::make_shared<get_data>(std::move(missing), type);
 
+    LOG_INFO(LOG_NODE) << "asm int $3 - 10";
     asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
     // Remove hashes of (unspent) transactions that we already have.

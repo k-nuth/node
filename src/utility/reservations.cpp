@@ -48,6 +48,7 @@ reservations::reservations(check_list& hashes, fast_chain& chain,
 }
 
 bool reservations::start() {
+    LOG_INFO(LOG_NODE) << "asm int $3 - 15";
     asm("int $3");  //TODO(fernando): remover
 #if defined(BITPRIM_DB_LEGACY)
     return chain_.begin_insert();
@@ -65,6 +66,7 @@ bool reservations::import(block_const_ptr block, size_t height) {
 }
 
 bool reservations::stop() {
+    LOG_INFO(LOG_NODE) << "asm int $3 - 16";
     asm("int $3");  //TODO(fernando): remover
 #if defined(BITPRIM_DB_LEGACY)
     return chain_.end_insert();

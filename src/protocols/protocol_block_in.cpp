@@ -541,6 +541,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
+    LOG_INFO(LOG_NODE) << "asm int $3 - 0";
     asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY            
     //if we haven't the parent block already, send a get_header message
@@ -665,6 +666,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
+    LOG_INFO(LOG_NODE) << "asm int $3 - 1";
     asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
 #ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED
