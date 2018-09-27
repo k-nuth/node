@@ -44,6 +44,7 @@ public:
     bool testnet;
     uint32_t subscriber_port;
     std::vector<std::string> rpc_allow_ip;
+    bool rpc_allow_all_ips;
 
 
     //Compact Blocks

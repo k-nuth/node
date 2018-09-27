@@ -581,6 +581,11 @@ options_metadata parser::load_settings()
         "RPC allowed ip defaults to 127.0.0.1."
     )
     (
+        "node.rpc_allow_all_ips",
+        value<bool>(&configured.node.rpc_allow_all_ips),
+        "RPC allowed ip defaults to false."
+    )
+    (
         "node.compact_blocks_high_bandwidth",
         value<bool>(&configured.node.compact_blocks_high_bandwidth),
         "Compact Blocks High-Bandwidth mode, default to true."
