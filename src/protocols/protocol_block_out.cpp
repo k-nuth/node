@@ -173,12 +173,9 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 
     const auto threshold = last_locator_top_.load();
 
-    LOG_INFO(LOG_NODE) << "asm int $3 - 2";
-    asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY
+    // LOG_INFO(LOG_NODE) << "asm int $3 - 2";
+    // asm("int $3");  //TODO(fernando): remover
     chain_.fetch_locator_block_headers(message, threshold, max_get_headers, BIND2(handle_fetch_locator_headers, _1, _2));
-#endif // BITPRIM_DB_LEGACY
-
     return true;
 }
 
