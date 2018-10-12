@@ -512,7 +512,7 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec,
 
 
     LOG_DEBUG(LOG_NODE)
-        << "Sended get header message compact blocks"
+        << "Sended get header message compact blocks to ["
         << authority() << "] ";
 
 }
@@ -541,9 +541,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
-    LOG_INFO(LOG_NODE) << "asm int $3 - 0";
-    asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY            
+    //LOG_INFO(LOG_NODE) << "asm int $3 - 0";
+    //asm("int $3");  //TODO(fernando): remover
+            
     //if we haven't the parent block already, send a get_header message
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
@@ -567,7 +567,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
     //         << " [" << authority() << "]";
     // }
-#endif // BITPRIM_DB_LEGACY        
+        
    
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
@@ -666,8 +666,8 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
-    LOG_INFO(LOG_NODE) << "asm int $3 - 1";
-    asm("int $3");  //TODO(fernando): remover        
+    //LOG_INFO(LOG_NODE) << "asm int $3 - 1";
+    //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
 #ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);

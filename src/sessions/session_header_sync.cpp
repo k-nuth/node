@@ -241,7 +241,7 @@ bool session_header_sync::initialize()
     }
 
     LOG_INFO(LOG_NODE) << "asm int $3 - 14";
-    asm("int $3");  //TODO(fernando): remover
+    //asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY     
     block_database::heights gaps;
     // Populate hash buckets from full database empty height scan.

@@ -189,7 +189,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
             }
 
             LOG_INFO(LOG_NODE) << "asm int $3 - 11";
-            asm("int $3");  //TODO(fernando): remover
+            //asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // BITPRIM_DB_LEGACY
@@ -197,7 +197,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
         }
         case inventory::type_id::transaction: {
             LOG_INFO(LOG_NODE) << "asm int $3 - 12";
-            asm("int $3");  //TODO(fernando): remover
+            //asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // BITPRIM_DB_LEGACY
@@ -218,7 +218,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
         return;
 
     LOG_INFO(LOG_NODE) << "asm int $3 - 13";
-    asm("int $3");  //TODO(fernando): remover
+    //asm("int $3");  //TODO(fernando): remover
     
     // Treat already confirmed transactions as not found.
     auto confirmed = !ec 
