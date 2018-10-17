@@ -140,12 +140,9 @@ void protocol_block_in::start()
 // Send get_[headers|blocks] sequence.
 //-----------------------------------------------------------------------------
 
-void protocol_block_in::send_get_blocks(const hash_digest& stop_hash)
-{
-    const auto heights = block::locator_heights(node_.top_block().height());
-
-    chain_.fetch_block_locator(heights,
-        BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+void protocol_block_in::send_get_blocks(const hash_digest& stop_hash) {
+    auto const heights = block::locator_heights(node_.top_block().height());
+    chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
 }
 
 void protocol_block_in::handle_fetch_block_locator(const code& ec,
@@ -166,11 +163,11 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
     if (message->start_hashes().empty())
         return;
 
-    const auto& last_hash = message->start_hashes().front();
+    auto const& last_hash = message->start_hashes().front();
 
     // TODO: move get_headers to a derived class protocol_block_in_31800.
-    const auto use_headers = negotiated_version() >= version::level::headers;
-    const auto request_type = (use_headers ? "headers" : "inventory");
+    auto const use_headers = negotiated_version() >= version::level::headers;
+    auto const request_type = (use_headers ? "headers" : "inventory");
 
     if (stop_hash == null_hash)
     {
@@ -201,40 +198,31 @@ void protocol_block_in::handle_fetch_block_locator(const code& ec,
 // TODO: move headers to a derived class protocol_block_in_31800.
 // This originates from send_header->annoucements and get_headers requests, or
 // from an unsolicited announcement. There is no way to distinguish.
-bool protocol_block_in::handle_receive_headers(const code& ec,
-    headers_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     // We don't want to request a batch of headers out of order.
-    if (!message->is_sequential())
-    {
-        LOG_WARNING(LOG_NODE)
-            << "Block headers out of order from [" << authority() << "].";
+    if ( ! message->is_sequential()) {
+        LOG_WARNING(LOG_NODE) << "Block headers out of order from [" << authority() << "].";
         stop(error::channel_stopped);
         return false;
     }
 
     // There is no benefit to this use of headers, in fact it is suboptimal.
     // In v3 headers will be used to build block tree before getting blocks.
-    const auto response = std::make_shared<get_data>();
+    auto const response = std::make_shared<get_data>();
 
     if (compact_from_peer_) {
-
-         /* LOG_INFO(LOG_NODE)
-            << " protocol_block_in::handle_receive_headers (compactblock) ["
-            << authority() << "] ";*/
-
+        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_headers (compactblock) [" << authority() << "] ";
         message->to_inventory(response->inventories(), inventory::type_id::compact_block);
     } else {
-
-        /*LOG_INFO(LOG_NODE)
-            << " protocol_block_in::handle_receive_headers (block) ["
-            << authority() << "] ";*/
-    message->to_inventory(response->inventories(), inventory::type_id::block);
+        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_headers (block) [" << authority() << "] ";
+        message->to_inventory(response->inventories(), inventory::type_id::block);
     }
    
+    // asm("int $3");  //TODO(fernando): remover
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -242,29 +230,22 @@ bool protocol_block_in::handle_receive_headers(const code& ec,
 
 // This originates from default annoucements and get_blocks requests, or from
 // an unsolicited announcement. There is no way to distinguish.
-bool protocol_block_in::handle_receive_inventory(const code& ec,
-    inventory_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
-    const auto response = std::make_shared<get_data>();
+    auto const response = std::make_shared<get_data>();
     
     if (compact_from_peer_) {
-
-   /*      LOG_INFO(LOG_NODE)
-            << " protocol_block_in::handle_receive_inventory (compactblock) ["
-            << authority() << "] ";
-*/
+        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_inventory (compactblock) [" << authority() << "] ";
         message->reduce(response->inventories(), inventory::type_id::compact_block);
     } else {
-
-          /*LOG_INFO(LOG_NODE)
-            << " protocol_block_in::handle_receive_inventory (block) ["
-            << authority() << "] ";*/
-    message->reduce(response->inventories(), inventory::type_id::block);
+        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_inventory (block) [" << authority() << "] ";
+        message->reduce(response->inventories(), inventory::type_id::block);
     }
     
+    // asm("int $3");  //TODO(fernando): remover
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -308,12 +289,12 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex.lock_upgrade();
-    const auto fresh = backlog_.empty();
+    auto const fresh = backlog_.empty();
     mutex.unlock_upgrade_and_lock();
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     // Enqueue the block inventory behind the preceding block inventory.
-    for (const auto& inventory: message->inventories()){
+    for (auto const& inventory: message->inventories()){
         if (inventory.type() == inventory::type_id::block) {
             backlog_.push(inventory.hash());
         } else if (inventory.type() == inventory::type_id::compact_block) {
@@ -358,8 +339,7 @@ bool protocol_block_in::handle_receive_not_found(const code& ec,
     hash_list hashes;
     message->to_hashes(hashes, inventory::type_id::block);
 
-    for (const auto& hash: hashes)
-    {
+    for (auto const& hash : hashes) {
         LOG_DEBUG(LOG_NODE)
             << "Block not_found [" << encode_hash(hash) << "] from ["
             << authority() << "]";
@@ -398,7 +378,7 @@ bool protocol_block_in::handle_receive_block(const code& ec,
         backlog_.pop();
 
     // Empty after pop means we need to make a new request.
-    const auto cleared = backlog_.empty();
+    auto const cleared = backlog_.empty();
 
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -532,7 +512,7 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec,
 
 
     LOG_DEBUG(LOG_NODE)
-        << "Sended get header message compact blocks"
+        << "Sended get header message compact blocks to ["
         << authority() << "] ";
 
 }
@@ -561,6 +541,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
+    //LOG_INFO(LOG_NODE) << "asm int $3 - 0";
+    //asm("int $3");  //TODO(fernando): remover
+            
     //if we haven't the parent block already, send a get_header message
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
@@ -574,7 +557,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             LOG_DEBUG(LOG_NODE)
             << "The chain isn't stale sending getheaders message [" << authority() << "]";
             
-            const auto heights = block::locator_heights(node_.top_block().height());
+            auto const heights = block::locator_heights(node_.top_block().height());
             chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
         } 
         return true;
@@ -584,6 +567,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
     //         << " [" << authority() << "]";
     // }
+        
    
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
@@ -681,9 +665,13 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         send_get_data_compact_block(ec, header_temp.hash());
         return true;
     }
-        
+
+    //LOG_INFO(LOG_NODE) << "asm int $3 - 1";
+    //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
+#ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
+#endif // BITPRIM_DB_TRANSACTION_UNCONFIRMED
 
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;
@@ -698,15 +686,11 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-
         auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
-
     } else {
-       
         compact_blocks_map_.emplace(header_temp.hash(), temp_compact_block{std::move(header_temp), std::move(txs_available)});
-
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
         return true;
@@ -732,14 +716,14 @@ void protocol_block_in::handle_store_block(const code& ec, block_const_ptr messa
         return;
     }
 
-    const auto hash = message->header().hash();
+    auto const hash = message->header().hash();
 
     // Ask the peer for blocks from the chain top up to this orphan.
     if (ec == error::orphan_block) {
         send_get_blocks(hash);
     }
 
-    const auto encoded = encode_hash(hash);
+    auto const encoded = encode_hash(hash);
 
     if (ec == error::orphan_block ||
         ec == error::duplicate_block ||
@@ -761,15 +745,15 @@ void protocol_block_in::handle_store_block(const code& ec, block_const_ptr messa
         return;
     }
 
-    const auto state = message->validation.state;
+    auto const state = message->validation.state;
     BITCOIN_ASSERT(state);
 
     // Show that diplayed forks may be missing activations due to checkpoints.
-    const auto checked = state->is_under_checkpoint() ? "*" : "";
+    auto const checked = state->is_under_checkpoint() ? "*" : "";
 
-#ifdef WITH_MINING
+#ifdef BITPRIM_WITH_MINING
     chain_.remove_mined_txs_from_chosen_list(message);
-#endif // WITH_MINING
+#endif // BITPRIM_WITH_MINING
 
     LOG_DEBUG(LOG_NODE)
         << "Connected block [" << encoded << "] at height [" << state->height()
@@ -811,7 +795,7 @@ void protocol_block_in::handle_timeout(const code& ec)
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex.lock_shared();
-    const auto backlog_empty = backlog_.empty();
+    auto const backlog_empty = backlog_.empty();
     mutex.unlock_shared();
     ///////////////////////////////////////////////////////////////////////////
 
@@ -851,7 +835,7 @@ void protocol_block_in::handle_stop(const code&)
 inline bool enabled(size_t height)
 {
     // Vary the reporting performance reporting interval by height.
-    const auto modulus =
+    auto const modulus =
         (height < 100000 ? 100 :
         (height < 200000 ? 10 : 1));
 
@@ -861,7 +845,7 @@ inline bool enabled(size_t height)
 inline float difference(const asio::time_point& start,
     const asio::time_point& end)
 {
-    const auto elapsed = duration_cast<asio::microseconds>(end - start);
+    auto const elapsed = duration_cast<asio::microseconds>(end - start);
     return static_cast<float>(elapsed.count());
 }
 
@@ -881,23 +865,23 @@ inline size_t total_cost_ms(const asio::time_point& start,
 void protocol_block_in::report(const chain::block& block)
 {
     BITCOIN_ASSERT(block.validation.state);
-    const auto height = block.validation.state->height();
+    auto const height = block.validation.state->height();
 
     if (enabled(height))
     {
-        const auto& times = block.validation;
-        const auto now = asio::steady_clock::now();
-        const auto transactions = block.transactions().size();
-        const auto inputs = std::max(block.total_inputs(), size_t(1));
+        auto const& times = block.validation;
+        auto const now = asio::steady_clock::now();
+        auto const transactions = block.transactions().size();
+        auto const inputs = std::max(block.total_inputs(), size_t(1));
 
         // Subtract total deserialization time from start of validation because
         // the wait time is between end_deserialize and start_check. This lets
         // us simulate block announcement validation time as there is no wait.
-        const auto start_validate = times.start_check -
+        auto const start_validate = times.start_check -
             (times.end_deserialize - times.start_deserialize);
 
-        boost::format format("Block [%|i|] %|4i| txs %|4i| ins "
-            "%|4i| wms %|4i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
+        boost::format format("Block [%|i|] %|5i| txs %|5i| ins "
+            "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
             "%|4i| aus %|4i| sus %|4i| dus %|f|");
 
         LOG_INFO(LOG_BLOCKCHAIN)

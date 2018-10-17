@@ -346,6 +346,21 @@ options_metadata parser::load_settings()
         value<uint16_t>(&configured.database.file_growth_rate),
         "Full database files increase by this percentage, defaults to 50."
     )
+
+#ifdef BITPRIM_DB_NEW
+    (
+        "database.reorg_pool_limit",
+        value<uint32_t>(&configured.database.reorg_pool_limit),
+        "Approximate number of blocks to store in the reorganization pool, defaults to 100."        //TODO(fernando): look for a good default
+    )
+    (
+        "database.db_max_size",
+        value<uint64_t>(&configured.database.db_max_size),
+        "Maximum size of the database expressed in bytes, defaults to 100 GiB."                    //TODO(fernando): look for a good default
+    )
+#endif // BITPRIM_DB_NEW
+
+#ifdef BITPRIM_DB_LEGACY    
     (
         "database.block_table_buckets",
         value<uint32_t>(&configured.database.block_table_buckets),
@@ -356,11 +371,14 @@ options_metadata parser::load_settings()
         value<uint32_t>(&configured.database.transaction_table_buckets),
         "Transaction hash table size, defaults to 110000000."
     )
+#endif // BITPRIM_DB_LEGACY
+#ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED    
     (
         "database.transaction_unconfirmed_table_buckets",
         value<uint32_t>(&configured.database.transaction_unconfirmed_table_buckets),
         "Unconfirmed Transaction hash table size, defaults to 10000."
     )
+#endif // BITPRIM_DB_TRANSACTION_UNCONFIRMED
     (
         "database.cache_capacity",
         value<uint32_t>(&configured.database.cache_capacity),

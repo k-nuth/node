@@ -181,28 +181,29 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
     // The order is reversed so that we can pop from the back.
     const auto& entry = inventory->inventories().back();
 
-    switch (entry.type())
-    {
-        case inventory::type_id::witness_transaction:
-        {
-            if (!enable_witness_)
-            {
+    switch (entry.type()) {
+        case inventory::type_id::witness_transaction: {
+            if (!enable_witness_) {
                 stop(error::channel_stopped);
                 return;
             }
 
-            chain_.fetch_transaction(entry.hash(), false, true,
-                BIND5(send_transaction, _1, _2, _3, _4, inventory));
+            LOG_INFO(LOG_NODE) << "asm int $3 - 11";
+            //asm("int $3");  //TODO(fernando): remover
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        case inventory::type_id::transaction:
-        {
-            chain_.fetch_transaction(entry.hash(), false, false,
-                BIND5(send_transaction, _1, _2, _3, _4, inventory));
+        case inventory::type_id::transaction: {
+            LOG_INFO(LOG_NODE) << "asm int $3 - 12";
+            //asm("int $3");  //TODO(fernando): remover
+#ifdef BITPRIM_DB_LEGACY
+            chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
+#endif // BITPRIM_DB_LEGACY
             break;
         }
-        default:
-        {
+        default: {
             BITCOIN_ASSERT_MSG(false, "improperly-filtered inventory");
         }
     }
@@ -216,11 +217,17 @@ void protocol_transaction_out::send_transaction(const code& ec,
     if (stopped(ec))
         return;
 
+    LOG_INFO(LOG_NODE) << "asm int $3 - 13";
+    //asm("int $3");  //TODO(fernando): remover
+    
     // Treat already confirmed transactions as not found.
-    auto confirmed = !ec && position != transaction_database::unconfirmed;
+    auto confirmed = !ec 
+#ifdef BITPRIM_DB_LEGACY
+                    && position != transaction_database::unconfirmed
+#endif // BITPRIM_DB_LEGACY
+                    ;
 
-    if (ec == error::not_found || confirmed)
-    {
+    if (ec == error::not_found || confirmed) {
         LOG_DEBUG(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";
 
@@ -232,8 +239,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
         return;
     }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating transaction requested by ["
             << authority() << "] " << ec.message();

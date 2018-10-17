@@ -48,7 +48,7 @@ size_t check_list::size() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void check_list::reserve(const block_database::heights& heights)
+void check_list::reserve(const heights& heights)
 {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
@@ -62,6 +62,7 @@ void check_list::reserve(const block_database::heights& heights)
 
     ///////////////////////////////////////////////////////////////////////////
 }
+
 
 void check_list::enqueue(hash_digest&& hash, size_t height)
 {

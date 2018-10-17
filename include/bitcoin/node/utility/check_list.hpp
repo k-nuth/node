@@ -33,6 +33,15 @@ namespace node {
 class BCN_API check_list
 {
 public:
+
+#ifdef BITPRIM_DB_LEGACY
+    using heights = database::block_database::heights;
+#endif // BITPRIM_DB_LEGACY
+
+#ifdef BITPRIM_DB_NEW
+    using heights = std::vector<size_t>;
+#endif // BITPRIM_DB_NEW
+
     /// The queue contains no checkpoints.
     bool empty() const;
 
@@ -41,7 +50,7 @@ public:
 
     /// Reserve the entries indicated by the given heights.
     /// Any entry not reserved here will be ignored upon enqueue.
-    void reserve(const database::block_database::heights& heights);
+    void reserve(const heights& heights);
 
     /// Place a hash on the queue at the height if it has a reservation.
     void enqueue(hash_digest&& hash, size_t height);
