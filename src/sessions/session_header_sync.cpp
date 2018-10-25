@@ -240,7 +240,7 @@ bool session_header_sync::initialize()
         return false;
     }
 
-    LOG_INFO(LOG_NODE) << "asm int $3 - 14";
+    //LOG_INFO(LOG_NODE) << "asm int $3 - 14";
     //asm("int $3");  //TODO(fernando): remover
 #ifdef BITPRIM_DB_LEGACY     
     block_database::heights gaps;
