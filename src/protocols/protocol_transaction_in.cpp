@@ -152,9 +152,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     return true;
 }
 
-void protocol_transaction_in::send_get_data(const code& ec,
-    get_data_ptr message)
-{
+void protocol_transaction_in::send_get_data(const code& ec, get_data_ptr message) {
     if (stopped(ec) || message->inventories().empty())
         return;
 
@@ -167,9 +165,12 @@ void protocol_transaction_in::send_get_data(const code& ec,
         return;
     }
 
+#ifndef BITPRIM_CURRENCY_BCH
     // Convert requested message types to corresponding witness types.
-    if (require_witness_)
+    if (require_witness_) {
         message->to_witness();
+    }
+#endif
 
     // inventory->get_data[transaction]
     SEND2(*message, handle_send, _1, message->command);
