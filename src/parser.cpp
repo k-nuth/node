@@ -510,15 +510,20 @@ options_metadata parser::load_settings()
     //     value<size_t>(&configured.chain.daa_height),
     //     "Height of the 2017-Nov-13 hard fork (DAA), defaults to 504031 (Mainnet)."
     // )
-    (
-        "fork.monolith_activation_time",
-        value<uint64_t>(&configured.chain.monolith_activation_time),
-        "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
-    )
+    // (
+    //     "fork.monolith_activation_time",
+    //     value<uint64_t>(&configured.chain.monolith_activation_time),
+    //     "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
+    // )
     (
         "fork.magnetic_anomaly_activation_time",
         value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
         "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
+    )
+    (
+        "fork.great_wall_activation_time",
+        value<uint64_t>(&configured.chain.great_wall_activation_time),
+        "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
     )
 #endif //BITPRIM_CURRENCY_BCH
 
