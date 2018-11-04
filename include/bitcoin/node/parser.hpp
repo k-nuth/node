@@ -24,44 +24,79 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/configuration.hpp>
 
-namespace libbitcoin { namespace node {
+namespace libbitcoin { 
+namespace node {
 
 /// Parse configurable values from environment variables, settings file, and
 /// command line positional and non-positional options.
-class BCN_API parser
-    : public config::parser
-{
+class BCN_API parser : public config::parser<parser> {
 public:
     parser(config::settings context);
     parser(configuration const& defaults);
 
     /// Parse all configuration into member settings.
-    virtual 
+    // virtual 
     bool parse(int argc, char const* argv[], std::ostream& error);
 
-    virtual 
+    // virtual 
     bool parse_from_file(boost::filesystem::path const& config_path, std::ostream& error);
     
     /// Load command line options (named).
-    virtual 
+    // virtual 
     options_metadata load_options();
 
     /// Load command line arguments (positional).
-    virtual 
+    // virtual 
     arguments_metadata load_arguments();
 
     /// Load configuration file settings.
-    virtual 
+    // virtual 
     options_metadata load_settings();
 
     /// Load environment variable settings.
-    virtual 
+    // virtual 
     options_metadata load_environment();
 
     /// The populated configuration settings values.
     configuration configured;
 };
 
-}} // namespace libbitcoin::node
+
+// class BCN_API parser
+//     : public config::parser
+// {
+// public:
+//     parser(config::settings context);
+//     parser(configuration const& defaults);
+
+//     /// Parse all configuration into member settings.
+//     virtual 
+//     bool parse(int argc, char const* argv[], std::ostream& error);
+
+//     virtual 
+//     bool parse_from_file(boost::filesystem::path const& config_path, std::ostream& error);
+    
+//     /// Load command line options (named).
+//     virtual 
+//     options_metadata load_options();
+
+//     /// Load command line arguments (positional).
+//     virtual 
+//     arguments_metadata load_arguments();
+
+//     /// Load configuration file settings.
+//     virtual 
+//     options_metadata load_settings();
+
+//     /// Load environment variable settings.
+//     virtual 
+//     options_metadata load_environment();
+
+//     /// The populated configuration settings values.
+//     configuration configured;
+// };
+
+} // namespace node
+} // namespace libbitcoin
 
 #endif

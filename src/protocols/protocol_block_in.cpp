@@ -305,9 +305,12 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
+#ifndef BITPRIM_CURRENCY_BCH
     // Convert requested message types to corresponding witness types.
-    if (require_witness_)
+    if (require_witness_) {
         message->to_witness();
+    }
+#endif
 
     // There was no backlog so the timer must be started now.
     if (fresh)
