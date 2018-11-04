@@ -510,15 +510,20 @@ options_metadata parser::load_settings()
     //     value<size_t>(&configured.chain.daa_height),
     //     "Height of the 2017-Nov-13 hard fork (DAA), defaults to 504031 (Mainnet)."
     // )
-    (
-        "fork.monolith_activation_time",
-        value<uint64_t>(&configured.chain.monolith_activation_time),
-        "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
-    )
+    // (
+    //     "fork.monolith_activation_time",
+    //     value<uint64_t>(&configured.chain.monolith_activation_time),
+    //     "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
+    // )
     (
         "fork.magnetic_anomaly_activation_time",
         value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
         "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
+    )
+    (
+        "fork.great_wall_activation_time",
+        value<uint64_t>(&configured.chain.great_wall_activation_time),
+        "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
     )
 #endif //BITPRIM_CURRENCY_BCH
 
@@ -645,6 +650,10 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         // Update bound variables in metadata.settings.
         notify(variables);
         
+        if ( ! version_sett_help) {
+            fix_checkpoints(configured.chain.easy_blocks, configured.chain.retarget, configured.chain.checkpoints);
+        }
+
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {
             configured.file.clear();
@@ -672,6 +681,8 @@ bool parser::parse_from_file(boost::filesystem::path const& config_path, std::os
 
         // Update bound variables in metadata.settings.
         notify(variables);
+
+        fix_checkpoints(configured.chain.easy_blocks, configured.chain.retarget, configured.chain.checkpoints);
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {
