@@ -145,9 +145,11 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     //LOG_INFO(LOG_NODE) << "asm int $3 - 9";
     //asm("int $3");  //TODO(fernando): remover
 
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
+#endif
 
     return true;
 }
