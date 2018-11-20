@@ -223,11 +223,12 @@ void protocol_transaction_out::send_transaction(const code& ec,
     // Treat already confirmed transactions as not found.
     auto confirmed = !ec 
 #if defined(BITPRIM_DB_LEGACY) 
-                    && position != transaction_database::unconfirmed;
+                    && position != transaction_database::unconfirmed
 #elif defined(BITPRIM_DB_NEW_FULL)
-                    && position != position_max;
+                    && position != position_max
 #endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
-
+                    ;
+                    
     if (ec == error::not_found || confirmed) {
         LOG_DEBUG(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";
