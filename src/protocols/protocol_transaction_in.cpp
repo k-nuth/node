@@ -144,11 +144,11 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
 
     //LOG_INFO(LOG_NODE) << "asm int $3 - 9";
     //asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY
+
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
-#endif // BITPRIM_DB_LEGACY
+
     return true;
 }
 
@@ -278,13 +278,13 @@ void protocol_transaction_in::send_get_transactions(
 
     //LOG_INFO(LOG_NODE) << "asm int $3 - 10";
     //asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
     // Remove hashes of (unspent) transactions that we already have.
     // This removes spent transactions which is not correnct, however given the
     // treatment of duplicate hashes by other nodes and the fact that this is
     // a set of pool transactions only, this is okay.
     chain_.filter_transactions(request, BIND2(send_get_data, _1, request));
-#endif // BITPRIM_DB_LEGACY
+#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_FULL
 }
 
 // Stop.
