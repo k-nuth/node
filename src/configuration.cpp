@@ -33,6 +33,10 @@ configuration::configuration(config::settings context)
     initchain(false),
 #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)    
 
+#if defined(BITPRIM_DB_NEW_FULL_ASYNC)
+    generate_indexes(false),
+#endif
+
     settings(false),
     version(false),
     node(context),
@@ -49,6 +53,10 @@ configuration::configuration(const configuration& other)
 #if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     initchain(other.initchain),
 #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
+
+#if defined(BITPRIM_DB_NEW_FULL_ASYNC)
+    generate_indexes(other.generate_indexes),
+#endif
 
     settings(other.settings),
     version(other.version),

@@ -107,6 +107,15 @@ options_metadata parser::load_options()
     ) 
  #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
 
+#if defined(BITPRIM_DB_NEW_FULL_ASYNC)
+    (
+        "generate_indexes,g",
+        value<bool>(&configured.generate_indexes)->
+            default_value(false)->zero_tokens(),
+        "Starts the indexing process."
+    )
+#endif
+
     (
         BN_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->

@@ -55,6 +55,11 @@ public:
     bool settings;
     bool version;
 
+
+#if defined(BITPRIM_DB_NEW_FULL_ASYNC)
+    bool generate_indexes;
+#endif
+
     /// Options and environment vars.
     boost::filesystem::path file;
 
