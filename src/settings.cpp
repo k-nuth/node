@@ -35,7 +35,7 @@ settings::settings()
     , subscriber_port(5556)
     , compact_blocks_high_bandwidth(true)
     , rpc_allow_all_ips(false)
-#ifdef WITH_KEOKEN
+#ifdef BITPRIM_WITH_KEOKEN
     , keoken_genesis_height(libbitcoin::max_size_t)
 #endif
 {
