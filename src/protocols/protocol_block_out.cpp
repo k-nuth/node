@@ -195,16 +195,17 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         return;
     }
 
+    // NOTE(Bitprim): In case message-> elements() is empty, the headers message also needs
+    // to return an empty array, so the getheaders sender knows that it is already synced.
+    // Respond to get_headers with headers.
+    SEND2(*message, handle_send, _1, message->command);
+
     if (message->elements().empty())
         return;
-
 
     // Allow a peer to sync despite our being stale.
     ////if (chain_.is_stale())
     ////    return;
-
-    // Respond to get_headers with headers.
-    SEND2(*message, handle_send, _1, message->command);
 
     // Save the locator top to limit an overlapping future request.
     last_locator_top_.store(message->elements().front().hash());
