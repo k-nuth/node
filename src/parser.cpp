@@ -358,6 +358,11 @@ options_metadata parser::load_settings()
         value<uint64_t>(&configured.database.db_max_size),
         "Maximum size of the database expressed in bytes, defaults to 100 GiB."                    //TODO(fernando): look for a good default
     )
+    (
+        "database.safe_mode",
+        value<bool>(&configured.database.safe_mode),
+        "safe mode is more secure but not the fastest, defaults to true."                  
+    )
 #endif // BITPRIM_DB_NEW
 
 #ifdef BITPRIM_DB_LEGACY    
