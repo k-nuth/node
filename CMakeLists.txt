@@ -75,12 +75,12 @@ message( STATUS "Bitprim: Compiling for ${MICROARCHITECTURE}")
 # add_definitions(-DBITPRIM_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
 
 
-# Implement --with-keoken and declare WITH_KEOKEN.
+# Implement --with-keoken and declare BITPRIM_WITH_KEOKEN.
 #------------------------------------------------------------------------------
 option(WITH_KEOKEN "Keoken enabled." OFF)
 if (WITH_KEOKEN)
   message(STATUS "Bitprim: Keoken enabled")
-  add_definitions(-DWITH_KEOKEN)
+  add_definitions(-DBITPRIM_WITH_KEOKEN)
 endif()
 
 # Implement --with-mining and declare WITH_MINING.
@@ -161,6 +161,14 @@ option(DB_NEW_BLOCKS "DB Blocks New enabled." OFF)
 if (DB_NEW_BLOCKS)
   message(STATUS "Bitprim: DB Blocks New enabled")
   add_definitions(-DBITPRIM_DB_NEW_BLOCKS)
+endif()
+
+# Implement and declare DB_NEW_FULL.
+#------------------------------------------------------------------------------
+option(DB_NEW_FULL "DB New Full enabled." OFF)
+if (DB_NEW_FULL)
+  message(STATUS "Bitprim: DB New Full enabled")
+  add_definitions(-DBITPRIM_DB_NEW_FULL)
 endif()
 
 option(JUST_BITPRIM_SOURCES "Just Bitprim source code to be linted." OFF)

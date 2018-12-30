@@ -672,9 +672,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //LOG_INFO(LOG_NODE) << "asm int $3 - 1";
     //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
-#ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED
+#if defined(BITPRIM_DB_TRANSACTION_UNCONFIRMED) || defined(BITPRIM_DB_NEW_FULL)
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
-#endif // BITPRIM_DB_TRANSACTION_UNCONFIRMED
+#endif 
 
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;

@@ -190,17 +190,17 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
 
             //LOG_INFO(LOG_NODE) << "asm int $3 - 11";
             //asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // BITPRIM_DB_LEGACY
+#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
             break;
         }
         case inventory::type_id::transaction: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 12";
             //asm("int $3");  //TODO(fernando): remover
-#ifdef BITPRIM_DB_LEGACY
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // BITPRIM_DB_LEGACY
+#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
             break;
         }
         default: {
@@ -222,11 +222,13 @@ void protocol_transaction_out::send_transaction(const code& ec,
     
     // Treat already confirmed transactions as not found.
     auto confirmed = !ec 
-#ifdef BITPRIM_DB_LEGACY
+#if defined(BITPRIM_DB_LEGACY) 
                     && position != transaction_database::unconfirmed
-#endif // BITPRIM_DB_LEGACY
+#elif defined(BITPRIM_DB_NEW_FULL)
+                    && position != position_max
+#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
                     ;
-
+                    
     if (ec == error::not_found || confirmed) {
         LOG_DEBUG(LOG_NODE)
             << "Transaction requested by [" << authority() << "] not found.";

@@ -250,10 +250,9 @@ bool session_header_sync::initialize()
     }
     // TODO: consider populating this directly in the database.
     hashes_.reserve(gaps);
-#else
-    return false;
+//#else
+   //return false;
 #endif // BITPRIM_DB_LEGACY     
-
 
     //*************************************************************************
     // TODO: get top and pair up checkpoints into slots.
