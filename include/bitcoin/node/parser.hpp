@@ -24,6 +24,8 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/configuration.hpp>
 
+#include <bitcoin/bitcoin/config/parser.hpp>
+
 namespace libbitcoin { 
 namespace node {
 

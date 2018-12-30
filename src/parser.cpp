@@ -626,7 +626,7 @@ options_metadata parser::load_settings()
     )
 #endif
 
-#if defined(BITPRIM_WITH_MINING)
+#if defined(BITPRIM_WITH_MEMPOOL)
     (
         "node.mempool_max_template_size",
         value<size_t>(&configured.chain.mempool_max_template_size),
