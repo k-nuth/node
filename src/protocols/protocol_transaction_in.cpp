@@ -142,15 +142,11 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     if (chain_.is_stale())
         return true;
 
-    //LOG_INFO(LOG_NODE) << "asm int $3 - 9";
-    //asm("int $3");  //TODO(fernando): remover
-
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL) || defined(BITPRIM_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
 #endif
-
     return true;
 }
 
@@ -182,9 +178,8 @@ void protocol_transaction_in::send_get_data(const code& ec, get_data_ptr message
 //-----------------------------------------------------------------------------
 
 // A transaction is acceptable whether solicited or broadcast.
-bool protocol_transaction_in::handle_receive_transaction(const code& ec,
-    transaction_const_ptr message)
-{
+bool protocol_transaction_in::handle_receive_transaction(const code& ec, transaction_const_ptr message) {
+
     if (stopped(ec))
         return false;
 
@@ -251,10 +246,6 @@ void protocol_transaction_in::handle_store_transaction(const code& ec,
         return;
     }
 
-#ifdef BITPRIM_WITH_MINING
-    chain_.add_to_chosen_list(message);
-#endif // BITPRIM_WITH_MINING
-
     LOG_DEBUG(LOG_NODE)
         << "Stored transaction [" << encoded << "] from [" << authority()
         << "].";
@@ -278,15 +269,13 @@ void protocol_transaction_in::send_get_transactions(
 
     const auto request = std::make_shared<get_data>(std::move(missing), type);
 
-    //LOG_INFO(LOG_NODE) << "asm int $3 - 10";
-    //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL) || defined(BITPRIM_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // This removes spent transactions which is not correnct, however given the
     // treatment of duplicate hashes by other nodes and the fact that this is
     // a set of pool transactions only, this is okay.
     chain_.filter_transactions(request, BIND2(send_get_data, _1, request));
-#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_FULL
+#endif
 }
 
 // Stop.

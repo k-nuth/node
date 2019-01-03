@@ -625,6 +625,19 @@ options_metadata parser::load_settings()
         "Block height where the first keoken transaction is stored."
     )
 #endif
+
+#if defined(BITPRIM_WITH_MEMPOOL)
+    (
+        "node.mempool_max_template_size",
+        value<size_t>(&configured.chain.mempool_max_template_size),
+        "Max size of the template block. Default is coin dependant. (BCH: 31,980,000 bytes, BTC and LTC: 3,980,000 bytes)"
+    )
+    (
+        "node.mempool_size_multiplier",
+        value<size_t>(&configured.chain.mempool_size_multiplier),
+        "Max mempool size is equal to MaxBlockSize multiplied by mempool_size_multiplier. Default is 10."
+    )
+#endif
     ;
 
     return description;
