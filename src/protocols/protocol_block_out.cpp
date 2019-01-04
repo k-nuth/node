@@ -224,7 +224,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     //LOG_INFO(LOG_NODE) << "asm int $3 - 3";
     //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+//#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
     chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
@@ -274,7 +274,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             SEND2(response, handle_send, _1, block_transactions::command);
         } 
     });
-#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+//#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
 
     return true;
 }
