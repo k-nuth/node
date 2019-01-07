@@ -45,8 +45,11 @@ if __name__ == "__main__":
 
                 opts_bch_domain = copy.deepcopy(opts_bch_no_keoken)
                 opts_bch_domain["%s:use_domain" % name] = "True"
-                
 
+                opts_btc_full = copy.deepcopy(opts_btc)
+                opts_btc_full["%s:db" % name] = "Full"
+                
+                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc_full, env_vars, build_requires)
                 handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
                 handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_keoken, env_vars, build_requires)
                 handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_no_keoken, env_vars, build_requires)
