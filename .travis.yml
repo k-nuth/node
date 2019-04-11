@@ -242,15 +242,15 @@ jobs:
     - stage: build and upload binaries
       os: osx
       language: generic
-      osx_image: xcode9.3
-      env: CONAN_APPLE_CLANG_VERSIONS=9.1
+      osx_image: xcode10.1
+      env: CONAN_APPLE_CLANG_VERSIONS=10.0
            BITPRIM_RUN_TESTS=true
       if: branch =~ /^(release|hotfix).+$/    #Just releases
     - stage: build and upload binaries
       os: osx
       language: generic
-      osx_image: xcode9.3
-      env: CONAN_APPLE_CLANG_VERSIONS=9.1
+      osx_image: xcode10.1
+      env: CONAN_APPLE_CLANG_VERSIONS=10.0
       if: branch =~ /^(feature|dev).*$/    #Just development
 
     # - stage: build and upload binaries
