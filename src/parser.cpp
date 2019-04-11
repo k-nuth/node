@@ -520,16 +520,24 @@ options_metadata parser::load_settings()
     //     value<uint64_t>(&configured.chain.monolith_activation_time),
     //     "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
     // )
-    (
-        "fork.magnetic_anomaly_activation_time",
-        value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
-        "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
-    )
+    // (
+    //     "fork.magnetic_anomaly_activation_time",
+    //     value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
+    //     "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
+    // )
     (
         "fork.great_wall_activation_time",
         value<uint64_t>(&configured.chain.great_wall_activation_time),
         "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
     )
+    (
+        "fork.graviton_activation_time",
+        value<uint64_t>(&configured.chain.graviton_activation_time),
+        "Unix time used for MTP activation of 2019-Nov-15 hard fork, defaults to 1573819200."
+    )
+
+
+    
 #endif //BITPRIM_CURRENCY_BCH
 
 
