@@ -67,6 +67,7 @@ test_script:
       Invoke-Expression $a
       conan remote add bitprim https://api.bintray.com/conan/bitprim/bitprim
       python ci_utils/process_conan_reqs.py
+      conan remove "*" -f
       conan remote remove bitprim
 
   - python build.py
