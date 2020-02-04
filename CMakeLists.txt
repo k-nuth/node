@@ -157,9 +157,9 @@ if (DB_NEW_FULL)
   add_definitions(-DKTH_DB_NEW_FULL)
 endif()
 
-option(JUST_KTH_SOURCES "Just Bitprim source code to be linted." OFF)
+option(JUST_KTH_SOURCES "Just Knuth source code to be linted." OFF)
 if (JUST_KTH_SOURCES)
-  message(STATUS "Knuth: Just Bitprim source code to be linted: enabled")
+  message(STATUS "Knuth: Just Knuth source code to be linted: enabled")
 endif()
 
 
@@ -213,7 +213,7 @@ if (NO_CONAN_AT_ALL)
 endif()
 
 if (NOT USE_CONAN)
-  # Require kth-blockchain of at least version 0 and output ${bitprim_node_CPPFLAGS/LIBS/PKG}.
+  # Require kth-blockchain of at least version 0 and output ${kth_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
   if(WITH_REMOTE_BLOCKCHAIN)
     if (NOT TARGET kth-blockchain-requester)
@@ -315,7 +315,7 @@ if (ENABLE_SHARED)
   set(MODE SHARED)
 endif()
 
-set(bitprim_node_sources_just_legacy
+set(kth_node_sources_just_legacy
   src/configuration.cpp
   src/full_node.cpp
   src/parser.cpp
@@ -343,24 +343,24 @@ set(bitprim_node_sources_just_legacy
 )
 
 if (WITH_KEOKEN)
-  set(bitprim_node_sources_just_kth 
-    ${bitprim_node_sources_just_kth}         
-    # src/bitprim/keoken/manager.cpp
+  set(kth_node_sources_just_kth 
+    ${kth_node_sources_just_kth}         
+    # src/keoken/manager.cpp
   )
 endif()
 
 if (NOT JUST_KTH_SOURCES)
-  set(bitprim_node_sources 
-    ${bitprim_node_sources_just_legacy}         
+  set(kth_node_sources 
+    ${kth_node_sources_just_legacy}         
   )
 endif()
 
-set(bitprim_node_sources 
-  ${bitprim_node_sources}   
-  ${bitprim_node_sources_just_kth}         
+set(kth_node_sources 
+  ${kth_node_sources}   
+  ${kth_node_sources_just_kth}         
 )
 
-add_library(kth-node ${MODE} ${bitprim_node_sources})
+add_library(kth-node ${MODE} ${kth_node_sources})
 
 
 
@@ -484,10 +484,10 @@ if (WITH_TESTS)
   enable_testing()
 endif()
 
-# local: test/bitprim_node_test
+# local: test/kth_node_test
 #------------------------------------------------------------------------------
 if (WITH_TESTS)
-  add_executable(bitprim_node_test
+  add_executable(kth_node_test
           test/check_list.cpp
           test/configuration.cpp
           test/header_list.cpp
@@ -499,10 +499,10 @@ if (WITH_TESTS)
           test/settings.cpp
           test/utility.cpp
           test/utility.hpp)
-  target_link_libraries(bitprim_node_test PUBLIC kth-node)
-  _group_sources(bitprim_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
+  target_link_libraries(kth_node_test PUBLIC kth-node)
+  _group_sources(kth_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
-  _add_tests(bitprim_node_test
+  _add_tests(kth_node_test
           configuration_tests
           node_tests
           #header_queue_tests

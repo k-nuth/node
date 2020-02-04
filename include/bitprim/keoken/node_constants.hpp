@@ -5,12 +5,12 @@
 #ifndef KTH_NODE_KEOKEN_CONSTANTS_HPP_
 #define KTH_NODE_KEOKEN_CONSTANTS_HPP_
 
-namespace bitprim {
+namespace kth {
 namespace keoken {
 
 size_t constexpr asset_id_initial = 1;
 
 } // namespace keoken
-} // namespace bitprim
+} // namespace kth
 
 #endif //KTH_NODE_KEOKEN_CONSTANTS_HPP_

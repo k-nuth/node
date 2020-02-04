@@ -181,7 +181,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         return;
     }
 
-    // NOTE(Bitprim): In case message-> elements() is empty, the headers message also needs
+    //Note(kth): In case message-> elements() is empty, the headers message also needs
     // to return an empty array, so the getheaders sender knows that it is already synced.
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);

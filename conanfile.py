@@ -134,11 +134,6 @@ class KnuthNodeConan(KnuthConanFile):
         self.info.options.cxxflags = "ANY"
         self.info.options.cflags = "ANY"
 
-        # #For Bitprim Packages libstdc++ and libstdc++11 are the same
-        # if self.settings.compiler == "gcc" or self.settings.compiler == "clang":
-        #     if str(self.settings.compiler.libcxx) == "libstdc++" or str(self.settings.compiler.libcxx) == "libstdc++11":
-        #         self.info.settings.compiler.libcxx = "ANY"
-
     def build(self):
         cmake = CMake(self)
         cmake.definitions["USE_CONAN"] = option_on_off(True)
@@ -225,7 +220,7 @@ class KnuthNodeConan(KnuthConanFile):
         cmake.definitions["MICROARCHITECTURE"] = self.options.microarchitecture
         cmake.definitions["KTH_PROJECT_VERSION"] = self.version
 
-        #TODO(bitprim): compare with the other project to see if this could be deleted!
+        #TODO(kth): compare with the other project to see if this could be deleted!
         if self.settings.compiler == "gcc":
             if float(str(self.settings.compiler.version)) >= 5:
                 cmake.definitions["NOT_USE_CPP11_ABI"] = option_on_off(False)

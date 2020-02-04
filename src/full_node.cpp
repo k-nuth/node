@@ -283,14 +283,12 @@ const blockchain::settings& full_node::chain_settings() const
     return chain_settings_;
 }
 
-safe_chain& full_node::chain()
-{
+safe_chain& full_node::chain() {
     return chain_;
 }
 
 //TODO: remove this function and use safe_chain in the rpc lib
-block_chain& full_node::chain_bitprim()
-{
+block_chain& full_node::chain_kth() {
     return chain_;
 }
 

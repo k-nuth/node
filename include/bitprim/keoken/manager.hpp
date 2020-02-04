@@ -16,7 +16,7 @@
 #include <knuth/keoken/node_constants.hpp>
 #include <knuth/keoken/state_delegated.hpp>
 
-namespace bitprim {
+namespace kth {
 namespace keoken {
 
 template <typename State>
@@ -204,6 +204,6 @@ public:
 };
 
 } // namespace keoken
-} // namespace bitprim
+} // namespace kth
 
 #endif //KTH_NODE_KEOKEN_MANAGER_HPP_

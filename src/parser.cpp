@@ -37,7 +37,7 @@ parser::parser(const configuration& defaults)
 parser::parser(config::settings context)
     : configured(context)
 {
-    // bitprim_node use history
+    // kth_node use history
     configured.database.index_start_height = 0;
     // libbitcoin_node doesn't use history, and history is expensive.
     // configured.database.index_start_height = libbitcoin::max_uint32;
@@ -580,7 +580,7 @@ options_metadata parser::load_settings()
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
     )
-    // TODO(bitprim): ver como implementamos esto para diferenciar server y node
+    // TODO(kth): ver como implementamos esto para diferenciar server y node
     (
         /* Internally this database, but it applies to server.*/
         "node.index_start_height",

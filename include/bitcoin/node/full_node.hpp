@@ -103,7 +103,7 @@ public:
 
     /// Blockchain.
     //TODO: remove this function and use safe_chain in the rpc lib
-    virtual blockchain::block_chain& chain_bitprim();
+    virtual blockchain::block_chain& chain_kth();
 
 // #ifdef WITH_KEOKEN
 //     knuth::keoken::manager<knuth::keoken::state_delegated>& keoken_manager();
