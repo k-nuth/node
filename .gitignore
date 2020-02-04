@@ -6,7 +6,6 @@
 *.pyc
 Makefile
 Makefile.in
-libbitcoin-node.pc
 
 pkg/
 

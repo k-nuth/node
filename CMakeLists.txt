@@ -119,9 +119,9 @@ endif()
 
 # Implement and declare DB_UNSPENT_LEGACY.
 #------------------------------------------------------------------------------
-option(DB_UNSPENT_LEGACY "DB Unspent Libbitcoin enabled." OFF)
+option(DB_UNSPENT_LEGACY "DB Unspent Legacy enabled." OFF)
 if (DB_UNSPENT_LEGACY)
-  message(STATUS "Knuth: DB Unspent Libbitcoin enabled")
+  message(STATUS "Knuth: DB Unspent Legacy enabled")
   add_definitions(-DKTH_DB_UNSPENT_LEGACY)
 endif()
 
