@@ -7,10 +7,10 @@
 
 #include <functional>
 
-#include <bitcoin/bitcoin/message/messages.hpp>
-#include <bitcoin/bitcoin/wallet/payment_address.hpp>
-#include <bitcoin/blockchain/interface/block_chain.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/domain/message/messages.hpp>
+#include <kth/domain/wallet/payment_address.hpp>
+#include <kth/blockchain/interface/block_chain.hpp>
+#include <kth/node/define.hpp>
 
 #include <knuth/keoken/interpreter.hpp>
 #include <knuth/keoken/node_constants.hpp>

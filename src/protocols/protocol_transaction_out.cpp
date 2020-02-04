@@ -2,15 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/protocols/protocol_transaction_out.hpp>
+#include <kth/node/protocols/protocol_transaction_out.hpp>
 
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <boost/range/adaptor/reversed.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
 
 namespace kth {
 namespace node {

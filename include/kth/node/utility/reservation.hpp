@@ -13,9 +13,9 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/set_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/performance.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/performance.hpp>
 
 namespace kth {
 namespace node {

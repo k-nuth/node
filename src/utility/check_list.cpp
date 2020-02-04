@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/utility/check_list.hpp>
+#include <kth/node/utility/check_list.hpp>
 
 #include <cstddef>
 #include <utility>
 #include <boost/bimap/support/lambda.hpp>
-#include <bitcoin/blockchain.hpp>
+#include <kth/blockchain.hpp>
 
 namespace kth {
 namespace node {

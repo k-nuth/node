@@ -2,20 +2,20 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/full_node.hpp>
+#include <kth/node/full_node.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <utility>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/node/configuration.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session_block_sync.hpp>
-#include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/sessions/session_inbound.hpp>
-#include <bitcoin/node/sessions/session_manual.hpp>
-#include <bitcoin/node/sessions/session_outbound.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/node/configuration.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session_block_sync.hpp>
+#include <kth/node/sessions/session_header_sync.hpp>
+#include <kth/node/sessions/session_inbound.hpp>
+#include <kth/node/sessions/session_manual.hpp>
+#include <kth/node/sessions/session_outbound.hpp>
 
 namespace kth {
 namespace node {

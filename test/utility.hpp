@@ -8,7 +8,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <bitcoin/node.hpp>
+#include <kth/node.hpp>
 
 namespace kth {
 namespace node {

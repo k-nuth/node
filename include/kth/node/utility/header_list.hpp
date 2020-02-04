@@ -8,8 +8,8 @@
 #include <cstddef>
 #include <memory>
 #include <kth/domain.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/check_list.hpp>
 
 namespace kth {
 namespace node {

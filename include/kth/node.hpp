@@ -12,30 +12,30 @@
  * Maintainers: Do not include this header internal to this library.
  */
 
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/configuration.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
-#include <bitcoin/node/parser.hpp>
-#include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/version.hpp>
-#include <bitcoin/node/protocols/protocol_block_in.hpp>
-#include <bitcoin/node/protocols/protocol_block_out.hpp>
-#include <bitcoin/node/protocols/protocol_block_sync.hpp>
-#include <bitcoin/node/protocols/protocol_header_sync.hpp>
-#include <bitcoin/node/protocols/protocol_transaction_in.hpp>
-#include <bitcoin/node/protocols/protocol_transaction_out.hpp>
-#include <bitcoin/node/sessions/session.hpp>
-#include <bitcoin/node/sessions/session_block_sync.hpp>
-#include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/sessions/session_inbound.hpp>
-#include <bitcoin/node/sessions/session_manual.hpp>
-#include <bitcoin/node/sessions/session_outbound.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
-#include <bitcoin/node/utility/header_list.hpp>
-#include <bitcoin/node/utility/performance.hpp>
-#include <bitcoin/node/utility/reservation.hpp>
-#include <bitcoin/node/utility/reservations.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/configuration.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
+#include <kth/node/parser.hpp>
+#include <kth/node/settings.hpp>
+#include <kth/node/version.hpp>
+#include <kth/node/protocols/protocol_block_in.hpp>
+#include <kth/node/protocols/protocol_block_out.hpp>
+#include <kth/node/protocols/protocol_block_sync.hpp>
+#include <kth/node/protocols/protocol_header_sync.hpp>
+#include <kth/node/protocols/protocol_transaction_in.hpp>
+#include <kth/node/protocols/protocol_transaction_out.hpp>
+#include <kth/node/sessions/session.hpp>
+#include <kth/node/sessions/session_block_sync.hpp>
+#include <kth/node/sessions/session_header_sync.hpp>
+#include <kth/node/sessions/session_inbound.hpp>
+#include <kth/node/sessions/session_manual.hpp>
+#include <kth/node/sessions/session_outbound.hpp>
+#include <kth/node/utility/check_list.hpp>
+#include <kth/node/utility/header_list.hpp>
+#include <kth/node/utility/performance.hpp>
+#include <kth/node/utility/reservation.hpp>
+#include <kth/node/utility/reservations.hpp>
 
 #endif

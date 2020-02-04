@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
-#include <bitcoin/node/version.hpp>
+#include <kth/node/version.hpp>
 
 namespace kth { namespace node {
 

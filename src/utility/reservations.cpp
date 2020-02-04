@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/utility/reservations.hpp>
+#include <kth/node/utility/reservations.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 #include <kth/domain.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
-#include <bitcoin/node/utility/performance.hpp>
-#include <bitcoin/node/utility/reservation.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/check_list.hpp>
+#include <kth/node/utility/performance.hpp>
+#include <kth/node/utility/reservation.hpp>
 
 namespace kth {
 namespace node {

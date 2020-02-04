@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/test/unit_test.hpp>
-#include <bitcoin/node.hpp>
+#include <kth/node.hpp>
 
 using namespace bc;
 

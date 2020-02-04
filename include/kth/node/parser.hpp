@@ -7,10 +7,10 @@
 
 #include <ostream>
 #include <kth/domain.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/configuration.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/configuration.hpp>
 
-#include <bitcoin/bitcoin/config/parser.hpp>
+#include <kth/domain/config/parser.hpp>
 
 namespace kth { 
 namespace node {

@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/configuration.hpp>
+#include <kth/node/configuration.hpp>
 
 #include <cstddef>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
 
 namespace kth {
 namespace node {

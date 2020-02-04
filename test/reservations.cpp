@@ -5,7 +5,7 @@
 ////#include <algorithm>
 ////#include <memory>
 ////#include <boost/test/unit_test.hpp>
-////#include <bitcoin/node.hpp>
+////#include <kth/node.hpp>
 ////#include "utility.hpp"
 ////
 ////using namespace bc;

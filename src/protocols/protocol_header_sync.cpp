@@ -2,15 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/protocols/protocol_header_sync.hpp>
+#include <kth/node/protocols/protocol_header_sync.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <functional>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
-#include <bitcoin/node/utility/header_list.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
+#include <kth/node/utility/header_list.hpp>
 
 namespace kth {
 namespace node {

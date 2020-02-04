@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/parser.hpp>
+#include <kth/node/parser.hpp>
 
 #include <cstdint>
 #include <iostream>
@@ -10,11 +10,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/bitcoin/multi_crypto_support.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/full_node.hpp>
-#include <bitcoin/node/settings.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/domain/multi_crypto_support.hpp>
+#include <kth/network.hpp>
+#include <kth/node/full_node.hpp>
+#include <kth/node/settings.hpp>
 
 //BC_DECLARE_CONFIG_DEFAULT_PATH("")
 //BC_DECLARE_CONFIG_DEFAULT_PATH("kth" / "bn.cfg")

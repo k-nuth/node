@@ -2,13 +2,13 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/utility/header_list.hpp>
+#include <kth/node/utility/header_list.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <utility>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/check_list.hpp>
 
 namespace kth {
 namespace node {

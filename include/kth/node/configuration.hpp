@@ -6,10 +6,10 @@
 #define KTH_NODE_CONFIGURATION_HPP
 
 #include <boost/filesystem.hpp>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/settings.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/settings.hpp>
 
 namespace kth {
 namespace node {

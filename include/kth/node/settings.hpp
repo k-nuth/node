@@ -7,7 +7,7 @@
 
 #include <cstdint>
 #include <kth/domain.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/node/define.hpp>
 
 namespace kth {
 namespace node {

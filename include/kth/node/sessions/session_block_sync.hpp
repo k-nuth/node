@@ -8,14 +8,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session.hpp>
-#include <bitcoin/node/settings.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
-#include <bitcoin/node/utility/reservation.hpp>
-#include <bitcoin/node/utility/reservations.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session.hpp>
+#include <kth/node/settings.hpp>
+#include <kth/node/utility/check_list.hpp>
+#include <kth/node/utility/reservation.hpp>
+#include <kth/node/utility/reservations.hpp>
 
 namespace kth {
 namespace node {

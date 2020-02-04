@@ -6,8 +6,8 @@
 #define KTH_NODE_SESSION_HPP
 
 #include <utility>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
 
 namespace kth {
 namespace node {

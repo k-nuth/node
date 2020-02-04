@@ -53,12 +53,18 @@ option(WITH_TESTS "Compile with unit tests." ON)
 
 set(KTH_PROJECT_VERSION "-" CACHE STRING "Specify the Knuth Project Version.")
 # message(${KTH_PROJECT_VERSION})
+message( STATUS "Knuth: Compiling version ${KTH_PROJECT_VERSION}")
 
-
-set(MICROARCHITECTURE "x86_64" CACHE STRING "Specify the Cryptocurrency (x86_64|...).")
+set(MICROARCHITECTURE "x86_64" CACHE STRING "Specify the Microarchitecture (x86_64|...).")
 message( STATUS "Knuth: Compiling for ${MICROARCHITECTURE}")
 # add_definitions(-DKTH_MICROARCHITECTURE=${MICROARCHITECTURE})
 # add_definitions(-DKTH_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
+
+set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
+message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
+
+message( STATUS "Knuth: CONAN_CXX_FLAGS ${CONAN_CXX_FLAGS}")
+message( STATUS "Knuth: CONAN_C_FLAGS ${CONAN_C_FLAGS}")
 
 
 # Implement --with-keoken and declare KTH_WITH_KEOKEN.
@@ -527,35 +533,35 @@ endif()
 
 
 set(_kth_headers
-        # include_bitcoin_HEADERS =
-        bitcoin/node.hpp
-        # include_bitcoin_node_HEADERS =
-        bitcoin/node/configuration.hpp
-        bitcoin/node/define.hpp
-        bitcoin/node/full_node.hpp
-        bitcoin/node/parser.hpp
-        bitcoin/node/settings.hpp
-        bitcoin/node/version.hpp
-        # include_bitcoin_node_protocols_HEADERS =
-        bitcoin/node/protocols/protocol_block_in.hpp
-        bitcoin/node/protocols/protocol_block_out.hpp
-        bitcoin/node/protocols/protocol_block_sync.hpp
-        bitcoin/node/protocols/protocol_header_sync.hpp
-        bitcoin/node/protocols/protocol_transaction_in.hpp
-        bitcoin/node/protocols/protocol_transaction_out.hpp
-        # include_bitcoin_node_sessions_HEADERS =
-        bitcoin/node/sessions/session.hpp
-        bitcoin/node/sessions/session_block_sync.hpp
-        bitcoin/node/sessions/session_header_sync.hpp
-        bitcoin/node/sessions/session_inbound.hpp
-        bitcoin/node/sessions/session_manual.hpp
-        bitcoin/node/sessions/session_outbound.hpp
-        # include_bitcoin_node_utility_HEADERS =
-        bitcoin/node/utility/check_list.hpp
-        bitcoin/node/utility/header_list.hpp
-        bitcoin/node/utility/performance.hpp
-        bitcoin/node/utility/reservation.hpp
-        bitcoin/node/utility/reservations.hpp)
+        # include_kth_HEADERS =
+        kth/node.hpp
+        # include_kth_node_HEADERS =
+        kth/node/configuration.hpp
+        kth/node/define.hpp
+        kth/node/full_node.hpp
+        kth/node/parser.hpp
+        kth/node/settings.hpp
+        kth/node/version.hpp
+        # include_kth_node_protocols_HEADERS =
+        kth/node/protocols/protocol_block_in.hpp
+        kth/node/protocols/protocol_block_out.hpp
+        kth/node/protocols/protocol_block_sync.hpp
+        kth/node/protocols/protocol_header_sync.hpp
+        kth/node/protocols/protocol_transaction_in.hpp
+        kth/node/protocols/protocol_transaction_out.hpp
+        # include_kth_node_sessions_HEADERS =
+        kth/node/sessions/session.hpp
+        kth/node/sessions/session_block_sync.hpp
+        kth/node/sessions/session_header_sync.hpp
+        kth/node/sessions/session_inbound.hpp
+        kth/node/sessions/session_manual.hpp
+        kth/node/sessions/session_outbound.hpp
+        # include_kth_node_utility_HEADERS =
+        kth/node/utility/check_list.hpp
+        kth/node/utility/header_list.hpp
+        kth/node/utility/performance.hpp
+        kth/node/utility/reservation.hpp
+        kth/node/utility/reservations.hpp)
 foreach (_header ${_kth_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")

@@ -6,10 +6,10 @@
 #define KTH_NODE_SESSION_MANUAL_HPP
 
 #include <memory>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session.hpp>
 
 namespace kth {
 namespace node {

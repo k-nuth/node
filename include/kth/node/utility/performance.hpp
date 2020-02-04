@@ -8,8 +8,8 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/node/define.hpp>
 
 namespace kth {
 namespace node {

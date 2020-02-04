@@ -9,8 +9,8 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/set_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
-#include <bitcoin/database.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/database.hpp>
+#include <kth/node/define.hpp>
 
 namespace kth {
 namespace node {

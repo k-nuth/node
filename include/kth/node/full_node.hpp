@@ -7,14 +7,14 @@
 
 #include <cstdint>
 #include <memory>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/bitcoin/multi_crypto_support.hpp>
-#include <bitcoin/node/configuration.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session_block_sync.hpp>
-#include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/domain/multi_crypto_support.hpp>
+#include <kth/node/configuration.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session_block_sync.hpp>
+#include <kth/node/sessions/session_header_sync.hpp>
+#include <kth/node/utility/check_list.hpp>
 
 // #ifdef WITH_KEOKEN
 // #include <knuth/keoken/manager.hpp>

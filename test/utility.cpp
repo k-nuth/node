@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
-#include <bitcoin/node.hpp>
+#include <kth/node.hpp>
 
 namespace kth {
 namespace node {

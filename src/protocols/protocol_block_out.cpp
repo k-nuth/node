@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/node/protocols/protocol_block_out.hpp>
+#include <kth/node/protocols/protocol_block_out.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -11,15 +11,15 @@
 #include <memory>
 #include <string>
 #include <boost/range/adaptor/reversed.hpp>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
 
 #ifdef KTH_USE_DOMAIN
-#include <bitcoin/infrastructure/math/sip_hash.hpp>
+#include <kth/infrastructure/math/sip_hash.hpp>
 #else
-#include <bitcoin/bitcoin/math/sip_hash.hpp>
+#include <kth/domain/math/sip_hash.hpp>
 #endif // KTH_USE_DOMAIN
 
 namespace kth {

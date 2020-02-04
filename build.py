@@ -18,7 +18,7 @@ if __name__ == "__main__":
             copy_env_vars(env_vars)
 
             if os.getenv('KTH_RUN_TESTS', 'false') == 'true':
-                options["%s:with_tests" % name] = "True"
+                options["%s:tests" % name] = "True"
 
 
             march_ids = get_base_march_ids()
@@ -43,19 +43,19 @@ if __name__ == "__main__":
                 # opts_bch_domain = copy.deepcopy(opts_bch_no_keoken)
                 # opts_bch_domain["%s:use_domain" % name] = "True"
 
-                opts_btc_full = copy.deepcopy(opts_btc)
-                opts_btc_full["%s:db" % name] = "full"
+                # opts_btc_full = copy.deepcopy(opts_btc)
+                # opts_btc_full["%s:db" % name] = "full"
 
                 opts_bch_full = copy.deepcopy(opts_bch_no_keoken)
                 opts_bch_full["%s:db" % name] = "full"
 
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_full, env_vars, build_requires)
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc_full, env_vars, build_requires)
-                # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
-                # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_keoken, env_vars, build_requires)
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_no_keoken, env_vars, build_requires)
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_btc, env_vars, build_requires)
-                # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_ltc, env_vars, build_requires)
+                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_full, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_btc_full, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_keoken, env_vars, build_requires)
+                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_no_keoken, env_vars, build_requires)
+                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_btc, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_ltc, env_vars, build_requires)
             else:
                 options["%s:currency" % name] = ci_currency
                 if ci_currency == "BCH":
@@ -66,17 +66,17 @@ if __name__ == "__main__":
                     opts_bch_domain = copy.deepcopy(options)
                     opts_bch_domain["%s:use_domain" % name] = "True"
                     
-                    handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
-                    # handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, options_keoken, env_vars, build_requires)
+                    handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
+                    # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, options_keoken, env_vars, build_requires)
 
                 opts_db_full = copy.deepcopy(options)
                 opts_db_full["%s:db" % name] = "full"
 
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, opts_db_full, env_vars, build_requires)
-                handle_microarchs("%s:microarchitecture" % name, marchs, filtered_builds, settings, options, env_vars, build_requires)
+                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_db_full, env_vars, build_requires)
+                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, options, env_vars, build_requires)
 
 
-            filter_marchs_tests(name, filtered_builds, ["%s:with_tests" % name])
+            filter_marchs_tests(name, filtered_builds, ["%s:tests" % name])
 
 
     builder.builds = filtered_builds

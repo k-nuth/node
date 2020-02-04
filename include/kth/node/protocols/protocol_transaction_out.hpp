@@ -8,9 +8,9 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
 
 namespace kth {
 namespace node {
