@@ -1,22 +1,8 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/protocols/protocol_block_out.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/protocols/protocol_block_out.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -25,18 +11,18 @@
 #include <memory>
 #include <string>
 #include <boost/range/adaptor/reversed.hpp>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
 
-#ifdef BITPRIM_USE_DOMAIN
-#include <bitcoin/infrastructure/math/sip_hash.hpp>
+#ifdef KTH_USE_DOMAIN
+#include <kth/infrastructure/math/sip_hash.hpp>
 #else
-#include <bitcoin/bitcoin/math/sip_hash.hpp>
-#endif // BITPRIM_USE_DOMAIN
+#include <kth/domain/math/sip_hash.hpp>
+#endif // KTH_USE_DOMAIN
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "block_out"
@@ -50,7 +36,7 @@ using namespace std::placeholders;
 
 inline bool is_witness(uint64_t services)
 {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -67,7 +53,7 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
     // TODO: move send_compact to a derived class protocol_block_out_70014.
     compact_to_peer_(false),
     compact_high_bandwidth_(true),
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
         compact_version_(1),
 #else
         compact_version_(2),
@@ -152,7 +138,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
     if (stopped(ec))
         return false;
 
-    const auto size = message->start_hashes().size();
+    auto const size = message->start_hashes().size();
 
     if (size > max_locator)
     {
@@ -171,7 +157,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
         return true;
     }
 
-    const auto threshold = last_locator_top_.load();
+    auto const threshold = last_locator_top_.load();
 
     // LOG_INFO(LOG_NODE) << "asm int $3 - 2";
     // asm("int $3");  //TODO(fernando): remover
@@ -195,7 +181,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
         return;
     }
 
-    // NOTE(Bitprim): In case message-> elements() is empty, the headers message also needs
+    //Note(kth): In case message-> elements() is empty, the headers message also needs
     // to return an empty array, so the getheaders sender knows that it is already synced.
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);
@@ -212,7 +198,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
 }
 
 bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, get_block_transactions_const_ptr message) {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     bool witness = false;
 #else
     bool witness = true;
@@ -224,7 +210,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 
     //LOG_INFO(LOG_NODE) << "asm int $3 - 3";
     //asm("int $3");  //TODO(fernando): remover
-//#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
@@ -274,7 +260,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
             SEND2(response, handle_send, _1, block_transactions::command);
         } 
     });
-//#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
 
     return true;
 }
@@ -289,7 +275,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     if (stopped(ec))
         return false;
 
-    const auto size = message->start_hashes().size();
+    auto const size = message->start_hashes().size();
 
     if (size > max_locator)
     {
@@ -312,13 +298,13 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     ////if (chain_.is_stale())
     ////    return true;
 
-    const auto threshold = last_locator_top_.load();
+    auto const threshold = last_locator_top_.load();
 
     //LOG_INFO(LOG_NODE) << "asm int $3 - 4";
     //asm("int $3");  //TODO(fernando): remover
-//#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_locator_block_hashes(message, threshold, max_get_blocks, BIND2(handle_fetch_locator_hashes, _1, _2));
-//#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
     return true;
 }
 
@@ -379,7 +365,7 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
     ////    return true;
 
     // Create a copy because message is const because it is shared.
-    const auto response = std::make_shared<inventory>();
+    auto const response = std::make_shared<inventory>();
 
     // TODO: convert all compact_block elements to block unless block is,
     // "recently announced and ... close to the tip of the best chain".
@@ -387,7 +373,7 @@ bool protocol_block_out::handle_receive_get_data(const code& ec,
     // Peer may request compact only after receipt of a send_compact message.
 
     // Reverse copy the block elements of the const inventory.
-    for (const auto inventory: reverse(message->inventories()))
+    for (auto const inventory: reverse(message->inventories()))
         if (inventory.is_block_type())
             response->inventories().push_back(inventory);
 
@@ -401,7 +387,7 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
         return;
 
     // The order is reversed so that we can pop from the back.
-    const auto& entry = inventory->inventories().back();
+    auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
         case inventory::type_id::witness_block: {
@@ -411,37 +397,37 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
             }
             //LOG_INFO(LOG_NODE) << "asm int $3 - 5";
             //asm("int $3");  //TODO(fernando): remover
-//#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL) 
+//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL) 
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
-//#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         }
         case inventory::type_id::block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 6";
             //asm("int $3");  //TODO(fernando): remover
-//#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
-//#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         }
         case inventory::type_id::filtered_block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 7";
             //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
-#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         }
         case inventory::type_id::compact_block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 8";
             //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_BLOCKS) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_compact_block(entry.hash(), BIND4(send_compact_block, _1, _2, _3, inventory));
-#endif // BITPRIM_DB_LEGACY || BITPRIM_DB_NEW_BLOCKS || defined(BITPRIM_DB_NEW_FULL)
+#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         }
         default: {
-            BITCOIN_ASSERT_MSG(false, "improperly-filtered inventory");
+            KTH_ASSERT_MSG(false, "improperly-filtered inventory");
         }
     }
 }
@@ -458,7 +444,7 @@ void protocol_block_out::send_block(const code& ec, block_const_ptr message,
             << "Block requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        BITCOIN_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT(!inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -490,7 +476,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
             << "Merkle block requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        BITCOIN_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT(!inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -522,7 +508,7 @@ void protocol_block_out::send_compact_block(const code& ec,
             << "Compact block requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        BITCOIN_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT(!inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -547,7 +533,7 @@ void protocol_block_out::handle_send_next(const code& ec,
     if (stopped(ec))
         return;
 
-    BITCOIN_ASSERT(!inventory->inventories().empty());
+    KTH_ASSERT(!inventory->inventories().empty());
     inventory->inventories().pop_back();
 
     // Break off recursion.
@@ -585,7 +571,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1)
     {
         // TODO: move compact_block to a derived class protocol_block_in_70014.
-        const auto block = incoming->front();
+        auto const block = incoming->front();
 
         if (block->validation.originator != nonce())
         {
@@ -600,14 +586,14 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         // TODO: move headers to a derived class protocol_block_in_70012.
         headers announce;
 
-        for (const auto block: *incoming)
+        for (auto const block: *incoming)
             if (block->validation.originator != nonce())
                 announce.elements().push_back(block->header());
 
         if (!announce.elements().empty())
         {
             SEND2(announce, handle_send, _1, announce.command);
-            ////const auto hash = announce.elements().front().hash();
+            ////auto const hash = announce.elements().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block header [" << encode_hash(hash)
             ////    << "] to [" << authority() << "].";
@@ -619,9 +605,9 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     {
         inventory announce;
 
-        for (const auto block: *incoming)
+        for (auto const block: *incoming)
             if (block->validation.originator != nonce()) {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
                 announce.inventories().push_back(
                     { inventory::type_id::block, block->header().hash() });
 #else
@@ -642,7 +628,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         if (!announce.inventories().empty())
         {
             SEND2(announce, handle_send, _1, announce.command);
-            ////const auto hash = announce.inventories().front().hash();
+            ////auto const hash = announce.inventories().front().hash();
             ////LOG_DEBUG(LOG_NODE)
             ////    << "Announced block inventory [" << encode_hash(hash)
             ////    << "] to [" << authority() << "].";
@@ -678,7 +664,7 @@ void protocol_block_out::handle_stop(const code&)
 // generating fork-relative locators.
 size_t protocol_block_out::locator_limit()
 {
-    const auto height = node_.top_block().height();
+    auto const height = node_.top_block().height();
     return safe_add(chain::block::locator_size(height), size_t(1));
 }
 
@@ -693,4 +679,4 @@ size_t protocol_block_out::locator_limit()
 // locators are only useful in walking up the chain.
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

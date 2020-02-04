@@ -1,0 +1,39 @@
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef KTH_NODE_SESSION_INBOUND_HPP
+#define KTH_NODE_SESSION_INBOUND_HPP
+
+#include <memory>
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session.hpp>
+
+namespace kth {
+namespace node {
+
+class full_node;
+
+/// Inbound connections session, thread safe.
+class BCN_API session_inbound
+  : public session<network::session_inbound>, track<session_inbound>
+{
+public:
+    typedef std::shared_ptr<session_inbound> ptr;
+
+    /// Construct an instance.
+    session_inbound(full_node& network, blockchain::safe_chain& chain);
+
+protected:
+    /// Overridden to attach blockchain protocols.
+    void attach_protocols(network::channel::ptr channel) override;
+
+    blockchain::safe_chain& chain_;
+};
+
+} // namespace node
+} // namespace kth
+
+#endif

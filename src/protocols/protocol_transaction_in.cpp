@@ -1,22 +1,8 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/protocols/protocol_transaction_in.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/protocols/protocol_transaction_in.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -24,11 +10,11 @@
 #include <functional>
 #include <memory>
 #include <utility>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "transaction_in"
@@ -41,7 +27,7 @@ using namespace std::placeholders;
 
 inline bool is_witness(uint64_t services)
 {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -122,7 +108,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     if (stopped(ec))
         return false;
 
-    const auto response = std::make_shared<get_data>();
+    auto const response = std::make_shared<get_data>();
 
     // Copy the transaction inventories into a get_data instance.
     message->reduce(response->inventories(), inventory::type_id::transaction);
@@ -142,7 +128,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     if (chain_.is_stale())
         return true;
 
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL) || defined(BITPRIM_WITH_MEMPOOL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL) || defined(KTH_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
@@ -163,7 +149,7 @@ void protocol_transaction_in::send_get_data(const code& ec, get_data_ptr message
         return;
     }
 
-#ifndef BITPRIM_CURRENCY_BCH
+#ifndef KTH_CURRENCY_BCH
     // Convert requested message types to corresponding witness types.
     if (require_witness_) {
         message->to_witness();
@@ -227,7 +213,7 @@ void protocol_transaction_in::handle_store_transaction(const code& ec,
     if (ec == error::orphan_transaction)
         send_get_transactions(message);
 
-    const auto encoded = encode_hash(message->hash());
+    auto const encoded = encode_hash(message->hash());
 
     // It is okay for us to receive a duplicate or a missing outputs tx but it
     // is not generally okay to receive an otherwise invalid transaction.
@@ -267,9 +253,9 @@ void protocol_transaction_in::send_get_transactions(
     if (missing.empty())
         return;
 
-    const auto request = std::make_shared<get_data>(std::move(missing), type);
+    auto const request = std::make_shared<get_data>(std::move(missing), type);
 
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL) || defined(BITPRIM_WITH_MEMPOOL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL) || defined(KTH_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // This removes spent transactions which is not correnct, however given the
     // treatment of duplicate hashes by other nodes and the fact that this is
@@ -288,4 +274,4 @@ void protocol_transaction_in::handle_stop(const code&)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

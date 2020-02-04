@@ -1,37 +1,23 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/full_node.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/full_node.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <utility>
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/node/configuration.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/sessions/session_block_sync.hpp>
-#include <bitcoin/node/sessions/session_header_sync.hpp>
-#include <bitcoin/node/sessions/session_inbound.hpp>
-#include <bitcoin/node/sessions/session_manual.hpp>
-#include <bitcoin/node/sessions/session_outbound.hpp>
+#include <kth/blockchain.hpp>
+#include <kth/node/configuration.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/sessions/session_block_sync.hpp>
+#include <kth/node/sessions/session_header_sync.hpp>
+#include <kth/node/sessions/session_inbound.hpp>
+#include <kth/node/sessions/session_manual.hpp>
+#include <kth/node/sessions/session_outbound.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::blockchain;
@@ -108,7 +94,7 @@ void full_node::run(result_handler handler)
     ////}
 
     ////// The instance is retained by the stop handler (i.e. until shutdown).
-    ////const auto header_sync = attach_header_sync_session();
+    ////auto const header_sync = attach_header_sync_session();
 
     ////// This is invoked on a new thread.
     ////header_sync->start(
@@ -134,7 +120,7 @@ void full_node::handle_headers_synchronized(const code& ec,
     ////}
 
     ////// The instance is retained by the stop handler (i.e. until shutdown).
-    ////const auto block_sync = attach_block_sync_session();
+    ////auto const block_sync = attach_block_sync_session();
 
     ////// This is invoked on a new thread.
     ////block_sync->start(
@@ -197,12 +183,12 @@ bool full_node::handle_reorganized(code ec, size_t fork_height,
     if (!incoming || incoming->empty())
         return true;
 
-    for (const auto block: *outgoing)
+    for (auto const block: *outgoing)
         LOG_DEBUG(LOG_NODE)
             << "Reorganization moved block to orphan pool ["
             << encode_hash(block->header().hash()) << "]";
 
-    const auto height = safe_add(fork_height, incoming->size());
+    auto const height = safe_add(fork_height, incoming->size());
 
     set_top_block({ incoming->back()->hash(), height });
     return true;
@@ -246,8 +232,8 @@ session_block_sync::ptr full_node::attach_block_sync_session()
 bool full_node::stop()
 {
     // Suspend new work last so we can use work to clear subscribers.
-    const auto p2p_stop = p2p::stop();
-    const auto chain_stop = chain_.stop();
+    auto const p2p_stop = p2p::stop();
+    auto const chain_stop = chain_.stop();
 
     if (!p2p_stop)
         LOG_ERROR(LOG_NODE)
@@ -270,8 +256,8 @@ bool full_node::close()
     if (!full_node::stop())
         return false;
 
-    const auto p2p_close = p2p::close();
-    const auto chain_close = chain_.close();
+    auto const p2p_close = p2p::close();
+    auto const chain_close = chain_.close();
 
     if (!p2p_close)
         LOG_ERROR(LOG_NODE)
@@ -297,19 +283,17 @@ const blockchain::settings& full_node::chain_settings() const
     return chain_settings_;
 }
 
-safe_chain& full_node::chain()
-{
+safe_chain& full_node::chain() {
     return chain_;
 }
 
 //TODO: remove this function and use safe_chain in the rpc lib
-block_chain& full_node::chain_bitprim()
-{
+block_chain& full_node::chain_kth() {
     return chain_;
 }
 
 // #ifdef WITH_KEOKEN
-// bitprim::keoken::manager<bitprim::keoken::state_delegated>& full_node::keoken_manager() {
+// knuth::keoken::manager<knuth::keoken::state_delegated>& full_node::keoken_manager() {
 //     return keoken_manager_;
 // }
 // #endif
@@ -330,11 +314,11 @@ void full_node::subscribe_transaction(transaction_handler&& handler)
 // Init node utils.
 // ------------------------------------------------------------------------
 chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
-//    bool const testnet = libbitcoin::get_network(metadata_.configured.network.identifier) == libbitcoin::config::settings::testnet;
+//    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
 
     bool const testnet_blocks = settings.easy_blocks;
     bool const retarget = settings.retarget;
-    const auto mainnet = retarget && !testnet_blocks;
+    auto const mainnet = retarget && !testnet_blocks;
 
     if (!mainnet && !testnet_blocks) {
         ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
@@ -346,4 +330,4 @@ chain::block full_node::get_genesis_block(blockchain::settings const& settings) 
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

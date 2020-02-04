@@ -1,25 +1,11 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 ////#include <algorithm>
 ////#include <memory>
 ////#include <boost/test/unit_test.hpp>
-////#include <bitcoin/node.hpp>
+////#include <kth/node.hpp>
 ////#include "utility.hpp"
 ////
 ////using namespace bc;
@@ -51,14 +37,14 @@
 ////
 ////BOOST_AUTO_TEST_CASE(reservations__import__true__true)
 ////{
-////    const auto block_ptr = std::make_shared<const block>();
+////    auto const block_ptr = std::make_shared<const block>();
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    BOOST_REQUIRE(reserves.import(block_ptr, 42));
 ////}
 ////
 ////BOOST_AUTO_TEST_CASE(reservations__import__false__false)
 ////{
-////    const auto block_ptr = std::make_shared<const block>();
+////    auto const block_ptr = std::make_shared<const block>();
 ////    DECLARE_RESERVATIONS(reserves, false);
 ////    BOOST_REQUIRE(!reserves.import(block_ptr, 42));
 ////}
@@ -79,7 +65,7 @@
 ////    header_queue hashes(no_checks);
 ////    hashes.initialize(check42);
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 1u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 1u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->slot(), 0u);
@@ -91,12 +77,12 @@
 ////    node::settings settings;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(3, check42.hash());
+////    auto const message = message_factory(3, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 4u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 1u);
 ////    BOOST_REQUIRE_EQUAL(table[1]->size(), 1u);
@@ -115,12 +101,12 @@
 ////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(45, check42.hash());
+////    auto const message = message_factory(45, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 5u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 9u);
 ////    BOOST_REQUIRE_EQUAL(table[1]->size(), 9u);
@@ -140,12 +126,12 @@
 ////    node::settings settings;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(41, check42.hash());
+////    auto const message = message_factory(41, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 8u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 5u);
 ////    BOOST_REQUIRE_EQUAL(table[1]->size(), 5u);
@@ -176,10 +162,10 @@
 ////    header_queue hashes(no_checks);
 ////    hashes.initialize(check42);
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 1u);
 ////
-////    const auto row = table[0];
+////    auto const row = table[0];
 ////    reserves.remove(row);
 ////    BOOST_REQUIRE(reserves.table().empty());
 ////    BOOST_REQUIRE_NO_THROW(reserves.remove(row));
@@ -190,20 +176,20 @@
 ////    node::settings settings;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(3, check42.hash());
+////    auto const message = message_factory(3, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table1 = reserves.table();
+////    auto const table1 = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table1.size(), 4u);
 ////    BOOST_REQUIRE(hashes.empty());
 ////
-////    const auto row = table1[2];
+////    auto const row = table1[2];
 ////    BOOST_REQUIRE_EQUAL(row->slot(), 2u);
 ////
 ////    reserves.remove(row);
-////    const auto table2 = reserves.table();
+////    auto const table2 = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table2.size(), 3u);
 ////    BOOST_REQUIRE_EQUAL(table2[0]->slot(), 0u);
 ////    BOOST_REQUIRE_EQUAL(table2[1]->slot(), 1u);
@@ -219,12 +205,12 @@
 ////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(9, check42.hash());
+////    auto const message = message_factory(9, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
 ////    // All rows have three hashes.
@@ -249,12 +235,12 @@
 ////    node::settings settings;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(3, check42.hash());
+////    auto const message = message_factory(3, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 4u);
 ////
 ////    // All rows have one hash.
@@ -284,16 +270,16 @@
 ////    header_queue hashes(no_checks);
 ////
 ////    // Initialize with a known header so we can import its block later.
-////    const auto message = message_factory(3, null_hash);
+////    auto const message = message_factory(3, null_hash);
 ////    auto& elements = message->elements();
-////    const auto genesis_header = elements[0];
+////    auto const genesis_header = elements[0];
 ////    hashes.initialize(genesis_header.hash(), 0);
 ////    elements.erase(std::find(elements.begin(), elements.end(), elements[0]));
 ////    BOOST_REQUIRE_EQUAL(elements.size(), 2u);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
 ////    // There are no hashes in reserve.
@@ -301,9 +287,9 @@
 ////
 ////    // Declare blocks that hash to the allocated headers.
 ////    // Blocks are evenly distrubuted (every third to each row).
-////    const auto block0 = std::make_shared<const block>(block{ genesis_header, {} });
-////    const auto block1 = std::make_shared<const block>(block{ elements[0], {} });
-////    const auto block2 = std::make_shared<const block>(block{ elements[1], {} });
+////    auto const block0 = std::make_shared<const block>(block{ genesis_header, {} });
+////    auto const block1 = std::make_shared<const block>(block{ elements[0], {} });
+////    auto const block2 = std::make_shared<const block>(block{ elements[1], {} });
 ////
 ////    // All rows have one hash.
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 1u); // 0
@@ -331,20 +317,20 @@
 ////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(7, check42.hash());
+////    auto const message = message_factory(7, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
 ////    BOOST_REQUIRE_EQUAL(hashes.size(), 2u);
 ////    BOOST_REQUIRE_EQUAL(table[0]->size(), 2u);
 ////    BOOST_REQUIRE_EQUAL(table[1]->size(), 2u);
 ////
-////    const auto block1 = std::make_shared<block>(block{ message->elements()[0], {} });
-////    const auto block4 = std::make_shared<block>(block{ message->elements()[3], {} });
+////    auto const block1 = std::make_shared<block>(block{ message->elements()[0], {} });
+////    auto const block4 = std::make_shared<block>(block{ message->elements()[3], {} });
 ////
 ////    // The import of two blocks from same row will cause populate to invoke reservation.
 ////    table[1]->import(block1);
@@ -365,12 +351,12 @@
 ////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(7, check42.hash());
+////    auto const message = message_factory(7, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
 ////    BOOST_REQUIRE_EQUAL(hashes.size(), 2u);
@@ -380,8 +366,8 @@
 ////    // Cap reserve at 1 block.
 ////    reserves.set_max_request(1);
 ////
-////    const auto block1 = std::make_shared<const block>(block{ message->elements()[0], {} });
-////    const auto block4 = std::make_shared<const block>(block{ message->elements()[3], {} });
+////    auto const block1 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    auto const block4 = std::make_shared<const block>(block{ message->elements()[3], {} });
 ////
 ////    // The import of two blocks from same row will cause populate to invoke reservation.
 ////    table[1]->import(block1);
@@ -404,16 +390,16 @@
 ////    header_queue hashes(no_checks);
 ////
 ////    // Initialize with a known header so we can import its block later.
-////    const auto message = message_factory(9, null_hash);
+////    auto const message = message_factory(9, null_hash);
 ////    auto& elements = message->elements();
-////    const auto genesis_header = elements[0];
+////    auto const genesis_header = elements[0];
 ////    hashes.initialize(genesis_header.hash(), 0);
 ////    elements.erase(std::find(elements.begin(), elements.end(), elements[0]));
 ////    BOOST_REQUIRE_EQUAL(elements.size(), 8u);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
 ////    // There are no hashes in reserve.
@@ -421,15 +407,15 @@
 ////
 ////    // Declare blocks that hash to the allocated headers.
 ////    // Blocks are evenly distrubuted (every third to each row).
-////    const auto block0 = std::make_shared<const block>(block{ genesis_header, {} });
-////    const auto block1 = std::make_shared<const block>(block{ elements[0], {} });
-////    const auto block2 = std::make_shared<const block>(block{ elements[1], {} });
-////    const auto block3 = std::make_shared<const block>(block{ elements[2], {} });
-////    const auto block4 = std::make_shared<const block>(block{ elements[3], {} });
-////    const auto block5 = std::make_shared<const block>(block{ elements[4], {} });
-////    const auto block6 = std::make_shared<const block>(block{ elements[5], {} });
-////    const auto block7 = std::make_shared<const block>(block{ elements[6], {} });
-////    const auto block8 = std::make_shared<const block>(block{ elements[7], {} });
+////    auto const block0 = std::make_shared<const block>(block{ genesis_header, {} });
+////    auto const block1 = std::make_shared<const block>(block{ elements[0], {} });
+////    auto const block2 = std::make_shared<const block>(block{ elements[1], {} });
+////    auto const block3 = std::make_shared<const block>(block{ elements[2], {} });
+////    auto const block4 = std::make_shared<const block>(block{ elements[3], {} });
+////    auto const block5 = std::make_shared<const block>(block{ elements[4], {} });
+////    auto const block6 = std::make_shared<const block>(block{ elements[5], {} });
+////    auto const block7 = std::make_shared<const block>(block{ elements[6], {} });
+////    auto const block8 = std::make_shared<const block>(block{ elements[7], {} });
 ////
 ////    // This will reset pending on all rows.
 ////    BOOST_REQUIRE_EQUAL(table[0]->request(false).inventories().size(), 3u);
@@ -572,7 +558,7 @@
 ////BOOST_AUTO_TEST_CASE(reservations__rates__default__zeros)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const auto rates = reserves.rates();
+////    auto const rates = reserves.rates();
 ////    BOOST_REQUIRE_EQUAL(rates.active_count, 0u);
 ////    BOOST_REQUIRE_EQUAL(rates.arithmentic_mean, 0.0);
 ////    BOOST_REQUIRE_EQUAL(rates.standard_deviation, 0.0);
@@ -584,15 +570,15 @@
 ////    settings.sync_peers = 3;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(2, check42.hash());
+////    auto const message = message_factory(2, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////    BOOST_REQUIRE_EQUAL(table.size(), 3u);
 ////
-////    const auto rates1 = reserves.rates();
+////    auto const rates1 = reserves.rates();
 ////    BOOST_REQUIRE_EQUAL(rates1.active_count, 0u);
 ////    BOOST_REQUIRE_EQUAL(rates1.arithmentic_mean, 0.0);
 ////    BOOST_REQUIRE_EQUAL(rates1.standard_deviation, 0.0);
@@ -611,7 +597,7 @@
 ////    table[1]->set_rate(std::move(rate1));
 ////    table[2]->set_rate(std::move(rate2));
 ////
-////    const auto rates2 = reserves.rates();
+////    auto const rates2 = reserves.rates();
 ////
 ////    // There are three active (non-idle) rows.
 ////    BOOST_REQUIRE_EQUAL(rates2.active_count, 3u);
@@ -631,12 +617,12 @@
 ////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
 ////    header_queue hashes(no_checks);
-////    const auto message = message_factory(4, check42.hash());
+////    auto const message = message_factory(4, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////
 ////    // normalized rate: 5 / (2 - 1) = 5
 ////    performance rate0;
@@ -680,7 +666,7 @@
 ////    table[3]->set_rate(std::move(rate3));
 ////    table[4]->set_rate(std::move(rate4));
 ////
-////    const auto rates2 = reserves.rates();
+////    auto const rates2 = reserves.rates();
 ////
 ////    // There are three active (non-idle) rows.
 ////    BOOST_REQUIRE_EQUAL(rates2.active_count, 4u);

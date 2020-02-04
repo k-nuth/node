@@ -1,22 +1,8 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/utility/reservation.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/utility/reservation.hpp>
 
 #include <chrono>
 #include <cmath>
@@ -24,12 +10,12 @@
 #include <cstdint>
 #include <utility>
 #include <boost/format.hpp>
-#include <bitcoin/bitcoin.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/performance.hpp>
-#include <bitcoin/node/utility/reservations.hpp>
+#include <kth/domain.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/performance.hpp>
+#include <kth/node/utility/reservations.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace std::chrono;
@@ -64,7 +50,7 @@ reservation::reservation(reservations& reservations, size_t slot,
 reservation::~reservation()
 {
     // This complicates unit testing and isn't strictly necessary.
-    ////BITCOIN_ASSERT_MSG(heights_.empty(), "The reservation is not empty.");
+    ////KTH_ASSERT_MSG(heights_.empty(), "The reservation is not empty.");
 }
 
 size_t reservation::slot() const
@@ -137,15 +123,15 @@ performance reservation::rate() const
 // Ignore idleness here, called only from an active channel, avoiding a race.
 bool reservation::expired() const
 {
-    const auto record = rate();
-    const auto normal_rate = record.normal();
-    const auto statistics = reservations_.rates();
-    const auto deviation = normal_rate - statistics.arithmentic_mean;
-    const auto absolute_deviation = std::fabs(deviation);
-    const auto allowed_deviation = multiple * statistics.standard_deviation;
-    const auto outlier = absolute_deviation > allowed_deviation;
-    const auto below_average = deviation < 0;
-    const auto expired = below_average && outlier;
+    auto const record = rate();
+    auto const normal_rate = record.normal();
+    auto const statistics = reservations_.rates();
+    auto const deviation = normal_rate - statistics.arithmentic_mean;
+    auto const absolute_deviation = std::fabs(deviation);
+    auto const allowed_deviation = multiple * statistics.standard_deviation;
+    auto const outlier = absolute_deviation > allowed_deviation;
+    auto const below_average = deviation < 0;
+    auto const expired = below_average && outlier;
 
     ////LOG_DEBUG(LOG_NODE)
     ////    << "Statistics for slot (" << slot() << ")"
@@ -180,17 +166,17 @@ void reservation::update_rate(size_t events, const microseconds& database)
     history_mutex_.lock();
 
     performance rate{ false, 0, 0, 0 };
-    const auto end = now();
-    const auto event_start = end - microseconds(database);
-    const auto start = end - rate_window();
-    const auto history_count = history_.size();
+    auto const end = now();
+    auto const event_start = end - microseconds(database);
+    auto const start = end - rate_window();
+    auto const history_count = history_.size();
 
     // Remove expired entries from the head of the queue.
     for (auto it = history_.begin(); it != history_.end() && it->time < start;
         it = history_.erase(it));
 
-    const auto window_full = history_count > history_.size();
-    const auto event_cost = static_cast<uint64_t>(database.count());
+    auto const window_full = history_count > history_.size();
+    auto const event_cost = static_cast<uint64_t>(database.count());
     history_.push_back({ events, event_cost, event_start });
 
     // We can't set the rate until we have a period (two or more data points).
@@ -202,11 +188,11 @@ void reservation::update_rate(size_t events, const microseconds& database)
     }
 
     // Summarize event count and database cost.
-    for (const auto& record: history_)
+    for (auto const& record: history_)
     {
-        BITCOIN_ASSERT(rate.events <= max_size_t - record.events);
+        KTH_ASSERT(rate.events <= max_size_t - record.events);
         rate.events += record.events;
-        BITCOIN_ASSERT(rate.database <= max_uint64 - record.database);
+        KTH_ASSERT(rate.database <= max_uint64 - record.database);
         rate.database += record.database;
     }
 
@@ -286,7 +272,7 @@ message::get_data reservation::request(bool new_channel)
     for (auto height = heights_.right.begin(); height != heights_.right.end();
         ++height)
     {
-        static const auto id = message::inventory::type_id::block;
+        static auto const id = message::inventory::type_id::block;
         packet.inventories().emplace_back(id, height->second);
     }
 
@@ -313,8 +299,8 @@ void reservation::insert(hash_digest&& hash, size_t height)
 void reservation::import(block_const_ptr block)
 {
     size_t height;
-    const auto hash = block->header().hash();
-    const auto encoded = encode_hash(hash);
+    auto const hash = block->header().hash();
+    auto const encoded = encode_hash(hash);
 
     if (!find_height_and_erase(hash, height))
     {
@@ -325,20 +311,20 @@ void reservation::import(block_const_ptr block)
     }
 
     bool success;
-    const auto importer = [this, &block, &height, &success]()
+    auto const importer = [this, &block, &height, &success]()
     {
         success = reservations_.import(block, height);
     };
 
     // Do the block import with timer.
-    const auto cost = timer<microseconds>::duration(importer);
+    auto const cost = timer<microseconds>::duration(importer);
 
     if (success)
     {
-        static const auto unit_size = 1u;
+        static auto const unit_size = 1u;
         update_rate(unit_size, cost);
-        const auto record = rate();
-        static const auto formatter =
+        auto const record = rate();
+        static auto const formatter =
             "Imported block #%06i (%02i) [%s] %06.2f %05.2f%%";
 
         LOG_INFO(LOG_NODE)
@@ -414,7 +400,7 @@ bool reservation::partition(reservation::ptr minimal)
 
     // This addition is safe.
     // Take half of the maximal reservation, rounding up to get last entry.
-    const auto offset = (heights_.size() + 1u) / 2u;
+    auto const offset = (heights_.size() + 1u) / 2u;
     auto it = heights_.right.begin();
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -428,7 +414,7 @@ bool reservation::partition(reservation::ptr minimal)
     }
 
     partitioned_ = !heights_.empty();
-    const auto populated = !minimal->empty();
+    auto const populated = !minimal->empty();
     minimal->pending_ = populated;
 
     if (!partitioned_)
@@ -460,7 +446,7 @@ bool reservation::find_height_and_erase(const hash_digest& hash,
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();
 
-    const auto it = heights_.left.find(hash);
+    auto const it = heights_.left.find(hash);
 
     if (it == heights_.left.end())
     {
@@ -481,4 +467,4 @@ bool reservation::find_height_and_erase(const hash_digest& hash,
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

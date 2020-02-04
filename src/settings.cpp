@@ -1,26 +1,12 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/settings.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/bitcoin.hpp>
+#include <kth/node/settings.hpp>
 
-namespace libbitcoin {
+#include <kth/domain.hpp>
+
+namespace kth {
 namespace node {
 
 using namespace bc::asio;
@@ -35,8 +21,8 @@ settings::settings()
     , subscriber_port(5556)
     , compact_blocks_high_bandwidth(true)
     , rpc_allow_all_ips(false)
-#ifdef BITPRIM_WITH_KEOKEN
-    , keoken_genesis_height(libbitcoin::max_size_t)
+#ifdef KTH_WITH_KEOKEN
+    , keoken_genesis_height(kth::max_size_t)
 #endif
 {
     rpc_allow_ip.push_back("127.0.0.1");
@@ -54,4 +40,4 @@ duration settings::block_latency() const
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

@@ -1,32 +1,18 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/protocols/protocol_transaction_out.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/protocols/protocol_transaction_out.hpp>
 
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <boost/range/adaptor/reversed.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/full_node.hpp>
+#include <kth/network.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/full_node.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "transaction_out"
@@ -42,7 +28,7 @@ using namespace std::placeholders;
 
 inline bool is_witness(uint64_t services)
 {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -162,10 +148,10 @@ bool protocol_transaction_out::handle_receive_get_data(const code& ec,
     }
 
     // Create a copy because message is const because it is shared.
-    const auto response = std::make_shared<inventory>();
+    auto const response = std::make_shared<inventory>();
 
     // Reverse copy the transaction elements of the const inventory.
-    for (const auto inventory: reverse(message->inventories()))
+    for (auto const inventory: reverse(message->inventories()))
         if (inventory.is_transaction_type())
             response->inventories().push_back(inventory);
 
@@ -179,7 +165,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
         return;
 
     // The order is reversed so that we can pop from the back.
-    const auto& entry = inventory->inventories().back();
+    auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
         case inventory::type_id::witness_transaction: {
@@ -190,21 +176,21 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
 
             //LOG_INFO(LOG_NODE) << "asm int $3 - 11";
             //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
+#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         }
         case inventory::type_id::transaction: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 12";
             //asm("int $3");  //TODO(fernando): remover
-#if defined(BITPRIM_DB_LEGACY) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
+#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         }
         default: {
-            BITCOIN_ASSERT_MSG(false, "improperly-filtered inventory");
+            KTH_ASSERT_MSG(false, "improperly-filtered inventory");
         }
     }
 }
@@ -222,11 +208,11 @@ void protocol_transaction_out::send_transaction(const code& ec,
     
     // Treat already confirmed transactions as not found.
     auto confirmed = !ec 
-#if defined(BITPRIM_DB_LEGACY) 
+#if defined(KTH_DB_LEGACY) 
                     && position != transaction_database::unconfirmed
-#elif defined(BITPRIM_DB_NEW_FULL)
+#elif defined(KTH_DB_NEW_FULL)
                     && position != position_max
-#endif // BITPRIM_DB_LEGACY || defined(BITPRIM_DB_NEW_FULL)
+#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
                     ;
                     
     if (ec == error::not_found || confirmed) {
@@ -234,7 +220,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
             << "Transaction requested by [" << authority() << "] not found.";
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        BITCOIN_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT(!inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -258,7 +244,7 @@ void protocol_transaction_out::handle_send_next(const code& ec,
     if (stopped(ec))
         return;
 
-    BITCOIN_ASSERT(!inventory->inventories().empty());
+    KTH_ASSERT(!inventory->inventories().empty());
     inventory->inventories().pop_back();
 
     // Break off recursion.
@@ -300,7 +286,7 @@ bool protocol_transaction_out::handle_transaction_pool(const code& ec,
         return true;
 
     inventory::type_id id;
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     id = inventory::type_id::transaction;
 #else
     if (message->is_segregated()){
@@ -327,4 +313,4 @@ void protocol_transaction_out::handle_stop(const code&)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

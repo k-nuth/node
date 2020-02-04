@@ -6,7 +6,6 @@
 *.pyc
 Makefile
 Makefile.in
-libbitcoin-node.pc
 
 pkg/
 
@@ -33,7 +32,6 @@ node_test/
 .idea/
 cmake-build-debug/
 cmake-build-release/
-bitprim-node.dir/
 
 CMakeSettings.json
 

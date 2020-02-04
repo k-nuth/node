@@ -1,30 +1,16 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/utility/header_list.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/utility/header_list.hpp>
 
 #include <algorithm>
 #include <cstddef>
 #include <utility>
-#include <bitcoin/node/define.hpp>
-#include <bitcoin/node/utility/check_list.hpp>
+#include <kth/node/define.hpp>
+#include <kth/node/utility/check_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::chain;
@@ -95,18 +81,18 @@ const chain::header::list& header_list::headers() const
 
 bool header_list::merge(headers_const_ptr message)
 {
-    const auto& headers = message->elements();
+    auto const& headers = message->elements();
 
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section.
     unique_lock lock(mutex_);
 
-    const auto count = std::min(remaining(), headers.size());
-    const auto end = headers.begin() + count;
+    auto const count = std::min(remaining(), headers.size());
+    auto const end = headers.begin() + count;
 
     for (auto it = headers.begin(); it != end; ++it)
     {
-        const auto& header = *it;
+        auto const& header = *it;
 
         if (!link(header) || !check(header) || !accept(header))
         {
@@ -135,7 +121,7 @@ bool header_list::merge(headers_const_ptr message)
 ////    auto height = start_.height();
 ////
 ////    // The height is safe from overflow.
-////    for (const auto& header: list_)
+////    for (auto const& header: list_)
 ////        out.emplace_back(header.hash(), height++);
 ////
 ////    return out;
@@ -163,7 +149,7 @@ bool header_list::link(const chain::header& header) const
 bool header_list::check(const header& header) const
 {
     // This is a hack for successful compile - this is dead code.
-    static const auto retarget = true;
+    static auto const retarget = true;
 
     // This validates is_valid_proof_of_work and is_valid_time_stamp.
     return !header.check(retarget);
@@ -180,4 +166,4 @@ bool header_list::accept(const header& header) const
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

@@ -1,29 +1,15 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/utility/check_list.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <kth/node/utility/check_list.hpp>
 
 #include <cstddef>
 #include <utility>
 #include <boost/bimap/support/lambda.hpp>
-#include <bitcoin/blockchain.hpp>
+#include <kth/blockchain.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::database;
@@ -56,8 +42,8 @@ void check_list::reserve(const heights& heights)
 
     checks_.clear();
 
-    for (const auto height : heights) {
-        const auto it = checks_.insert({ null_hash, height });
+    for (auto const height : heights) {
+        auto const it = checks_.insert({ null_hash, height });
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -71,13 +57,13 @@ void check_list::enqueue(hash_digest&& hash, size_t height)
     unique_lock lock(mutex_);
 
     using namespace boost::bimaps;
-    const auto it = checks_.right.find(height);
+    auto const it = checks_.right.find(height);
 
     // Ignore the entry if it is not reserved.
     if (it == checks_.right.end())
         return;
 
-    BITCOIN_ASSERT(it->second == null_hash);
+    KTH_ASSERT(it->second == null_hash);
     checks_.right.modify_data(it, _data = std::move(hash));
     ///////////////////////////////////////////////////////////////////////////
 }
@@ -101,4 +87,4 @@ bool check_list::dequeue(hash_digest& out_hash, size_t& out_height)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

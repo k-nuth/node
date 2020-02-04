@@ -1,32 +1,18 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#include <bitcoin/node/sessions/session_inbound.hpp>
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin/blockchain.hpp>
-#include <bitcoin/network.hpp>
-#include <bitcoin/node/full_node.hpp>
-#include <bitcoin/node/protocols/protocol_block_in.hpp>
-#include <bitcoin/node/protocols/protocol_block_out.hpp>
-#include <bitcoin/node/protocols/protocol_transaction_in.hpp>
-#include <bitcoin/node/protocols/protocol_transaction_out.hpp>
+#include <kth/node/sessions/session_inbound.hpp>
 
-namespace libbitcoin {
+#include <kth/blockchain.hpp>
+#include <kth/network.hpp>
+#include <kth/node/full_node.hpp>
+#include <kth/node/protocols/protocol_block_in.hpp>
+#include <kth/node/protocols/protocol_block_out.hpp>
+#include <kth/node/protocols/protocol_transaction_in.hpp>
+#include <kth/node/protocols/protocol_transaction_out.hpp>
+
+namespace kth {
 namespace node {
 
 using namespace bc::blockchain;
@@ -46,7 +32,7 @@ session_inbound::session_inbound(full_node& network, safe_chain& chain)
 
 void session_inbound::attach_protocols(channel::ptr channel)
 {
-    const auto version = channel->negotiated_version();
+    auto const version = channel->negotiated_version();
 
     if (version >= version::level::bip31)
         attach<protocol_ping_60001>(channel)->start();
@@ -64,4 +50,4 @@ void session_inbound::attach_protocols(channel::ptr channel)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth
