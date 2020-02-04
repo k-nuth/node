@@ -1,23 +1,9 @@
-/**
- * Copyright (c) 2016-2018 Bitprim Inc.
- *
- * This file is part of Bitprim.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#ifndef BITPRIM_NODE_KEOKEN_MANAGER_HPP_
-#define BITPRIM_NODE_KEOKEN_MANAGER_HPP_
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef KTH_NODE_KEOKEN_MANAGER_HPP_
+#define KTH_NODE_KEOKEN_MANAGER_HPP_
 
 #include <functional>
 
@@ -26,9 +12,9 @@
 #include <bitcoin/blockchain/interface/block_chain.hpp>
 #include <bitcoin/node/define.hpp>
 
-#include <bitprim/keoken/interpreter.hpp>
-#include <bitprim/keoken/node_constants.hpp>
-#include <bitprim/keoken/state_delegated.hpp>
+#include <knuth/keoken/interpreter.hpp>
+#include <knuth/keoken/node_constants.hpp>
+#include <knuth/keoken/state_delegated.hpp>
 
 namespace bitprim {
 namespace keoken {
@@ -152,11 +138,11 @@ private:
         }
         processed_height_ = fork_height - 1;
 
-        // for (const auto block: *outgoing)
+        // for (auto const block: *outgoing)
         //     LOG_DEBUG(LOG_NODE)
         //         << "Reorganization moved block to orphan pool ["
         //         << encode_hash(block->header().hash()) << "]";
-        // const auto height = safe_add(fork_height, incoming->size());
+        // auto const height = safe_add(fork_height, incoming->size());
         // set_top_block({ incoming->back()->hash(), height });
 
         //TODO(fernando): Important! See what to do in case of re-organizations
@@ -220,4 +206,4 @@ public:
 } // namespace keoken
 } // namespace bitprim
 
-#endif //BITPRIM_NODE_KEOKEN_MANAGER_HPP_
+#endif //KTH_NODE_KEOKEN_MANAGER_HPP_

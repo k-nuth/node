@@ -1,21 +1,7 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <bitcoin/node/utility/reservations.hpp>
 
 #include <algorithm>
@@ -25,7 +11,7 @@
 #include <numeric>
 #include <utility>
 #include <vector>
-#include <bitcoin/bitcoin.hpp>
+#include <kth/domain.hpp>
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/performance.hpp>
@@ -48,12 +34,12 @@ reservations::reservations(check_list& hashes, fast_chain& chain,
 }
 
 bool reservations::start() {
-#if defined(BITPRIM_DB_LEGACY)
+#if defined(KTH_DB_LEGACY)
     return chain_.begin_insert();
-#elif defined(BITPRIM_DB_NEW)
+#elif defined(KTH_DB_NEW)
     return true;
 #else
-#error You must define BITPRIM_DB_LEGACY or BITPRIM_DB_NEW
+#error You must define KTH_DB_LEGACY or KTH_DB_NEW
 #endif
 }
 
@@ -64,12 +50,12 @@ bool reservations::import(block_const_ptr block, size_t height) {
 }
 
 bool reservations::stop() {
-#if defined(BITPRIM_DB_LEGACY)
+#if defined(KTH_DB_LEGACY)
     return chain_.end_insert();
-#elif defined(BITPRIM_DB_NEW)
+#elif defined(KTH_DB_NEW)
     return true;
 #else
-#error You must define BITPRIM_DB_LEGACY or BITPRIM_DB_NEW
+#error You must define KTH_DB_LEGACY or KTH_DB_NEW
 #endif
 }
 
@@ -82,30 +68,30 @@ reservations::rate_statistics reservations::rates() const
 {
     // Copy row pointer table to prevent need for lock during iteration.
     auto rows = table();
-    const auto idle = [](reservation::ptr row)
+    auto const idle = [](reservation::ptr row)
     {
         return row->idle();
     };
 
     // Remove idle rows from the table.
     rows.erase(std::remove_if(rows.begin(), rows.end(), idle), rows.end());
-    const auto active_rows = rows.size();
+    auto const active_rows = rows.size();
 
     std::vector<double> rates(active_rows);
-    const auto normal_rate = [](reservation::ptr row)
+    auto const normal_rate = [](reservation::ptr row)
     {
         return row->rate().normal();
     };
 
     // Convert to a rates table and sum.
     std::transform(rows.begin(), rows.end(), rates.begin(), normal_rate);
-    const auto total = std::accumulate(rates.begin(), rates.end(), 0.0);
+    auto const total = std::accumulate(rates.begin(), rates.end(), 0.0);
 
     // Calculate mean and sum of deviations.
-    const auto mean = divide<double>(total, active_rows);
-    const auto summary = [mean](double initial, double rate)
+    auto const mean = divide<double>(total, active_rows);
+    auto const summary = [mean](double initial, double rate)
     {
-        const auto difference = mean - rate;
+        auto const difference = mean - rate;
         return initial + (difference * difference);
     };
 
@@ -135,7 +121,7 @@ void reservations::remove(reservation::ptr row)
     ///////////////////////////////////////////////////////////////////////////
     mutex_.lock_upgrade();
 
-    const auto it = std::find(table_.begin(), table_.end(), row);
+    auto const it = std::find(table_.begin(), table_.end(), row);
 
     if (it == table_.end())
     {
@@ -162,7 +148,7 @@ void reservations::initialize(size_t connections)
     auto rows = std::min(max_rows, connections);
 
     // Ensure that there is at least one block per row.
-    const auto blocks = hashes_.size();
+    auto const blocks = hashes_.size();
     rows = std::min(rows, blocks);
 
     // Guard against division by zero.
@@ -172,8 +158,8 @@ void reservations::initialize(size_t connections)
     table_.reserve(rows);
 
     // Allocate up to 50k headers per row.
-    const auto max_allocation = rows * max_request();
-    const auto allocation = std::min(blocks, max_allocation);
+    auto const max_allocation = rows * max_request();
+    auto const allocation = std::min(blocks, max_allocation);
 
     for (size_t row = 0; row < rows; ++row)
         table_.push_back(std::make_shared<reservation>(*this, row, timeout_));
@@ -187,8 +173,8 @@ void reservations::initialize(size_t connections)
     {
         for (size_t row = 0; row < rows; ++row)
         {
-            DEBUG_ONLY(const auto result =) hashes_.dequeue(hash, height);
-            BITCOIN_ASSERT_MSG(result, "The checklist is empty.");
+            DEBUG_ONLY(auto const result =) hashes_.dequeue(hash, height);
+            KTH_ASSERT_MSG(result, "The checklist is empty.");
             table_[row]->insert(std::move(hash), height);
         }
     }
@@ -205,7 +191,7 @@ bool reservations::populate(reservation::ptr minimal)
     mutex_.lock();
 
     // Take from unallocated or allocated hashes, true if minimal not empty.
-    const auto populated = reserve(minimal) || partition(minimal);
+    auto const populated = reserve(minimal) || partition(minimal);
 
     mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
@@ -221,7 +207,7 @@ bool reservations::populate(reservation::ptr minimal)
 // This can cause reduction of an active reservation.
 bool reservations::partition(reservation::ptr minimal)
 {
-    const auto maximal = find_maximal();
+    auto const maximal = find_maximal();
     return maximal && maximal != minimal && maximal->partition(minimal);
 }
 
@@ -231,7 +217,7 @@ reservation::ptr reservations::find_maximal()
         return nullptr;
 
     // The maximal row is that with the most block hashes reserved.
-    const auto comparer = [](reservation::ptr left, reservation::ptr right)
+    auto const comparer = [](reservation::ptr left, reservation::ptr right)
     {
         return left->size() < right->size();
     };
@@ -245,15 +231,15 @@ bool reservations::reserve(reservation::ptr minimal)
     if (!minimal->empty())
         return true;
 
-    const auto allocation = std::min(hashes_.size(), max_request());
+    auto const allocation = std::min(hashes_.size(), max_request());
 
     size_t height;
     hash_digest hash;
 
     for (size_t block = 0; block < allocation; ++block)
     {
-        DEBUG_ONLY(const auto result =) hashes_.dequeue(hash, height);
-        BITCOIN_ASSERT_MSG(result, "The checklist is empty.");
+        DEBUG_ONLY(auto const result =) hashes_.dequeue(hash, height);
+        KTH_ASSERT_MSG(result, "The checklist is empty.");
         minimal->insert(std::move(hash), height);
     }
 
@@ -274,4 +260,4 @@ void reservations::set_max_request(size_t value)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

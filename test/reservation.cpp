@@ -1,21 +1,7 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 ////#include <chrono>
 ////#include <memory>
 ////#include <utility>
@@ -108,11 +94,11 @@
 ////BOOST_AUTO_TEST_CASE(reservation__stopped__import_last_block__true)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const auto reserve = std::make_shared<reservation>(reserves, 0, 0);
-////    const auto message = message_factory(1, check42.hash());
-////    const auto& header1 = message->elements()[0];
+////    auto const reserve = std::make_shared<reservation>(reserves, 0, 0);
+////    auto const message = message_factory(1, check42.hash());
+////    auto const& header1 = message->elements()[0];
 ////    reserve->insert(header1.hash(), 42);
-////    const auto block1 = std::make_shared<const block>(block{ header1, {} });
+////    auto const block1 = std::make_shared<const block>(block{ header1, {} });
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->empty());
 ////    BOOST_REQUIRE(reserve->stopped());
@@ -125,7 +111,7 @@
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    reservation reserve(reserves, 0, 0);
-////    const auto rate = reserve.rate();
+////    auto const rate = reserve.rate();
 ////    BOOST_REQUIRE(rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 0u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 0u);
@@ -145,7 +131,7 @@
 ////    value.database = 2;
 ////    value.window = 3;
 ////    reserve.set_rate(std::move(value));
-////    const auto rate = reserve.rate();
+////    auto const rate = reserve.rate();
 ////    BOOST_REQUIRE(!rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 1u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 2u);
@@ -183,7 +169,7 @@
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    const size_t expected = 10;
 ////    reservation_fixture reserve(reserves, 0, expected);
-////    const auto window = reserve.rate_window();
+////    auto const window = reserve.rate_window();
 ////    BOOST_REQUIRE_EQUAL(window.count(), expected * 1000 * 1000 * 3);
 ////}
 ////
@@ -196,15 +182,15 @@
 ////
 ////    // The timeout cannot be exceeded because the current time is fixed.
 ////    static const uint32_t timeout = 1;
-////    const auto now = std::chrono::high_resolution_clock::now();
-////    const auto reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
+////    auto const now = std::chrono::high_resolution_clock::now();
+////    auto const reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
 ////
 ////    // Create a history entry.
-////    const auto message = message_factory(3, null_hash);
+////    auto const message = message_factory(3, null_hash);
 ////    reserve->insert(message->elements()[0].hash(), 0);
-////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
+////    auto const block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    auto const block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    auto const block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////    reserve->import(block0);
 ////    reserve->import(block1);
 ////
@@ -218,7 +204,7 @@
 ////    reserve->reset();
 ////
 ////    // Confirm reset of rate.
-////    const auto rate = reserve->rate();
+////    auto const rate = reserve->rate();
 ////    BOOST_REQUIRE(rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 0u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 0u);
@@ -253,9 +239,9 @@
 ////BOOST_AUTO_TEST_CASE(reservation__insert1__single__size_1_pending)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, false);
-////    const auto reserve = std::make_shared<reservation_fixture>(reserves, 0, 0);
-////    const auto message = message_factory(1, check42.hash());
-////    const auto& header = message->elements()[0];
+////    auto const reserve = std::make_shared<reservation_fixture>(reserves, 0, 0);
+////    auto const message = message_factory(1, check42.hash());
+////    auto const& header = message->elements()[0];
 ////    BOOST_REQUIRE(reserve->empty());
 ////    reserve->set_pending(false);
 ////    reserve->insert(checkpoint{ header.hash(), 42 });
@@ -267,9 +253,9 @@
 ////BOOST_AUTO_TEST_CASE(reservation__insert2__single__size_1_pending)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, false);
-////    const auto reserve = std::make_shared<reservation_fixture>(reserves, 0, 0);
-////    const auto message = message_factory(1, check42.hash());
-////    const auto& header = message->elements()[0];
+////    auto const reserve = std::make_shared<reservation_fixture>(reserves, 0, 0);
+////    auto const message = message_factory(1, check42.hash());
+////    auto const& header = message->elements()[0];
 ////    BOOST_REQUIRE(reserve->empty());
 ////    reserve->set_pending(false);
 ////    reserve->insert(header.hash(), 42);
@@ -283,10 +269,10 @@
 ////BOOST_AUTO_TEST_CASE(reservation__import__unsolicitied___empty_idle)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const auto reserve = std::make_shared<reservation>(reserves, 0, 0);
-////    const auto message = message_factory(1, check42.hash());
-////    const auto& header = message->elements()[0];
-////    const auto block1 = std::make_shared<const block>(block{ header, {} });
+////    auto const reserve = std::make_shared<reservation>(reserves, 0, 0);
+////    auto const message = message_factory(1, check42.hash());
+////    auto const& header = message->elements()[0];
+////    auto const block1 = std::make_shared<const block>(block{ header, {} });
 ////    BOOST_REQUIRE(reserve->idle());
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->idle());
@@ -296,11 +282,11 @@
 ////BOOST_AUTO_TEST_CASE(reservation__import__fail__idle)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, false);
-////    const auto reserve = std::make_shared<reservation>(reserves, 0, 0);
-////    const auto message = message_factory(1, check42.hash());
-////    const auto& header = message->elements()[0];
+////    auto const reserve = std::make_shared<reservation>(reserves, 0, 0);
+////    auto const message = message_factory(1, check42.hash());
+////    auto const& header = message->elements()[0];
 ////    reserve->insert(header.hash(), 42);
-////    const auto block1 = std::make_shared<const block>(block{ header, {} });
+////    auto const block1 = std::make_shared<const block>(block{ header, {} });
 ////    BOOST_REQUIRE(reserve->idle());
 ////    reserve->import(block1);
 ////    BOOST_REQUIRE(reserve->idle());
@@ -312,15 +298,15 @@
 ////
 ////    // If import time is non-zero the zero timeout will exceed and history will not accumulate.
 ////    static const uint32_t timeout = 0;
-////    const auto now = std::chrono::high_resolution_clock::now();
-////    const auto reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
-////    const auto message = message_factory(3, null_hash);
+////    auto const now = std::chrono::high_resolution_clock::now();
+////    auto const reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
+////    auto const message = message_factory(3, null_hash);
 ////    reserve->insert(message->elements()[0].hash(), 0);
 ////    reserve->insert(message->elements()[1].hash(), 1);
 ////    reserve->insert(message->elements()[2].hash(), 2);
-////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
+////    auto const block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    auto const block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    auto const block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////    reserve->import(block0);
 ////    reserve->import(block1);
 ////    reserve->import(block2);
@@ -335,15 +321,15 @@
 ////
 ////    // The timeout cannot be exceeded because the current time is fixed.
 ////    static const uint32_t timeout = 1;
-////    const auto now = std::chrono::high_resolution_clock::now();
-////    const auto reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
-////    const auto message = message_factory(3, null_hash);
+////    auto const now = std::chrono::high_resolution_clock::now();
+////    auto const reserve = std::make_shared<reservation_fixture>(reserves, 0, timeout, now);
+////    auto const message = message_factory(3, null_hash);
 ////    reserve->insert(message->elements()[0].hash(), 0);
 ////    reserve->insert(message->elements()[1].hash(), 1);
 ////    reserve->insert(message->elements()[2].hash(), 2);
-////    const auto block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
-////    const auto block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
-////    const auto block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
+////    auto const block0 = std::make_shared<const block>(block{ message->elements()[0], {} });
+////    auto const block1 = std::make_shared<const block>(block{ message->elements()[1], {} });
+////    auto const block2 = std::make_shared<const block>(block{ message->elements()[2], {} });
 ////
 ////    // Idle checks assume minimum_history is set to 3.
 ////    BOOST_REQUIRE(reserve->idle());
@@ -374,8 +360,8 @@
 ////BOOST_AUTO_TEST_CASE(reservation__partition__minimal_not_empty__false_unchanged)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const auto reserve1 = std::make_shared<reservation_fixture>(reserves, 0, 0);
-////    const auto reserve2 = std::make_shared<reservation_fixture>(reserves, 1, 0);
+////    auto const reserve1 = std::make_shared<reservation_fixture>(reserves, 0, 0);
+////    auto const reserve2 = std::make_shared<reservation_fixture>(reserves, 1, 0);
 ////    reserve2->insert(check42);
 ////    BOOST_REQUIRE(reserve1->partition(reserve2));
 ////    BOOST_REQUIRE_EQUAL(reserve2->size(), 1u);
@@ -392,12 +378,12 @@
 ////    BOOST_REQUIRE(reserve.pending());
 ////
 ////    // Creates a request with no hashes reserved.
-////    const auto result = reserve.request(false);
+////    auto const result = reserve.request(false);
 ////    BOOST_REQUIRE(result.inventories().empty());
 ////    BOOST_REQUIRE(!reserve.pending());
 ////
 ////    // The rate is not reset because the new channel parameter is false.
-////    const auto rate = reserve.rate();
+////    auto const rate = reserve.rate();
 ////    BOOST_REQUIRE(!rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 1u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 2u);
@@ -408,19 +394,19 @@
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    reservation_fixture reserve(reserves, 0, 0);
-////    const auto message = message_factory(1, null_hash);
+////    auto const message = message_factory(1, null_hash);
 ////    reserve.insert(message->elements()[0].hash(), 0);
 ////    reserve.set_rate({ false, 1, 2, 3 });
 ////    BOOST_REQUIRE(reserve.pending());
 ////
 ////    // Creates a request with one hash reserved.
-////    const auto result = reserve.request(true);
+////    auto const result = reserve.request(true);
 ////    BOOST_REQUIRE_EQUAL(result.inventories().size(), 1u);
 ////    BOOST_REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
 ////    BOOST_REQUIRE(!reserve.pending());
 ////
 ////    // The rate is reset because the new channel parameter is true.
-////    const auto rate = reserve.rate();
+////    auto const rate = reserve.rate();
 ////    BOOST_REQUIRE(rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 0u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 0u);
@@ -431,19 +417,19 @@
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    reservation_fixture reserve(reserves, 0, 0);
-////    const auto message = message_factory(1, null_hash);
+////    auto const message = message_factory(1, null_hash);
 ////    reserve.insert(message->elements()[0].hash(), 0);
 ////    reserve.set_rate({ false, 1, 2, 3 });
 ////    reserve.set_pending(false);
 ////
 ////    // Creates a request with one hash reserved.
-////    const auto result = reserve.request(true);
+////    auto const result = reserve.request(true);
 ////    BOOST_REQUIRE_EQUAL(result.inventories().size(), 1u);
 ////    BOOST_REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
 ////    BOOST_REQUIRE(!reserve.pending());
 ////
 ////    // The rate is reset because the new channel parameter is true.
-////    const auto rate = reserve.rate();
+////    auto const rate = reserve.rate();
 ////    BOOST_REQUIRE(rate.idle);
 ////    BOOST_REQUIRE_EQUAL(rate.events, 0u);
 ////    BOOST_REQUIRE_EQUAL(rate.database, 0u);
@@ -454,14 +440,14 @@
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    reservation_fixture reserve(reserves, 0, 0);
-////    const auto message = message_factory(3, null_hash);
+////    auto const message = message_factory(3, null_hash);
 ////    reserve.insert(message->elements()[0].hash(), 0);
 ////    reserve.insert(message->elements()[1].hash(), 1);
 ////    reserve.insert(message->elements()[2].hash(), 2);
 ////    BOOST_REQUIRE(reserve.pending());
 ////
 ////    // Creates a request with 3 hashes reserved.
-////    const auto result = reserve.request(false);
+////    auto const result = reserve.request(false);
 ////    BOOST_REQUIRE_EQUAL(result.inventories().size(), 3u);
 ////    BOOST_REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
 ////    BOOST_REQUIRE(result.inventories()[1].hash() == message->elements()[1].hash());
@@ -473,12 +459,12 @@
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
 ////    reservation_fixture reserve(reserves, 0, 0);
-////    const auto message = message_factory(1, null_hash);
+////    auto const message = message_factory(1, null_hash);
 ////    reserve.insert(message->elements()[0].hash(), 0);
 ////    reserve.set_pending(false);
 ////
 ////    // Creates an empty request for not new and not pending scneario.
-////    const auto result = reserve.request(false);
+////    auto const result = reserve.request(false);
 ////    BOOST_REQUIRE(result.inventories().empty());
 ////    BOOST_REQUIRE(!reserve.pending());
 ////}
@@ -500,11 +486,11 @@
 ////    blockchain_fixture blockchain;
 ////    config::checkpoint::list checkpoints;
 ////    header_queue hashes(checkpoints);
-////    const auto message = message_factory(4, check42.hash());
+////    auto const message = message_factory(4, check42.hash());
 ////    hashes.initialize(check42);
 ////    BOOST_REQUIRE(hashes.enqueue(message));
 ////    reservations reserves(hashes, blockchain, settings);
-////    const auto table = reserves.table();
+////    auto const table = reserves.table();
 ////
 ////    // Simulate the rate summary on each channel by setting it directly.
 ////
@@ -525,7 +511,7 @@
 ////    table[4]->set_rate({ false,  8,  3,  5 });
 ////
 ////    // see reservations__rates__five_reservations_one_idle__idle_excluded
-////    const auto rates2 = reserves.rates();
+////    auto const rates2 = reserves.rates();
 ////    BOOST_REQUIRE_EQUAL(rates2.active_count, 4u);
 ////    BOOST_REQUIRE_EQUAL(rates2.arithmentic_mean, 3.0);
 ////

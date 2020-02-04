@@ -1,21 +1,7 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <bitcoin/node/parser.hpp>
 
 #include <cstdint>
@@ -73,7 +59,7 @@ parser::parser(config::settings context)
 
     // A node allows 1000 host names by default.
     configured.network.host_pool_capacity = 1000;
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     // Expose full node (1) services by default.
     configured.network.services = serve::node_network;
 #else
@@ -347,7 +333,7 @@ options_metadata parser::load_settings()
         "Full database files increase by this percentage, defaults to 50."
     )
 
-#ifdef BITPRIM_DB_NEW
+#ifdef KTH_DB_NEW
     (
         "database.reorg_pool_limit",
         value<uint32_t>(&configured.database.reorg_pool_limit),
@@ -363,9 +349,9 @@ options_metadata parser::load_settings()
         value<bool>(&configured.database.safe_mode),
         "safe mode is more secure but not the fastest, defaults to true."                  
     )
-#endif // BITPRIM_DB_NEW
+#endif // KTH_DB_NEW
 
-#ifdef BITPRIM_DB_LEGACY    
+#ifdef KTH_DB_LEGACY    
     (
         "database.block_table_buckets",
         value<uint32_t>(&configured.database.block_table_buckets),
@@ -376,14 +362,14 @@ options_metadata parser::load_settings()
         value<uint32_t>(&configured.database.transaction_table_buckets),
         "Transaction hash table size, defaults to 110000000."
     )
-#endif // BITPRIM_DB_LEGACY
-#ifdef BITPRIM_DB_TRANSACTION_UNCONFIRMED    
+#endif // KTH_DB_LEGACY
+#ifdef KTH_DB_TRANSACTION_UNCONFIRMED    
     (
         "database.transaction_unconfirmed_table_buckets",
         value<uint32_t>(&configured.database.transaction_unconfirmed_table_buckets),
         "Unconfirmed Transaction hash table size, defaults to 10000."
     )
-#endif // BITPRIM_DB_TRANSACTION_UNCONFIRMED
+#endif // KTH_DB_TRANSACTION_UNCONFIRMED
     (
         "database.cache_capacity",
         value<uint32_t>(&configured.database.cache_capacity),
@@ -504,7 +490,7 @@ options_metadata parser::load_settings()
         "Prevent dummy value malleability, defaults to true (soft fork)."
     )
 
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     // (
     //     "fork.uahf_height",
     //     value<size_t>(&configured.chain.uahf_height),
@@ -538,7 +524,7 @@ options_metadata parser::load_settings()
 
 
     
-#endif //BITPRIM_CURRENCY_BCH
+#endif //KTH_CURRENCY_BCH
 
 
 
@@ -626,7 +612,7 @@ options_metadata parser::load_settings()
         value<bool>(&configured.node.compact_blocks_high_bandwidth),
         "Compact Blocks High-Bandwidth mode, default to true."
     )
-#ifdef BITPRIM_WITH_KEOKEN
+#ifdef KTH_WITH_KEOKEN
     (
         "node.keoken_genesis_height",
         value<size_t>(&configured.node.keoken_genesis_height),
@@ -634,7 +620,7 @@ options_metadata parser::load_settings()
     )
 #endif
 
-#if defined(BITPRIM_WITH_MEMPOOL)
+#if defined(KTH_WITH_MEMPOOL)
     (
         "node.mempool_max_template_size",
         value<size_t>(&configured.chain.mempool_max_template_size),
@@ -725,4 +711,4 @@ bool parser::parse_from_file(boost::filesystem::path const& config_path, std::os
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

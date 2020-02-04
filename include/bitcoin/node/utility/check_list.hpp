@@ -1,23 +1,9 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#ifndef LIBBITCOIN_NODE_CHECK_LIST_HPP
-#define LIBBITCOIN_NODE_CHECK_LIST_HPP
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef KTH_NODE_CHECK_LIST_HPP
+#define KTH_NODE_CHECK_LIST_HPP
 
 #include <cstddef>
 #include <boost/bimap.hpp>
@@ -34,13 +20,13 @@ class BCN_API check_list
 {
 public:
 
-#ifdef BITPRIM_DB_LEGACY
+#ifdef KTH_DB_LEGACY
     using heights = database::block_database::heights;
-#endif // BITPRIM_DB_LEGACY
+#endif // KTH_DB_LEGACY
 
-#ifdef BITPRIM_DB_NEW
+#ifdef KTH_DB_NEW
     using heights = std::vector<size_t>;
-#endif // BITPRIM_DB_NEW
+#endif // KTH_DB_NEW
 
     /// The queue contains no checkpoints.
     bool empty() const;
@@ -69,6 +55,6 @@ private:
 };
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth
 
 #endif

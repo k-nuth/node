@@ -1,23 +1,9 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-#ifndef LIBBITCOIN_NODE_FULL_NODE_HPP
-#define LIBBITCOIN_NODE_FULL_NODE_HPP
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef KTH_NODE_FULL_NODE_HPP
+#define KTH_NODE_FULL_NODE_HPP
 
 #include <cstdint>
 #include <memory>
@@ -31,7 +17,7 @@
 #include <bitcoin/node/utility/check_list.hpp>
 
 // #ifdef WITH_KEOKEN
-// #include <bitprim/keoken/manager.hpp>
+// #include <knuth/keoken/manager.hpp>
 // #endif
 
 namespace libbitcoin {
@@ -39,7 +25,7 @@ namespace node {
 
 struct multi_crypto_setter {
     multi_crypto_setter(network::settings const& net_settings) {
-#if defined(BITPRIM_CURRENCY_BCH)
+#if defined(KTH_CURRENCY_BCH)
         switch (net_settings.identifier) {
             case netmagic::bch_mainnet:
                 set_cashaddr_prefix("bitcoincash");
@@ -55,13 +41,13 @@ struct multi_crypto_setter {
         }
 
 
-#elif defined(BITPRIM_CURRENCY_BTC)
+#elif defined(KTH_CURRENCY_BTC)
         // set_network(net_settings.identifier);
         // set_cashaddr_prefix("");
-#else //BITPRIM_CURRENCY_BCH
+#else //KTH_CURRENCY_BCH
         // set_network(net_settings.identifier);
         // set_cashaddr_prefix("");
-#endif //BITPRIM_CURRENCY_BCH
+#endif //KTH_CURRENCY_BCH
     }
 };
 
@@ -120,7 +106,7 @@ public:
     virtual blockchain::block_chain& chain_bitprim();
 
 // #ifdef WITH_KEOKEN
-//     bitprim::keoken::manager<bitprim::keoken::state_delegated>& keoken_manager();
+//     knuth::keoken::manager<knuth::keoken::state_delegated>& keoken_manager();
 // #endif
 
     // Subscriptions.
@@ -179,11 +165,11 @@ private:
     const blockchain::settings& chain_settings_;
 
 // #ifdef WITH_KEOKEN
-//     bitprim::keoken::manager<bitprim::keoken::state_delegated> keoken_manager_;
+//     knuth::keoken::manager<knuth::keoken::state_delegated> keoken_manager_;
 // #endif
 };
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth
 
 #endif

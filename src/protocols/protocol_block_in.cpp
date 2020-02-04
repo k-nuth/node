@@ -1,21 +1,7 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <bitcoin/node/protocols/protocol_block_in.hpp>
 
 #include <algorithm>
@@ -46,7 +32,7 @@ using namespace std::placeholders;
 
 inline bool is_witness(uint64_t services)
 {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -114,7 +100,7 @@ void protocol_block_in::start()
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     if (compact_from_peer_)
     {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
         uint64_t compact_version = 1;
 #else
         uint64_t compact_version = 2;
@@ -272,7 +258,7 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     if (compact_from_peer_) {
 
         if (node_.node_settings().compact_blocks_high_bandwidth) {
-#ifdef BITPRIM_CURRENCY_BCH
+#ifdef KTH_CURRENCY_BCH
             uint64_t compact_version = 1;
 #else
             uint64_t compact_version = 2;
@@ -305,7 +291,7 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-#ifndef BITPRIM_CURRENCY_BCH
+#ifndef KTH_CURRENCY_BCH
     // Convert requested message types to corresponding witness types.
     if (require_witness_) {
         message->to_witness();
@@ -672,7 +658,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //LOG_INFO(LOG_NODE) << "asm int $3 - 1";
     //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
-#if defined(BITPRIM_DB_TRANSACTION_UNCONFIRMED) || defined(BITPRIM_DB_NEW_FULL)
+#if defined(KTH_DB_TRANSACTION_UNCONFIRMED) || defined(KTH_DB_NEW_FULL)
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
 #endif 
 
@@ -749,7 +735,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_const_ptr messa
     }
 
     auto const state = message->validation.state;
-    BITCOIN_ASSERT(state);
+    KTH_ASSERT(state);
 
     // Show that diplayed forks may be missing activations due to checkpoints.
     auto const checked = state->is_under_checkpoint() ? "*" : "";
@@ -863,7 +849,7 @@ inline size_t total_cost_ms(const asio::time_point& start,
 
 void protocol_block_in::report(const chain::block& block)
 {
-    BITCOIN_ASSERT(block.validation.state);
+    KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
 
     if (enabled(height))
@@ -919,4 +905,4 @@ void protocol_block_in::report(const chain::block& block)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

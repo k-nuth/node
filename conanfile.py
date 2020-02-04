@@ -1,31 +1,17 @@
-#
-# Copyright (c) 2017-2018 Bitprim Inc.
-#
-# This file is part of Bitprim.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# Copyright (c) 2016-2020 Knuth Project developers.
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 
 from conans import CMake
 from ci_utils import option_on_off, march_conan_manip, pass_march_to_compiler
-from ci_utils import BitprimConanFile
+from ci_utils import KnuthConanFile
 
-class BitprimNodeConan(BitprimConanFile):
-    name = "bitprim-node"
+class KnuthNodeConan(KnuthConanFile):
+    name = "node"
     # version = get_version()
     license = "http://www.boost.org/users/license.html"
-    url = "https://github.com/bitprim/bitprim-node"
+    url = "https://github.com/k-nuth/node"
     description = "Bitcoin full node"
     settings = "os", "compiler", "build_type", "arch"
 
@@ -77,8 +63,8 @@ class BitprimNodeConan(BitprimConanFile):
 
     generators = "cmake"
     exports = "conan_*", "ci_utils/*"
-    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "bitprim-nodeConfig.cmake.in", "bitprimbuildinfo.cmake", "include/*", "test/*", "console/*"
-    package_files = "build/lbitprim-node.a"
+    exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "kth-nodeConfig.cmake.in", "knuthbuildinfo.cmake", "include/*", "test/*", "console/*"
+    package_files = "build/lkth-node.a"
     build_policy = "missing"
 
     @property
@@ -87,12 +73,12 @@ class BitprimNodeConan(BitprimConanFile):
 
     def requirements(self):
         if self.options.use_domain:
-            self.requires("boost/1.69.0@bitprim/stable")
+            self.requires("boost/1.69.0@kth/stable")
         else:
-            self.requires("boost/1.66.0@bitprim/stable")
+            self.requires("boost/1.66.0@kth/stable")
 
-        self.requires("bitprim-blockchain/0.X@%s/%s" % (self.user, self.channel))
-        self.requires("bitprim-network/0.X@%s/%s" % (self.user, self.channel))
+        self.requires("kth-blockchain/0.X@%s/%s" % (self.user, self.channel))
+        self.requires("kth-network/0.X@%s/%s" % (self.user, self.channel))
 
     def config_options(self):
         if self.settings.arch != "x86_64":
@@ -106,7 +92,7 @@ class BitprimNodeConan(BitprimConanFile):
                 self.options.remove("shared")
 
     def configure(self):
-        BitprimConanFile.configure(self)
+        KnuthConanFile.configure(self)
 
         if self.settings.arch == "x86_64" and self.options.microarchitecture == "_DUMMY_":
             del self.options.fix_march
@@ -140,7 +126,7 @@ class BitprimNodeConan(BitprimConanFile):
         self.output.info("Compiling for DB: %s" % (self.options.db,))
 
     def package_id(self):
-        BitprimConanFile.package_id(self)
+        KnuthConanFile.package_id(self)
 
         self.info.options.with_tests = "ANY"
         self.info.options.verbose = "ANY"
@@ -175,7 +161,7 @@ class BitprimNodeConan(BitprimConanFile):
             cmake.definitions["DB_SPENDS"] = option_on_off(False)
             cmake.definitions["DB_HISTORY"] = option_on_off(False)
             cmake.definitions["DB_STEALTH"] = option_on_off(False)
-            cmake.definitions["DB_UNSPENT_LIBBITCOIN"] = option_on_off(True)
+            cmake.definitions["DB_UNSPENT_LEGACY"] = option_on_off(True)
             cmake.definitions["DB_LEGACY"] = option_on_off(True)
             cmake.definitions["DB_NEW"] = option_on_off(False)
             cmake.definitions["DB_NEW_BLOCKS"] = option_on_off(False)
@@ -185,7 +171,7 @@ class BitprimNodeConan(BitprimConanFile):
             cmake.definitions["DB_SPENDS"] = option_on_off(True)
             cmake.definitions["DB_HISTORY"] = option_on_off(True)
             cmake.definitions["DB_STEALTH"] = option_on_off(True)
-            cmake.definitions["DB_UNSPENT_LIBBITCOIN"] = option_on_off(True)
+            cmake.definitions["DB_UNSPENT_LEGACY"] = option_on_off(True)
             cmake.definitions["DB_LEGACY"] = option_on_off(True)
             cmake.definitions["DB_NEW"] = option_on_off(False)
             cmake.definitions["DB_NEW_BLOCKS"] = option_on_off(False)
@@ -195,7 +181,7 @@ class BitprimNodeConan(BitprimConanFile):
             cmake.definitions["DB_SPENDS"] = option_on_off(False)
             cmake.definitions["DB_HISTORY"] = option_on_off(False)
             cmake.definitions["DB_STEALTH"] = option_on_off(False)
-            cmake.definitions["DB_UNSPENT_LIBBITCOIN"] = option_on_off(False)
+            cmake.definitions["DB_UNSPENT_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_NEW"] = option_on_off(True)
             cmake.definitions["DB_NEW_BLOCKS"] = option_on_off(False)
@@ -205,7 +191,7 @@ class BitprimNodeConan(BitprimConanFile):
             cmake.definitions["DB_SPENDS"] = option_on_off(False)
             cmake.definitions["DB_HISTORY"] = option_on_off(False)
             cmake.definitions["DB_STEALTH"] = option_on_off(False)
-            cmake.definitions["DB_UNSPENT_LIBBITCOIN"] = option_on_off(False)
+            cmake.definitions["DB_UNSPENT_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_NEW"] = option_on_off(True)
             cmake.definitions["DB_NEW_BLOCKS"] = option_on_off(True)
@@ -215,7 +201,7 @@ class BitprimNodeConan(BitprimConanFile):
             cmake.definitions["DB_SPENDS"] = option_on_off(False)
             cmake.definitions["DB_HISTORY"] = option_on_off(False)
             cmake.definitions["DB_STEALTH"] = option_on_off(False)
-            cmake.definitions["DB_UNSPENT_LIBBITCOIN"] = option_on_off(False)
+            cmake.definitions["DB_UNSPENT_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_LEGACY"] = option_on_off(False)
             cmake.definitions["DB_NEW"] = option_on_off(True)
             cmake.definitions["DB_NEW_BLOCKS"] = option_on_off(False)
@@ -237,7 +223,7 @@ class BitprimNodeConan(BitprimConanFile):
 
 
         cmake.definitions["MICROARCHITECTURE"] = self.options.microarchitecture
-        cmake.definitions["BITPRIM_PROJECT_VERSION"] = self.version
+        cmake.definitions["KTH_PROJECT_VERSION"] = self.version
 
         #TODO(bitprim): compare with the other project to see if this could be deleted!
         if self.settings.compiler == "gcc":
@@ -272,4 +258,4 @@ class BitprimNodeConan(BitprimConanFile):
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']
-        self.cpp_info.libs = ["bitprim-node"]
+        self.cpp_info.libs = ["kth-node"]

@@ -1,21 +1,7 @@
-/**
- * Copyright (c) 2011-2017 libbitcoin developers (see AUTHORS)
- *
- * This file is part of libbitcoin.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <bitcoin/node/sessions/session_block_sync.hpp>
 
 #include <cstddef>
@@ -76,7 +62,7 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         << "Getting blocks.";
 
     // Copy the reservations table.
-    const auto table = reservations_.table();
+    auto const table = reservations_.table();
 
     if (table.empty())
     {
@@ -92,11 +78,11 @@ void session_block_sync::handle_started(const code& ec, result_handler handler)
         return;
     }
 
-    const auto complete = synchronize<result_handler>(
+    auto const complete = synchronize<result_handler>(
         BIND2(handle_complete, _1, handler), table.size(), NAME);
 
     // This is the end of the start sequence.
-    for (const auto row: table)
+    for (auto const row: table)
         new_connection(row, complete);
 
     ////reset_timer();
@@ -147,12 +133,12 @@ void session_block_sync::attach_handshake_protocols(channel::ptr channel,
     result_handler handle_started)
 {
     // Don't use configured services or relay for block sync.
-    const auto relay = false;
-    const auto own_version = settings_.protocol_maximum;
-    const auto own_services = version::service::none;
-    const auto invalid_services = settings_.invalid_services;
-    const auto minimum_version = settings_.protocol_minimum;
-    const auto minimum_services = version::service::node_network;
+    auto const relay = false;
+    auto const own_version = settings_.protocol_maximum;
+    auto const own_services = version::service::none;
+    auto const invalid_services = settings_.invalid_services;
+    auto const minimum_version = settings_.protocol_minimum;
+    auto const minimum_services = version::service::node_network;
 
     // The negotiated_version is initialized to the configured maximum.
     if (channel->negotiated_version() >= version::level::bip61)
@@ -223,7 +209,7 @@ void session_block_sync::handle_complete(const code& ec,
     result_handler handler)
 {
     // Always stop but give sync priority over stop for reporting.
-    const auto stop = reservations_.stop();
+    auto const stop = reservations_.stop();
 
     if (ec)
     {
@@ -270,7 +256,7 @@ void session_block_sync::handle_timer(const code& ec)
     ////// TODO: push into reservations_ implementation.
     ////// TODO: add a boolean increment method to the synchronizer and pass here.
     ////const size_t id = reservations_.table().size();
-    ////const auto row = std::make_shared<reservation>(reservations_, id);
+    ////auto const row = std::make_shared<reservation>(reservations_, id);
     ////const synchronizer<result_handler> handler({}, 0, "name", true);
     ////if (add) new_connection(row, handler);
     ////// TODO: drop the slowest channel
@@ -280,4 +266,4 @@ void session_block_sync::handle_timer(const code& ec)
 }
 
 } // namespace node
-} // namespace libbitcoin
+} // namespace kth

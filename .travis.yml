@@ -1,21 +1,7 @@
-#
-# Copyright (c) 2017-2018 Bitprim Inc.
-#
-# This file is part of Bitprim.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+# Copyright (c) 2016-2020 Knuth Project developers.
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 
 branches:
   only:
@@ -39,7 +25,7 @@ linux: &linux
    os: linux
    sudo: required
    language: python
-   python: "3.6"
+   python: "3.7"
    services:
      - docker
 
@@ -94,41 +80,41 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
-           BITPRIM_CI_CURRENCY=BCH
+           KTH_CI_CURRENCY=BCH
       if: branch =~ /^(release|hotfix).+$/    #Just releases
       script:
         - |
           conan user
-          conan remote add bitprim_temp https://api.bintray.com/conan/bitprim/bitprim
-          echo "waiting for bitprim-blockchain/0.X@bitprim/staging ..."
-          conan search bitprim-blockchain/0.X@bitprim/staging -r bitprim_temp > /dev/null
+          conan remote add kth_temp https://api.bintray.com/conan/k-nuth/kth
+          echo "waiting for kth-blockchain/0.X@kth/staging ..."
+          conan search kth-blockchain/0.X@kth/staging -r kth_temp > /dev/null
           while [ $? == 1 ]
           do
             printf "."
             sleep 10
-            conan search bitprim-blockchain/0.X@bitprim/staging -r bitprim_temp > /dev/null
+            conan search kth-blockchain/0.X@kth/staging -r kth_temp > /dev/null
           done
-          echo "bitprim-blockchain/0.X@bitprim/staging found"
-          echo "waiting for bitprim-network/0.X@bitprim/staging ..."
-          conan search bitprim-network/0.X@bitprim/staging -r bitprim_temp > /dev/null
+          echo "kth-blockchain/0.X@kth/staging found"
+          echo "waiting for kth-network/0.X@kth/staging ..."
+          conan search kth-network/0.X@kth/staging -r kth_temp > /dev/null
           while [ $? == 1 ]
           do
             printf "."
             sleep 10
-            conan search bitprim-network/0.X@bitprim/staging -r bitprim_temp > /dev/null
+            conan search kth-network/0.X@kth/staging -r kth_temp > /dev/null
           done
-          echo "bitprim-network/0.X@bitprim/staging found"
+          echo "kth-network/0.X@kth/staging found"
 
 # Static Checks ------------------------------------------------------
     - stage: static checks
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
@@ -149,7 +135,7 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
@@ -159,18 +145,18 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7 
-           BITPRIM_RUN_TESTS=true
+           KTH_RUN_TESTS=true
       if: branch =~ /^(release|hotfix|dev|feature).*$/    #Avoid master
 
     - stage: build and upload binaries
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6
@@ -180,7 +166,7 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_GCC_VERSIONS=5 CONAN_DOCKER_IMAGE=conanio/gcc5
@@ -191,7 +177,7 @@ jobs:
     #   os: linux
     #   sudo: required
     #   language: python
-    #   python: "3.6"
+    #   python: "3.7"
     #   services:
     #     - docker
     #   env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=conanio/gcc49
@@ -203,7 +189,7 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       services:
         - docker
       env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
@@ -213,7 +199,7 @@ jobs:
     #   os: linux
     #   sudo: required
     #   language: python
-    #   python: "3.6"
+    #   python: "3.7"
     #   services:
     #     - docker
     #   env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50
@@ -223,7 +209,7 @@ jobs:
     #   os: linux
     #   sudo: required
     #   language: python
-    #   python: "3.6"
+    #   python: "3.7"
     #   services:
     #     - docker
     #   env: CONAN_CLANG_VERSIONS=4.0 CONAN_DOCKER_IMAGE=conanio/clang40
@@ -233,7 +219,7 @@ jobs:
     #   os: linux
     #   sudo: required
     #   language: python
-    #   python: "3.6"
+    #   python: "3.7"
     #   services:
     #     - docker
     #   env: CONAN_CLANG_VERSIONS=3.9 CONAN_DOCKER_IMAGE=conanio/clang39
@@ -244,7 +230,7 @@ jobs:
       language: generic
       osx_image: xcode10.1
       env: CONAN_APPLE_CLANG_VERSIONS=10.0
-           BITPRIM_RUN_TESTS=true
+           KTH_RUN_TESTS=true
       if: branch =~ /^(release|hotfix).+$/    #Just releases
     - stage: build and upload binaries
       os: osx
@@ -279,7 +265,7 @@ jobs:
       os: linux
       sudo: required
       language: python
-      python: "3.6"
+      python: "3.7"
       # install: skip
       if: branch =~ /^(release|hotfix|dev|feature).*$/    #Avoid master
       script:
@@ -292,12 +278,12 @@ jobs:
 
         - eval $(python ci_utils/set_envvars_and_files.py)
         #TODO(fernando): configure the remote and user using environment variables
-        - conan remote add bitprim_temp https://api.bintray.com/conan/bitprim/bitprim
+        - conan remote add kth_temp https://api.bintray.com/conan/k-nuth/kth
         - conan user
-        - conan user ${CONAN_LOGIN_USERNAME} -r bitprim_temp -p ${CONAN_PASSWORD}
+        - conan user ${CONAN_LOGIN_USERNAME} -r kth_temp -p ${CONAN_PASSWORD}
         - conan user
-        - conan alias "${REPO_NAME}/0.X@bitprim/${BITPRIM_CONAN_CHANNEL}" "${REPO_NAME}/${BITPRIM_CONAN_VERSION}@bitprim/${BITPRIM_CONAN_CHANNEL}"
-        - conan upload "${REPO_NAME}/0.X@bitprim/${BITPRIM_CONAN_CHANNEL}" --all -r bitprim_temp
+        - conan alias "${REPO_NAME}/0.X@kth/${KTH_CONAN_CHANNEL}" "${REPO_NAME}/${KTH_CONAN_VERSION}@kth/${KTH_CONAN_CHANNEL}"
+        - conan upload "${REPO_NAME}/0.X@kth/${KTH_CONAN_CHANNEL}" --all -r kth_temp
 
 # Push to repos ------------------------------------------------------
     - stage: push to repos
