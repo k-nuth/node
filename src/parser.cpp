@@ -39,7 +39,7 @@ parser::parser(config::settings context)
 {
     // kth_node use history
     configured.database.index_start_height = 0;
-    // libbitcoin_node doesn't use history, and history is expensive.
+    // node doesn't use history, and history is expensive.
     // configured.database.index_start_height = kth::max_uint32;
 
     using serve = message::version::service;

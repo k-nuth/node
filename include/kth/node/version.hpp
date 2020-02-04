@@ -1,9 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2014-2015 libbitcoin-node developers (see COPYING).
-//
-//        GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY
-//
-///////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2016-2020 Knuth Project developers.
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef KTH_NODE_VERSION_HPP_
 #define KTH_NODE_VERSION_HPP_
 
@@ -15,6 +13,6 @@
 
 namespace kth { namespace node {
 char const* version();
-}} /*namespace libbitcoin::node*/
+}} // namespace kth::node
  
 #endif //KTH_NODE_VERSION_HPP_
