@@ -22,7 +22,7 @@
 #include <bitcoin/bitcoin/math/sip_hash.hpp>
 #endif // KTH_USE_DOMAIN
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "block_out"

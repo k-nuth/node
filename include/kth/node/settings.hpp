@@ -9,7 +9,7 @@
 #include <kth/domain.hpp>
 #include <bitcoin/node/define.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 /// Common database configuration settings, properties not thread safe.

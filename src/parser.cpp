@@ -17,11 +17,11 @@
 #include <bitcoin/node/settings.hpp>
 
 //BC_DECLARE_CONFIG_DEFAULT_PATH("")
-//BC_DECLARE_CONFIG_DEFAULT_PATH("libbitcoin" / "bn.cfg")
+//BC_DECLARE_CONFIG_DEFAULT_PATH("kth" / "bn.cfg")
 
 // TODO: localize descriptions.
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace boost::filesystem;
@@ -40,7 +40,7 @@ parser::parser(config::settings context)
     // kth_node use history
     configured.database.index_start_height = 0;
     // libbitcoin_node doesn't use history, and history is expensive.
-    // configured.database.index_start_height = libbitcoin::max_uint32;
+    // configured.database.index_start_height = kth::max_uint32;
 
     using serve = message::version::service;
 

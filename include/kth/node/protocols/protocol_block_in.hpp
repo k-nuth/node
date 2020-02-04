@@ -13,7 +13,7 @@
 #include <bitcoin/network.hpp>
 #include <bitcoin/node/define.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 struct temp_compact_block {

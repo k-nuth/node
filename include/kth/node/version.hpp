@@ -13,7 +13,7 @@
 #define KTH_NODE_VERSION "0.0.0"
 #endif
 
-namespace libbitcoin { namespace node {
+namespace kth { namespace node {
 char const* version();
 }} /*namespace libbitcoin::node*/
  

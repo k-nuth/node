@@ -17,7 +17,7 @@
 #include <bitcoin/node/utility/performance.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::blockchain;

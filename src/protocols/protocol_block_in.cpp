@@ -18,7 +18,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/full_node.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "block_in"

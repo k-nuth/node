@@ -9,7 +9,7 @@
 #include <boost/bimap/support/lambda.hpp>
 #include <bitcoin/blockchain.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::database;

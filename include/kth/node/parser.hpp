@@ -12,7 +12,7 @@
 
 #include <bitcoin/bitcoin/config/parser.hpp>
 
-namespace libbitcoin { 
+namespace kth { 
 namespace node {
 
 #ifdef KTH_USE_DOMAIN

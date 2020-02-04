@@ -12,7 +12,7 @@
 #include <bitcoin/database.hpp>
 #include <bitcoin/node/define.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 /// A thread safe checkpoint queue.

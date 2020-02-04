@@ -11,7 +11,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/settings.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 // Not localizable.

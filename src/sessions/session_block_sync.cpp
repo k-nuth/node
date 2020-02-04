@@ -15,7 +15,7 @@
 #include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define CLASS session_block_sync

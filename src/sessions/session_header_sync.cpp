@@ -17,7 +17,7 @@
 #include <bitcoin/node/settings.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define CLASS session_header_sync

@@ -10,7 +10,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::chain;

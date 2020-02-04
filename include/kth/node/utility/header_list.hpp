@@ -11,7 +11,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/check_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 /// A smart queue for chaining blockchain headers, thread safe.

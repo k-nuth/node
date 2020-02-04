@@ -17,7 +17,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/performance.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 class reservations;

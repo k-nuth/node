@@ -17,7 +17,7 @@
 #include <bitcoin/node/sessions/session_manual.hpp>
 #include <bitcoin/node/sessions/session_outbound.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::blockchain;
@@ -314,7 +314,7 @@ void full_node::subscribe_transaction(transaction_handler&& handler)
 // Init node utils.
 // ------------------------------------------------------------------------
 chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
-//    bool const testnet = libbitcoin::get_network(metadata_.configured.network.identifier) == libbitcoin::config::settings::testnet;
+//    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
 
     bool const testnet_blocks = settings.easy_blocks;
     bool const retarget = settings.retarget;

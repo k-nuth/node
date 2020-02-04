@@ -14,7 +14,7 @@
 #include <bitcoin/node/define.hpp>
 #include <bitcoin/node/utility/header_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 class full_node;

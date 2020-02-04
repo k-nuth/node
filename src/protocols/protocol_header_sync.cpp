@@ -12,7 +12,7 @@
 #include <bitcoin/node/full_node.hpp>
 #include <bitcoin/node/utility/header_list.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 #define NAME "header_sync"

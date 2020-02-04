@@ -5,7 +5,7 @@
 
 #include <bitcoin/node/version.hpp>
 
-namespace libbitcoin { namespace node {
+namespace kth { namespace node {
 
 char const* version() {
     return KTH_NODE_VERSION;

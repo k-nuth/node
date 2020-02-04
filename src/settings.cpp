@@ -6,7 +6,7 @@
 
 #include <kth/domain.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace bc::asio;
@@ -22,7 +22,7 @@ settings::settings()
     , compact_blocks_high_bandwidth(true)
     , rpc_allow_all_ips(false)
 #ifdef KTH_WITH_KEOKEN
-    , keoken_genesis_height(libbitcoin::max_size_t)
+    , keoken_genesis_height(kth::max_size_t)
 #endif
 {
     rpc_allow_ip.push_back("127.0.0.1");

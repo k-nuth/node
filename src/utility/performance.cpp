@@ -6,7 +6,7 @@
 
 #include <kth/domain.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 double performance::normal() const

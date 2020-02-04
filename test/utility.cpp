@@ -10,7 +10,7 @@
 #include <thread>
 #include <bitcoin/node.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 namespace test {
 

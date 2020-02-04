@@ -20,7 +20,7 @@
 // #include <knuth/keoken/manager.hpp>
 // #endif
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 struct multi_crypto_setter {

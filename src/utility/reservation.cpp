@@ -15,7 +15,7 @@
 #include <bitcoin/node/utility/performance.hpp>
 #include <bitcoin/node/utility/reservations.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 using namespace std::chrono;

@@ -16,7 +16,7 @@
 #include <bitcoin/node/utility/check_list.hpp>
 #include <bitcoin/node/utility/reservation.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 // Class to manage a set of reservation objects during sync, thread safe.

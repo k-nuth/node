@@ -11,7 +11,7 @@
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/node/define.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 class BCN_API performance

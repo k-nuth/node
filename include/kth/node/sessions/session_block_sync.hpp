@@ -17,7 +17,7 @@
 #include <bitcoin/node/utility/reservation.hpp>
 #include <bitcoin/node/utility/reservations.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 class full_node;

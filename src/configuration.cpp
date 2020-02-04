@@ -8,7 +8,7 @@
 #include <bitcoin/blockchain.hpp>
 #include <bitcoin/network.hpp>
 
-namespace libbitcoin {
+namespace kth {
 namespace node {
 
 // Construct with defaults derived from given context.
