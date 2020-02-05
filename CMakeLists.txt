@@ -38,14 +38,6 @@ option(ENABLE_SHARED "" OFF)
 #------------------------------------------------------------------------------
 option(ENABLE_POSITION_INDEPENDENT_CODE "Enable POSITION_INDEPENDENT_CODE property" ON)
 
-# Implement --with-remote-blockchain and declare WITH_REMOTE_BLOCKCHAIN.
-#------------------------------------------------------------------------------
-option(WITH_REMOTE_BLOCKCHAIN "Compile with remote kth-blockchain (aka. kth-blockchain-requester)." OFF)
-
-# Implement --with-remote-database and declare WITH_REMOTE_DATABASE.
-#------------------------------------------------------------------------------
-option(WITH_REMOTE_DATABASE "Compile with remote kth-database (aka. kth-database-requester)." OFF)
-
 # Implement --with-tests and declare WITH_TESTS.
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
@@ -221,16 +213,6 @@ endif()
 if (NOT USE_CONAN)
   # Require kth-blockchain of at least version 0 and output ${kth_node_CPPFLAGS/LIBS/PKG}.
   #------------------------------------------------------------------------------
-  if(WITH_REMOTE_BLOCKCHAIN)
-    if (NOT TARGET kth-blockchain-requester)
-      find_package(kth-blockchain-requester 0 REQUIRED)
-    endif()
-  else()
-    if (NOT TARGET kth-blockchain)
-      find_package(kth-blockchain 0 REQUIRED)
-    endif()
-  endif()
-
   if (NOT TARGET kth-blockchain)
     find_package(kth-blockchain 0 REQUIRED)
   endif()
@@ -390,41 +372,13 @@ if (NOT MSVC)
   target_compile_definitions(kth-node PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
 endif()
 
-if (WITH_REMOTE_BLOCKCHAIN)
-  target_compile_definitions(kth-node PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-endif()
-
-if (WITH_REMOTE_DATABASE)
-  target_compile_definitions(kth-node PUBLIC -DWITH_REMOTE_DATABASE)
-endif()
-
-
-
-#TODO(dario) Handle WITH_REMOTE_BLOCKCHAIN with Conan?
-# if (NOT NO_CONAN_AT_ALL)
-#   target_link_libraries(kth-node PUBLIC ${CONAN_LIBS})
-# else()
-#   if (WITH_REMOTE_BLOCKCHAIN)
-#     target_link_libraries(kth-node kth-blockchain-requester kth-network)
-#   else()
-#     target_link_libraries(kth-node kth-blockchain kth-network)
-#   endif()
-# endif()
-
-
 if (NOT USE_CONAN)
-  if (WITH_REMOTE_BLOCKCHAIN)
-    target_link_libraries(kth-node PUBLIC kth-blockchain-requester kth-network)
-  else()
-    target_link_libraries(kth-node PUBLIC kth-blockchain kth-network)
-  endif()
+  target_link_libraries(kth-node PUBLIC kth-blockchain kth-network)
 endif()
 
 if (NOT NO_CONAN_AT_ALL)
   target_link_libraries(kth-node PUBLIC ${CONAN_LIBS})
 endif()
-
-
 
 if (USE_CONAN)
   if (MINGW)
@@ -433,56 +387,6 @@ if (USE_CONAN)
 endif()
 
 _group_sources(kth-node "${CMAKE_CURRENT_LIST_DIR}")
-
-# src/kth-node-requester.la => ${libdir}
-#------------------------------------------------------------------------------
-if(WITH_REMOTE_BLOCKCHAIN)
-  add_library(kth-node-requester ${MODE}
-    src/configuration.cpp
-    src/full_node.cpp
-    src/parser.cpp
-    src/protocols/protocol_block_in.cpp
-    src/protocols/protocol_block_out.cpp
-    src/protocols/protocol_block_sync.cpp
-    src/protocols/protocol_header_sync.cpp
-    src/protocols/protocol_transaction_in.cpp
-    src/protocols/protocol_transaction_out.cpp
-    src/sessions/session_block_sync.cpp
-    src/sessions/session_header_sync.cpp
-    src/sessions/session_inbound.cpp
-    src/sessions/session_manual.cpp
-    src/sessions/session_outbound.cpp
-    src/settings.cpp
-    src/utility/check_list.cpp
-    src/utility/header_list.cpp
-    src/utility/performance.cpp
-    src/utility/reservation.cpp
-    src/utility/reservations.cpp)
-  target_include_directories(kth-node-requester PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-
-  target_compile_definitions(kth-node-requester PUBLIC -DBCN_STATIC -DBCB_STATIC -DBCD_STATIC -DBCT_STATIC -DBC_STATIC)
-  target_compile_definitions(kth-node-requester PUBLIC -DWITH_NODE_REQUESTER)
-  
-  if (NOT MSVC)
-    target_compile_definitions(kth-node-requester PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
-  endif()
-
-  target_compile_definitions(kth-node-requester PUBLIC -DWITH_REMOTE_BLOCKCHAIN)
-
-  if (WITH_REMOTE_DATABASE)
-    target_compile_definitions(kth-node-requester PUBLIC -DWITH_REMOTE_DATABASE)
-  endif()
-
-  if (NOT USE_CONAN)
-    target_link_libraries(kth-node-requester kth-blockchain-requester kth-network)
-  else()
-    target_link_libraries(kth-node-requester PUBLIC ${CONAN_LIBS})
-  endif()
-
-  _group_sources(kth-node-requester "${CMAKE_CURRENT_LIST_DIR}/requester")
-endif()
 
 # Tests
 #==============================================================================
@@ -521,15 +425,9 @@ endif()
 
 # Install
 #==============================================================================
-if(WITH_REMOTE_BLOCKCHAIN)
-  install(TARGETS kth-node kth-node-requester
-          EXPORT kth-node
-          ARCHIVE DESTINATION lib)
-else()
-  install(TARGETS kth-node
-          EXPORT kth-node
-          ARCHIVE DESTINATION lib)
-endif()
+install(TARGETS kth-node
+        EXPORT kth-node
+        ARCHIVE DESTINATION lib)
 
 
 set(_kth_headers

@@ -35,9 +35,7 @@ public:
     /// Options.
     bool help;
 
-#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     bool initchain;
-#endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     bool settings;
     bool version;
 
