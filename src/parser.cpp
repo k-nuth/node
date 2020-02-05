@@ -366,11 +366,6 @@ options_metadata parser::load_settings()
         value<uint32_t>(&configured.database.cache_capacity),
         "The maximum number of entries in the unspent outputs cache, defaults to 10000."
     )
-    (
-        "database.replier",
-        value<config::endpoint>(&configured.database.replier),
-        "Database-blockchain connection, defaults to 127.0.0.1:5568."
-    )    
     /* [blockchain] */
     (
         "blockchain.cores",
@@ -440,11 +435,6 @@ options_metadata parser::load_settings()
         "Assume bip34, bip65, and bip66 activation if enabled, defaults to true (hard fork)."
     )
     (
-        "blockchain.replier",
-        value<config::endpoint>(&configured.chain.replier),
-        "Blockchain Replier connect() endpoint."
-    )
-    (
         "fork.bip68",
         value<bool>(&configured.chain.bip68),
         "Add relative locktime enforcement, defaults to true (soft fork)."
@@ -459,6 +449,9 @@ options_metadata parser::load_settings()
         value<bool>(&configured.chain.bip113),
         "Use median time past for locktime, defaults to true (soft fork)."
     )
+
+#if ! defined(KTH_CURRENCY_BCH)
+    // BTC only things
     (
         "fork.bip141",
         value<bool>(&configured.chain.bip141),
@@ -475,7 +468,9 @@ options_metadata parser::load_settings()
         "Prevent dummy value malleability, defaults to true (soft fork)."
     )
 
-#ifdef KTH_CURRENCY_BCH
+#else
+    // BCH only things
+
     // (
     //     "fork.uahf_height",
     //     value<size_t>(&configured.chain.uahf_height),
@@ -496,19 +491,26 @@ options_metadata parser::load_settings()
     //     value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
     //     "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
     // )
+    // (
+    //     "fork.great_wall_activation_time",
+    //     value<uint64_t>(&configured.chain.great_wall_activation_time),
+    //     "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
+    // )
+    // (
+    //     "fork.graviton_activation_time",
+    //     value<uint64_t>(&configured.chain.graviton_activation_time),
+    //     "Unix time used for MTP activation of 2019-Nov-15 hard fork, defaults to 1573819200."
+    // )
     (
-        "fork.great_wall_activation_time",
-        value<uint64_t>(&configured.chain.great_wall_activation_time),
-        "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
+        "fork.phonon_activation_time",
+        value<uint64_t>(&configured.chain.phonon_activation_time),
+        "Unix time used for MTP activation of 2020-May-15 hard fork, defaults to 1589544000."
     )
-    (
-        "fork.graviton_activation_time",
-        value<uint64_t>(&configured.chain.graviton_activation_time),
-        "Unix time used for MTP activation of 2019-Nov-15 hard fork, defaults to 1573819200."
-    )
-
-
-    
+    // (
+    //     "fork.graviton_activation_time",
+    //     value<uint64_t>(&configured.chain.graviton_activation_time),
+    //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 9999999999."
+    // )
 #endif //KTH_CURRENCY_BCH
 
 
