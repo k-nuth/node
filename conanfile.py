@@ -101,10 +101,6 @@ class KnuthNodeConan(KnuthConanFile):
                 self.output.warn("Keoken mode requires db=full and your configuration is db=%s, it has been changed automatically..." % (self.options.db,))
                 self.options.db = "full"
 
-
-        # self.options["*"].db = self.options.db
-        # self.options["*"].use_domain = self.options.use_domain
-
         self.options["*"].mempool = self.options.mempool
         self.output.info("Compiling for currency: %s" % (self.options.currency,))
         self.output.info("Compiling with mempool: %s" % (self.options.mempool,))
@@ -115,8 +111,6 @@ class KnuthNodeConan(KnuthConanFile):
     def build(self):
         cmake = self.cmake_basis()
 
-        cmake.definitions["WITH_REMOTE_BLOCKCHAIN"] = option_on_off(self.with_remote_blockchain)
-        cmake.definitions["WITH_REMOTE_DATABASE"] = option_on_off(self.with_remote_database)
         # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
         cmake.definitions["WITH_KEOKEN"] = option_on_off(self.is_keoken)
         cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)

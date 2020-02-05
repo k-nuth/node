@@ -9,10 +9,5 @@ set(KTH_NODE_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 include("${KTH_NODE_CMAKE_DIR}/kth-nodeTargets.cmake")
 set(KTH_NODE_LIBRARIES kth-node)
 
-if ("WITH_REMOTE_BLOCKCHAIN" IN_LIST _compile_definitions)
-    find_package(kth-blockchain-requester 0 REQUIRED)
-else()
-	find_package(kth-blockchain 0 REQUIRED)
-endif()
-
+find_package(kth-blockchain 0 REQUIRED)
 find_package(kth-network 0 REQUIRED)

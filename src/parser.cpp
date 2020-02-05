@@ -44,11 +44,6 @@ parser::parser(config::settings context)
 
     using serve = message::version::service;
 
-#if WITH_NODE_REQUESTER
-    // Default endpoint for blockchain replier.
-    configured.chain.replier = { "tcp://localhost:5502" };
-#endif
-
     // A node allows 8 inbound connections by default.
     configured.network.inbound_connections = 8;
     // Logs will slow things if not rotated.
@@ -83,16 +78,12 @@ options_metadata parser::load_options()
             default_value(false)->zero_tokens(),
         "Display command line options."
     )
-
-#if !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
     (
         "initchain,i",
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
     ) 
- #endif // !defined(WITH_REMOTE_BLOCKCHAIN) && !defined(WITH_REMOTE_DATABASE)
-
     (
         BN_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->
@@ -375,14 +366,11 @@ options_metadata parser::load_settings()
         value<uint32_t>(&configured.database.cache_capacity),
         "The maximum number of entries in the unspent outputs cache, defaults to 10000."
     )
-#if defined(WITH_REMOTE_DATABASE)    
     (
         "database.replier",
         value<config::endpoint>(&configured.database.replier),
         "Database-blockchain connection, defaults to 127.0.0.1:5568."
     )    
-#endif //defined(WITH_REMOTE_DATABASE)    
-
     /* [blockchain] */
     (
         "blockchain.cores",
@@ -451,14 +439,11 @@ options_metadata parser::load_settings()
         value<bool>(&configured.chain.bip90),
         "Assume bip34, bip65, and bip66 activation if enabled, defaults to true (hard fork)."
     )
-#if defined(WITH_REMOTE_BLOCKCHAIN)
     (
         "blockchain.replier",
         value<config::endpoint>(&configured.chain.replier),
         "Blockchain Replier connect() endpoint."
     )
-#endif // defined(WITH_REMOTE_BLOCKCHAIN)
-
     (
         "fork.bip68",
         value<bool>(&configured.chain.bip68),
