@@ -5,28 +5,32 @@
 
 > Bitcoin full node as a C++17 library
 
-Build steps
------------
+## Getting started
 
-Library installation can be performed in 3 simple steps:
+Installing the library is as simple as:
 
-1. Install the Knuth build helper:
+1. Install and configure the Knuth build helper:
 ```
-pip install kthbuild --user --upgrade
-```
+$ pip install kthbuild --user --upgrade
 
-2. Configure the Conan remote:
-```
-conan remote add kth https://api.bintray.com/conan/k-nuth/kth
+$ conan remote add kth https://api.bintray.com/conan/k-nuth/kth
 ```
 
-3. Install the appropriate library:
+2. Install the appropriate library:
 
 ```
 conan install node/0.X@kth/stable 
 ```
 
-In you want to tune the installation for better performance, please refer to the [documentation](https://k-nuth.github.io/docs/content/user_guide/advanced_installation.html).
+For more more detailed instructions, please refer to our [documentation](https://k-nuth.github.io/docs/).
+
+## About this library
+
+This library can be used stand-alone, but it is probably convenient for you to use one of our main projects, [look over here](https://github.com/k-nuth/kth/).
+
+## Issues
+
+Each of our modules has its own Github repository, but in case you want to create an issue, please do so in our [main repository](https://github.com/k-nuth/kth/issues).
 
 
 <!-- Links -->
