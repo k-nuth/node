@@ -19,7 +19,7 @@ $ conan remote add kth https://api.bintray.com/conan/k-nuth/kth
 2. Install the appropriate library:
 
 ```
-conan install node/0.X@kth/stable 
+$ conan install node/0.X@kth/stable 
 ```
 
 For more more detailed instructions, please refer to our [documentation](https://k-nuth.github.io/docs/).
