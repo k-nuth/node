@@ -17,7 +17,7 @@
 #include <kth/node/settings.hpp>
 
 //BC_DECLARE_CONFIG_DEFAULT_PATH("")
-//BC_DECLARE_CONFIG_DEFAULT_PATH("kth" / "bn.cfg")
+//BC_DECLARE_CONFIG_DEFAULT_PATH("kth" / "kth.cfg")
 
 // TODO: localize descriptions.
 
