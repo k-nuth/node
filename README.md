@@ -22,7 +22,7 @@ $ conan remote add kth https://api.bintray.com/conan/k-nuth/kth
 $ conan install node/0.X@kth/stable 
 ```
 
-For more more detailed instructions, please refer to our [documentation](https://k-nuth.github.io/docs/).
+For more more detailed instructions, please refer to our [documentation](https://kth.cash/docs/).
 
 ## About this library
 
