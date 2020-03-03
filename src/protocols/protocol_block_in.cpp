@@ -30,14 +30,24 @@ using namespace bc::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
-inline bool is_witness(uint64_t services)
-{
+inline 
+bool is_witness(uint64_t services) {
 #ifdef KTH_CURRENCY_BCH
     return false;
 #else
     return (services & version::service::node_witness) != 0;
 #endif
 }
+
+inline
+uint64_t get_compact_blocks_version() {
+#ifdef KTH_CURRENCY_BCH
+        return 1;
+#else
+        return 2;
+#endif
+}
+
 
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     safe_chain& chain)
@@ -69,8 +79,7 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
 // Start.
 //-----------------------------------------------------------------------------
 
-void protocol_block_in::start()
-{
+void protocol_block_in::start() {
     // Use timer to drop slow peers.
     protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
 
@@ -91,31 +100,20 @@ void protocol_block_in::start()
     SUBSCRIBE2(block_transactions, handle_receive_block_transactions, _1, _2);
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
-    if (headers_from_peer_)
-    {
+    if (headers_from_peer_) {
         // Ask peer to send headers vs. inventory block announcements.
         SEND2(send_headers{}, handle_send, _1, send_headers::command);
     }
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
-    if (compact_from_peer_)
-    {
-#ifdef KTH_CURRENCY_BCH
-        uint64_t compact_version = 1;
-#else
-        uint64_t compact_version = 2;
-#endif
-
+    if (compact_from_peer_) {
         if (chain_.is_stale()) {
-        
             //forze low bandwidth    
             LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
-            SEND2((send_compact{false, compact_version}), handle_send, _1, send_compact::command);
-        }
-        else {
-            
+            SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
+        } else {
             LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
-            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, compact_version}), handle_send, _1, send_compact::command);
+            SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
         } 
     }
@@ -237,13 +235,10 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     return true;
 }
 
-void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
-{
-    if (stopped(ec))
-        return;
+void protocol_block_in::send_get_data(const code& ec, get_data_ptr message) {
+    if (stopped(ec)) return;
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure filtering block hashes for ["
             << authority() << "] " << ec.message();
@@ -251,22 +246,15 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
         return;
     }
 
-    if (message->inventories().empty())
+    if (message->inventories().empty()) {
         return;
-
+    }
 
     if (compact_from_peer_) {
-
         if (node_.node_settings().compact_blocks_high_bandwidth) {
-#ifdef KTH_CURRENCY_BCH
-            uint64_t compact_version = 1;
-#else
-            uint64_t compact_version = 2;
-#endif
-
             if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
                 LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
-                SEND2((send_compact{true, compact_version}), handle_send, _1, send_compact::command);
+                SEND2((send_compact{true, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
                 compact_blocks_high_bandwidth_set_ = true;
             }
         }
@@ -299,8 +287,9 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message)
 #endif
 
     // There was no backlog so the timer must be started now.
-    if (fresh)
+    if (fresh) {
         reset_timer();
+    }
 
     // inventory|headers->get_data[blocks]
     SEND2(*message, handle_send, _1, message->command);
