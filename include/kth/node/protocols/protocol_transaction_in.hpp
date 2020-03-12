@@ -31,12 +31,12 @@ public:
 
 private:
     void send_get_transactions(transaction_const_ptr message);
-    void send_get_data(const code& ec, get_data_ptr message);
+    void send_get_data(code const& ec, get_data_ptr message);
 
-    bool handle_receive_inventory(const code& ec, inventory_const_ptr message);
-    bool handle_receive_transaction(const code& ec,
+    bool handle_receive_inventory(code const& ec, inventory_const_ptr message);
+    bool handle_receive_transaction(code const& ec,
         transaction_const_ptr message);
-    void handle_store_transaction(const code& ec,
+    void handle_store_transaction(code const& ec,
         transaction_const_ptr message);
 
     void handle_stop(const code&);

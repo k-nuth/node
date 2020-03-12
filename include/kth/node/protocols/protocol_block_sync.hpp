@@ -33,9 +33,9 @@ public:
 
 private:
     void send_get_blocks(event_handler complete, bool reset);
-    void handle_event(const code& ec, event_handler complete);
-    void blocks_complete(const code& ec, event_handler handler);
-    bool handle_receive_block(const code& ec, block_const_ptr message,
+    void handle_event(code const& ec, event_handler complete);
+    void blocks_complete(code const& ec, event_handler handler);
+    bool handle_receive_block(code const& ec, block_const_ptr message,
         event_handler complete);
 
     reservation::ptr reservation_;

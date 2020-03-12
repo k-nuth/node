@@ -14,7 +14,9 @@ namespace node {
 // Construct with defaults derived from given context.
 configuration::configuration(config::settings context)
   : help(false)
+#if ! defined(KTH_DB_READONLY)
   , initchain(false)
+#endif  
   , settings(false)
   , version(false)
   , node(context)
@@ -26,7 +28,9 @@ configuration::configuration(config::settings context)
 // Copy constructor.
 configuration::configuration(const configuration& other)
   : help(other.help)
+#if ! defined(KTH_DB_READONLY)  
   , initchain(other.initchain)
+#endif  
   , settings(other.settings)
   , version(other.version)
   , file(other.file)

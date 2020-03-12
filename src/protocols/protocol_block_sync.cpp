@@ -14,8 +14,7 @@
 #include <kth/node/full_node.hpp>
 #include <kth/node/utility/reservation.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 #define NAME "block_sync"
 #define CLASS protocol_block_sync
@@ -28,21 +27,17 @@ using namespace std::placeholders;
 static const asio::seconds expiry_interval(5);
 
 // Depends on protocol_header_sync, which requires protocol version 31800.
-protocol_block_sync::protocol_block_sync(full_node& network,
-    channel::ptr channel, reservation::ptr row)
-  : protocol_timer(network, channel, true, NAME),
-    reservation_(row),
-    CONSTRUCT_TRACK(protocol_block_sync)
-{
-}
+protocol_block_sync::protocol_block_sync(full_node& network, channel::ptr channel, reservation::ptr row)
+    : protocol_timer(network, channel, true, NAME)
+    , reservation_(row)
+    , CONSTRUCT_TRACK(protocol_block_sync)
+{}
 
 // Start sequence.
 // ----------------------------------------------------------------------------
 
-void protocol_block_sync::start(event_handler handler)
-{
-    auto const complete = synchronize<event_handler>(
-        BIND2(blocks_complete, _1, handler), 1, NAME);
+void protocol_block_sync::start(event_handler handler) {
+    auto const complete = synchronize<event_handler>(BIND2(blocks_complete, _1, handler), 1, NAME);
 
     protocol_timer::start(expiry_interval, BIND2(handle_event, _1, complete));
 
@@ -57,11 +52,11 @@ void protocol_block_sync::start(event_handler handler)
 
 void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
 {
-    if (stopped())
+    if (stopped()) {
         return;
+    }
 
-    if (reservation_->stopped())
-    {
+    if (reservation_->stopped()) {
         LOG_DEBUG(LOG_NODE)
             << "Stopping complete slot (" << reservation_->slot() << ").";
         complete(error::success);
@@ -72,8 +67,9 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
     auto const request = reservation_->request(reset);
 
     // Or we may be the same channel and with hashes already requested.
-    if (request.inventories().empty())
+    if (request.inventories().empty()) {
         return;
+    }
 
     LOG_DEBUG(LOG_NODE)
         << "Sending request of " << request.inventories().size()
@@ -86,23 +82,20 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
 // block messages. This requires that this handler never call back into the
 // subscriber. Otherwise a deadlock will result. This in turn requires that
 // the 'complete' parameter handler never call into the message subscriber.
-bool protocol_block_sync::handle_receive_block(const code& ec,
-    block_const_ptr message, event_handler complete)
-{
-    if (stopped(ec))
+bool protocol_block_sync::handle_receive_block(code const& ec, block_const_ptr message, event_handler complete) {
+    if (stopped(ec)) {
         return false;
+    }
 
-    LOG_INFO(LOG_NODE)
-            << "protocol_block_sync::handle_receive_block ***********************************************************";
+    LOG_INFO(LOG_NODE) << "protocol_block_sync::handle_receive_block ***********************************************************";
 
-
+#if ! defined(KTH_DB_READONLY)
     // Add the block to the blockchain store.
     reservation_->import(message);
+#endif    
 
-    if (reservation_->toggle_partitioned())
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Restarting partitioned slot (" << reservation_->slot() << ").";
+    if (reservation_->toggle_partitioned()) {
+        LOG_DEBUG(LOG_NODE) << "Restarting partitioned slot (" << reservation_->slot() << ").";
         complete(error::channel_stopped);
         return false;
     }
@@ -113,13 +106,12 @@ bool protocol_block_sync::handle_receive_block(const code& ec,
 }
 
 // This is fired by the base timer and stop handler.
-void protocol_block_sync::handle_event(const code& ec, event_handler complete)
-{
-    if (stopped(ec))
+void protocol_block_sync::handle_event(code const& ec, event_handler complete) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec && ec != error::channel_timeout)
-    {
+    if (ec && ec != error::channel_timeout) {
         LOG_DEBUG(LOG_NODE)
             << "Failure in block sync timer for slot (" << reservation_->slot()
             << ") " << ec.message();
@@ -130,26 +122,20 @@ void protocol_block_sync::handle_event(const code& ec, event_handler complete)
     // This results from other channels taking this channel's hashes in
     // combination with this channel's peer not responding to the last request.
     // Causing a successful stop here prevents channel startup just to stop.
-    if (reservation_->stopped())
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Stopping complete slot (" << reservation_->slot() << ").";
+    if (reservation_->stopped()) {
+        LOG_DEBUG(LOG_NODE) << "Stopping complete slot (" << reservation_->slot() << ").";
         complete(error::success);
         return;
     }
 
-    if (reservation_->expired())
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Restarting slow slot (" << reservation_->slot() << ")";
+    if (reservation_->expired()) {
+        LOG_DEBUG(LOG_NODE) << "Restarting slow slot (" << reservation_->slot() << ")";
         complete(error::channel_timeout);
         return;
     }
 }
 
-void protocol_block_sync::blocks_complete(const code& ec,
-    event_handler handler)
-{
+void protocol_block_sync::blocks_complete(code const& ec, event_handler handler) {
     // We are no longer receiving blocks, so exclude from average.
     reservation_->reset();
 
@@ -161,5 +147,4 @@ void protocol_block_sync::blocks_complete(const code& ec,
     stop(error::channel_stopped);
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

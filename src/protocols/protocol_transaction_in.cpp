@@ -102,7 +102,7 @@ void protocol_transaction_in::start()
 // Receive inventory sequence.
 //-----------------------------------------------------------------------------
 
-bool protocol_transaction_in::handle_receive_inventory(const code& ec,
+bool protocol_transaction_in::handle_receive_inventory(code const& ec,
     inventory_const_ptr message)
 {
     if (stopped(ec))
@@ -136,7 +136,7 @@ bool protocol_transaction_in::handle_receive_inventory(const code& ec,
     return true;
 }
 
-void protocol_transaction_in::send_get_data(const code& ec, get_data_ptr message) {
+void protocol_transaction_in::send_get_data(code const& ec, get_data_ptr message) {
     if (stopped(ec) || message->inventories().empty())
         return;
 
@@ -164,7 +164,7 @@ void protocol_transaction_in::send_get_data(const code& ec, get_data_ptr message
 //-----------------------------------------------------------------------------
 
 // A transaction is acceptable whether solicited or broadcast.
-bool protocol_transaction_in::handle_receive_transaction(const code& ec, transaction_const_ptr message) {
+bool protocol_transaction_in::handle_receive_transaction(code const& ec, transaction_const_ptr message) {
 
     if (stopped(ec))
         return false;
@@ -201,7 +201,7 @@ bool protocol_transaction_in::handle_receive_transaction(const code& ec, transac
 // The transaction has been saved to the memory pool (or not).
 // This will be picked up by subscription in transaction_out and will cause
 // the transaction to be announced to non-originating relay-accepting peers.
-void protocol_transaction_in::handle_store_transaction(const code& ec,
+void protocol_transaction_in::handle_store_transaction(code const& ec,
     transaction_const_ptr message)
 {
     if (stopped(ec))

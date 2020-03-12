@@ -102,7 +102,7 @@ void full_node::run(result_handler handler)
     ////        this, _1, handler));
 }
 
-void full_node::handle_headers_synchronized(const code& ec,
+void full_node::handle_headers_synchronized(code const& ec,
     result_handler handler)
 {
     ////if (stopped())
@@ -128,7 +128,7 @@ void full_node::handle_headers_synchronized(const code& ec,
     ////        this, _1, handler));
 }
 
-void full_node::handle_running(const code& ec, result_handler handler) {
+void full_node::handle_running(code const& ec, result_handler handler) {
     if (stopped()) {
         handler(error::service_stopped);
         return;

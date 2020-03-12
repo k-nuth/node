@@ -58,7 +58,7 @@ void session_header_sync::start(result_handler handler)
     session::start(CONCURRENT_DELEGATE2(handle_started, _1, handler));
 }
 
-void session_header_sync::handle_started(const code& ec,
+void session_header_sync::handle_started(code const& ec,
     result_handler handler)
 {
     if (ec)
@@ -104,7 +104,7 @@ void session_header_sync::new_connection(header_list::ptr row,
     session_batch::connect(BIND4(handle_connect, _1, _2, row, handler));
 }
 
-void session_header_sync::handle_connect(const code& ec, channel::ptr channel,
+void session_header_sync::handle_connect(code const& ec, channel::ptr channel,
     header_list::ptr row, result_handler handler)
 {
     if (ec)
@@ -147,7 +147,7 @@ void session_header_sync::attach_handshake_protocols(channel::ptr channel,
             ->start(handle_started);
 }
 
-void session_header_sync::handle_channel_start(const code& ec,
+void session_header_sync::handle_channel_start(code const& ec,
     channel::ptr channel, header_list::ptr row, result_handler handler)
 {
     // Treat a start failure just like a completion failure.
@@ -175,7 +175,7 @@ void session_header_sync::attach_protocols(channel::ptr channel,
         BIND3(handle_complete, _1, row, handler));
 }
 
-void session_header_sync::handle_complete(const code& ec,
+void session_header_sync::handle_complete(code const& ec,
     header_list::ptr row, result_handler handler)
 {
     if (ec)
@@ -207,7 +207,7 @@ void session_header_sync::handle_complete(const code& ec,
     handler(error::success);
 }
 
-void session_header_sync::handle_channel_stop(const code& ec,
+void session_header_sync::handle_channel_stop(code const& ec,
     header_list::ptr row)
 {
     LOG_DEBUG(LOG_NODE)

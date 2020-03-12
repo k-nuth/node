@@ -15,8 +15,7 @@
 #include <kth/node/utility/performance.hpp>
 #include <kth/node/utility/reservations.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace std::chrono;
 using namespace bc::chain;
@@ -44,37 +43,30 @@ reservation::reservation(reservations& reservations, size_t slot,
     reservations_(reservations),
     slot_(slot),
     rate_window_(minimum_history * sync_timeout_seconds * micro_per_second)
-{
-}
+{}
 
-reservation::~reservation()
-{
+reservation::~reservation() {
     // This complicates unit testing and isn't strictly necessary.
     ////KTH_ASSERT_MSG(heights_.empty(), "The reservation is not empty.");
 }
 
-size_t reservation::slot() const
-{
+size_t reservation::slot() const {
     return slot_;
 }
 
-bool reservation::pending() const
-{
+bool reservation::pending() const {
     return pending_;
 }
 
-void reservation::set_pending(bool value)
-{
+void reservation::set_pending(bool value) {
     pending_ = value;
 }
 
-std::chrono::microseconds reservation::rate_window() const
-{
+std::chrono::microseconds reservation::rate_window() const {
     return rate_window_;
 }
 
-high_resolution_clock::time_point reservation::now() const
-{
+high_resolution_clock::time_point reservation::now() const {
     return high_resolution_clock::now();
 }
 
@@ -82,47 +74,39 @@ high_resolution_clock::time_point reservation::now() const
 //-----------------------------------------------------------------------------
 
 // Clears rate/history but leaves hashes unchanged.
-void reservation::reset()
-{
+void reservation::reset() {
     set_rate({ true, 0, 0, 0 });
     clear_history();
 }
 
 // Shortcut for rate().idle call.
-bool reservation::idle() const
-{
+bool reservation::idle() const {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(rate_mutex_);
-
     return rate_.idle;
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void reservation::set_rate(performance&& rate)
-{
+void reservation::set_rate(performance&& rate) {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     unique_lock lock(rate_mutex_);
-
     rate_ = std::move(rate);
     ///////////////////////////////////////////////////////////////////////////
 }
 
 // Get a copy of the current rate.
-performance reservation::rate() const
-{
+performance reservation::rate() const {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(rate_mutex_);
-
     return rate_;
     ///////////////////////////////////////////////////////////////////////////
 }
 
 // Ignore idleness here, called only from an active channel, avoiding a race.
-bool reservation::expired() const
-{
+bool reservation::expired() const {
     auto const record = rate();
     auto const normal_rate = record.normal();
     auto const statistics = reservations_.rates();
@@ -147,20 +131,17 @@ bool reservation::expired() const
     return expired;
 }
 
-void reservation::clear_history()
-{
+void reservation::clear_history() {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     unique_lock lock(history_mutex_);
-
     history_.clear();
     ///////////////////////////////////////////////////////////////////////////
 }
 
 // It is possible to get a rate update after idling and before starting anew.
 // This can reduce the average during startup of the new channel until start.
-void reservation::update_rate(size_t events, const microseconds& database)
-{
+void reservation::update_rate(size_t events, const microseconds& database) {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     history_mutex_.lock();
@@ -172,24 +153,21 @@ void reservation::update_rate(size_t events, const microseconds& database)
     auto const history_count = history_.size();
 
     // Remove expired entries from the head of the queue.
-    for (auto it = history_.begin(); it != history_.end() && it->time < start;
-        it = history_.erase(it));
+    for (auto it = history_.begin(); it != history_.end() && it->time < start; it = history_.erase(it));
 
     auto const window_full = history_count > history_.size();
     auto const event_cost = static_cast<uint64_t>(database.count());
     history_.push_back({ events, event_cost, event_start });
 
     // We can't set the rate until we have a period (two or more data points).
-    if (history_.size() < minimum_history)
-    {
+    if (history_.size() < minimum_history) {
         history_mutex_.unlock();
         //---------------------------------------------------------------------
         return;
     }
 
     // Summarize event count and database cost.
-    for (auto const& record: history_)
-    {
+    for (auto const& record: history_) {
         KTH_ASSERT(rate.events <= max_size_t - record.events);
         rate.events += record.events;
         KTH_ASSERT(rate.database <= max_uint64 - record.database);
@@ -218,60 +196,51 @@ void reservation::update_rate(size_t events, const microseconds& database)
 // Hash methods.
 //-----------------------------------------------------------------------------
 
-bool reservation::empty() const
-{
+bool reservation::empty() const {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(hash_mutex_);
-
     return heights_.empty();
     ///////////////////////////////////////////////////////////////////////////
 }
 
-size_t reservation::size() const
-{
+size_t reservation::size() const {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(hash_mutex_);
-
     return heights_.size();
     ///////////////////////////////////////////////////////////////////////////
 }
 
-bool reservation::stopped() const
-{
+bool reservation::stopped() const {
     // Critical Section (stop)
     ///////////////////////////////////////////////////////////////////////////
     shared_lock lock(stop_mutex_);
-
     return stopped_;
     ///////////////////////////////////////////////////////////////////////////
 }
 
 // Obtain and clear the outstanding blocks request.
-message::get_data reservation::request(bool new_channel)
-{
+message::get_data reservation::request(bool new_channel) {
     message::get_data packet;
 
     // We are a new channel, clear history and rate data, next block starts.
-    if (new_channel)
+    if (new_channel) {
         reset();
+    }
 
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();
 
-    if (!new_channel && !pending_)
-    {
+    if ( ! new_channel && ! pending_) {
         hash_mutex_.unlock_upgrade();
         //---------------------------------------------------------------------
         return packet;
     }
 
     // Build get_blocks request message.
-    for (auto height = heights_.right.begin(); height != heights_.right.end();
-        ++height)
-    {
+    for (auto height = heights_.right.begin(); height != heights_.right.end(); ++height) {
         static auto const id = message::inventory::type_id::block;
         packet.inventories().emplace_back(id, height->second);
     }
@@ -285,8 +254,7 @@ message::get_data reservation::request(bool new_channel)
     return packet;
 }
 
-void reservation::insert(hash_digest&& hash, size_t height)
-{
+void reservation::insert(hash_digest&& hash, size_t height) {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     unique_lock lock(hash_mutex_);
@@ -296,14 +264,13 @@ void reservation::insert(hash_digest&& hash, size_t height)
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void reservation::import(block_const_ptr block)
-{
+#if ! defined(KTH_DB_READONLY)
+void reservation::import(block_const_ptr block) {
     size_t height;
     auto const hash = block->header().hash();
     auto const encoded = encode_hash(hash);
 
-    if (!find_height_and_erase(hash, height))
-    {
+    if ( ! find_height_and_erase(hash, height)) {
         LOG_DEBUG(LOG_NODE)
             << "Ignoring unsolicited block (" << slot() << ") ["
             << encoded << "]";
@@ -311,16 +278,14 @@ void reservation::import(block_const_ptr block)
     }
 
     bool success;
-    auto const importer = [this, &block, &height, &success]()
-    {
+    auto const importer = [this, &block, &height, &success]() {
         success = reservations_.import(block, height);
     };
 
     // Do the block import with timer.
     auto const cost = timer<microseconds>::duration(importer);
 
-    if (success)
-    {
+    if (success) {
         static auto const unit_size = 1u;
         update_rate(unit_size, cost);
         auto const record = rate();
@@ -330,9 +295,7 @@ void reservation::import(block_const_ptr block)
         LOG_INFO(LOG_NODE)
             << boost::format(formatter) % height % slot() % encoded %
             (record.total() * micro_per_second) % (record.ratio() * 100);
-    }
-    else
-    {
+    } else {
         // This could also result from a block import failure resulting from
         // inserting at a height that is already populated, but that should be
         // precluded by the implementation. This is the only other failure.
@@ -343,15 +306,15 @@ void reservation::import(block_const_ptr block)
 
     populate();
 }
+#endif // ! defined(KTH_DB_READONLY)
 
-void reservation::populate()
-{
+
+void reservation::populate() {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     stop_mutex_.lock_upgrade();
 
-    if (!stopped_ && empty())
-    {
+    if ( ! stopped_ && empty()) {
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         stop_mutex_.unlock_upgrade_and_lock();
         stopped_ = !reservations_.populate(shared_from_this());
@@ -364,14 +327,12 @@ void reservation::populate()
     ///////////////////////////////////////////////////////////////////////////
 }
 
-bool reservation::toggle_partitioned()
-{
+bool reservation::toggle_partitioned() {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();
 
-    if (partitioned_)
-    {
+    if (partitioned_) {
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         hash_mutex_.unlock_upgrade_and_lock();
         partitioned_ = false;
@@ -388,11 +349,11 @@ bool reservation::toggle_partitioned()
 }
 
 // Give the minimal row ~ half of our hashes, return false if minimal is empty.
-bool reservation::partition(reservation::ptr minimal)
-{
+bool reservation::partition(reservation::ptr minimal) {
     // This assumes that partition has been called under a table mutex.
-    if (!minimal->empty())
+    if (!minimal->empty()) {
         return true;
+    }
 
     // Critical Section (hash)
     ///////////////////////////////////////////////////////////////////////////
@@ -407,8 +368,7 @@ bool reservation::partition(reservation::ptr minimal)
     hash_mutex_.unlock_upgrade_and_lock();
 
     // TODO: move the range in a single command.
-    for (size_t index = 0; index < offset; ++index)
-    {
+    for (size_t index = 0; index < offset; ++index) {
         minimal->heights_.right.insert(std::move(*it));
         it = heights_.right.erase(it);
     }
@@ -417,8 +377,7 @@ bool reservation::partition(reservation::ptr minimal)
     auto const populated = !minimal->empty();
     minimal->pending_ = populated;
 
-    if (!partitioned_)
-    {
+    if ( ! partitioned_) {
         // Critical Section (stop)
         ///////////////////////////////////////////////////////////////////////
         unique_lock lock(stop_mutex_);
@@ -431,25 +390,23 @@ bool reservation::partition(reservation::ptr minimal)
     hash_mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-    if (populated)
+    if (populated) {
         LOG_DEBUG(LOG_NODE)
             << "Moved [" << minimal->size() << "] blocks from slot (" << slot()
             << ") to (" << minimal->slot() << ") leaving [" << size() << "].";
+    }
 
     return populated;
 }
 
-bool reservation::find_height_and_erase(const hash_digest& hash,
-    size_t& out_height)
-{
+bool reservation::find_height_and_erase(const hash_digest& hash, size_t& out_height) {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();
 
     auto const it = heights_.left.find(hash);
 
-    if (it == heights_.left.end())
-    {
+    if (it == heights_.left.end()) {
         hash_mutex_.unlock_upgrade();
         //---------------------------------------------------------------------
         return false;
@@ -466,5 +423,4 @@ bool reservation::find_height_and_erase(const hash_digest& hash,
     return true;
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

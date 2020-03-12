@@ -16,14 +16,9 @@
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 
-#ifdef KTH_USE_DOMAIN
 #include <kth/infrastructure/math/sip_hash.hpp>
-#else
-#include <kth/domain/math/sip_hash.hpp>
-#endif // KTH_USE_DOMAIN
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 #define NAME "block_out"
 #define CLASS protocol_block_out
@@ -104,7 +99,7 @@ void protocol_block_out::start()
 //-----------------------------------------------------------------------------
 
 // TODO: move send_compact to a derived class protocol_block_out_70014.
-bool protocol_block_out::handle_receive_send_compact(const code& ec,
+bool protocol_block_out::handle_receive_send_compact(code const& ec,
     send_compact_const_ptr message)
 {
     if (stopped(ec))
@@ -117,7 +112,7 @@ bool protocol_block_out::handle_receive_send_compact(const code& ec,
 }
 
 // TODO: move send_headers to a derived class protocol_block_out_70012.
-bool protocol_block_out::handle_receive_send_headers(const code& ec,
+bool protocol_block_out::handle_receive_send_headers(code const& ec,
     send_headers_const_ptr message)
 {
     if (stopped(ec))
@@ -132,7 +127,7 @@ bool protocol_block_out::handle_receive_send_headers(const code& ec,
 //-----------------------------------------------------------------------------
 
 // TODO: move get_headers to a derived class protocol_block_out_31800.
-bool protocol_block_out::handle_receive_get_headers(const code& ec,
+bool protocol_block_out::handle_receive_get_headers(code const& ec,
     get_headers_const_ptr message)
 {
     if (stopped(ec))
@@ -166,7 +161,7 @@ bool protocol_block_out::handle_receive_get_headers(const code& ec,
 }
 
 // TODO: move headers to a derived class protocol_block_out_31800.
-void protocol_block_out::handle_fetch_locator_headers(const code& ec,
+void protocol_block_out::handle_fetch_locator_headers(code const& ec,
     headers_ptr message)
 {
     if (stopped(ec))
@@ -197,7 +192,7 @@ void protocol_block_out::handle_fetch_locator_headers(const code& ec,
     last_locator_top_.store(message->elements().front().hash());
 }
 
-bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, get_block_transactions_const_ptr message) {
+bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, get_block_transactions_const_ptr message) {
 #ifdef KTH_CURRENCY_BCH
     bool witness = false;
 #else
@@ -211,7 +206,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
     //LOG_INFO(LOG_NODE) << "asm int $3 - 3";
     //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
-    chain_.fetch_block(block_hash, witness, [this, message](const code& ec, block_const_ptr block, uint64_t) {
+    chain_.fetch_block(block_hash, witness, [this, message](code const& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
                     
@@ -269,7 +264,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(const code& ec, g
 // Receive get_blocks sequence.
 //-----------------------------------------------------------------------------
 
-bool protocol_block_out::handle_receive_get_blocks(const code& ec,
+bool protocol_block_out::handle_receive_get_blocks(code const& ec,
     get_blocks_const_ptr message)
 {
     if (stopped(ec))
@@ -308,7 +303,7 @@ bool protocol_block_out::handle_receive_get_blocks(const code& ec,
     return true;
 }
 
-void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
+void protocol_block_out::handle_fetch_locator_hashes(code const& ec,
     inventory_ptr message)
 {
     if (stopped(ec))
@@ -344,7 +339,7 @@ void protocol_block_out::handle_fetch_locator_hashes(const code& ec,
 
 // TODO: move compact_block to derived class protocol_block_out_70014.
 // TODO: move filtered_block to derived class protocol_block_out_70001.
-bool protocol_block_out::handle_receive_get_data(const code& ec,
+bool protocol_block_out::handle_receive_get_data(code const& ec,
     get_data_const_ptr message)
 {
     if (stopped(ec))
@@ -432,7 +427,7 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
     }
 }
 
-void protocol_block_out::send_block(const code& ec, block_const_ptr message,
+void protocol_block_out::send_block(code const& ec, block_const_ptr message,
     size_t, inventory_ptr inventory)
 {
     if (stopped(ec))
@@ -464,7 +459,7 @@ void protocol_block_out::send_block(const code& ec, block_const_ptr message,
 }
 
 // TODO: move merkle_block to derived class protocol_block_out_70001.
-void protocol_block_out::send_merkle_block(const code& ec,
+void protocol_block_out::send_merkle_block(code const& ec,
     merkle_block_const_ptr message, size_t, inventory_ptr inventory)
 {
     if (stopped(ec))
@@ -496,7 +491,7 @@ void protocol_block_out::send_merkle_block(const code& ec,
 }
 
 // TODO: move compact_block to derived class protocol_block_out_70014.
-void protocol_block_out::send_compact_block(const code& ec,
+void protocol_block_out::send_compact_block(code const& ec,
     compact_block_const_ptr message, size_t, inventory_ptr inventory)
 {
     if (stopped(ec))
@@ -527,7 +522,7 @@ void protocol_block_out::send_compact_block(const code& ec,
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-void protocol_block_out::handle_send_next(const code& ec,
+void protocol_block_out::handle_send_next(code const& ec,
     inventory_ptr inventory)
 {
     if (stopped(ec))
@@ -678,5 +673,4 @@ size_t protocol_block_out::locator_limit()
 // Other than a reorg there is no reason for the peer to regress, as
 // locators are only useful in walking up the chain.
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

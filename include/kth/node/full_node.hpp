@@ -151,11 +151,11 @@ private:
         block_const_ptr_list_const_ptr incoming,
         block_const_ptr_list_const_ptr outgoing);
 
-    void handle_headers_synchronized(const code& ec, result_handler handler);
-    void handle_network_stopped(const code& ec, result_handler handler);
+    void handle_headers_synchronized(code const& ec, result_handler handler);
+    void handle_network_stopped(code const& ec, result_handler handler);
 
-    void handle_started(const code& ec, result_handler handler);
-    void handle_running(const code& ec, result_handler handler);
+    void handle_started(code const& ec, result_handler handler);
+    void handle_running(code const& ec, result_handler handler);
 
     // These are thread safe.
     check_list hashes_;

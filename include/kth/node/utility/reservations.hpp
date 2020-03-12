@@ -16,26 +16,22 @@
 #include <kth/node/utility/check_list.hpp>
 #include <kth/node/utility/reservation.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 // Class to manage a set of reservation objects during sync, thread safe.
-class BCN_API reservations
-{
+class BCN_API reservations {
 public:
-    typedef struct
-    {
+    typedef struct {
         size_t active_count;
         double arithmentic_mean;
         double standard_deviation;
     } rate_statistics;
 
-    typedef std::shared_ptr<reservations> ptr;
+    using ptr = std::shared_ptr<reservations>;
 
     /// Construct a reservation table of reservations, allocating hashes evenly
     /// among the rows up to the limit of a single get headers p2p request.
-    reservations(check_list& hashes, blockchain::fast_chain& chain,
-        const settings& settings);
+    reservations(check_list& hashes, blockchain::fast_chain& chain, const settings& settings);
 
     /// Set the flush lock guard.
     bool start();
@@ -49,8 +45,10 @@ public:
     /// Return a copy of the reservation table.
     reservation::list table() const;
 
+#if ! defined(KTH_DB_READONLY)
     /// Import the given block to the blockchain at the specified height.
     bool import(block_const_ptr block, size_t height);
+#endif
 
     /// Populate a starved row by taking half of the hashes from a weak row.
     bool populate(reservation::ptr minimal);
@@ -92,8 +90,7 @@ private:
     mutable upgrade_mutex mutex_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif
 

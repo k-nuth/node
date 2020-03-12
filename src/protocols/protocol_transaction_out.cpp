@@ -81,7 +81,7 @@ void protocol_transaction_out::start()
 //-----------------------------------------------------------------------------
 
 // TODO: move fee_filters to a derived class protocol_transaction_out_70013.
-bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
+bool protocol_transaction_out::handle_receive_fee_filter(code const& ec,
     fee_filter_const_ptr message)
 {
     if (stopped(ec))
@@ -99,7 +99,7 @@ bool protocol_transaction_out::handle_receive_fee_filter(const code& ec,
 //-----------------------------------------------------------------------------
 
 // TODO: move memory_pool to a derived class protocol_transaction_out_60002.
-bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
+bool protocol_transaction_out::handle_receive_memory_pool(code const& ec,
     memory_pool_const_ptr)
 {
     if (stopped(ec))
@@ -116,7 +116,7 @@ bool protocol_transaction_out::handle_receive_memory_pool(const code& ec,
 }
 
 // Each invocation is limited to 50000 vectors and invoked from common thread.
-void protocol_transaction_out::handle_fetch_mempool(const code& ec,
+void protocol_transaction_out::handle_fetch_mempool(code const& ec,
     inventory_ptr message)
 {
     if (stopped(ec) || message->inventories().empty())
@@ -132,7 +132,7 @@ void protocol_transaction_out::handle_fetch_mempool(const code& ec,
 // TODO: subscribe to and handle get_block_transactions message.
 // TODO: expose a new service bit that indicates complete current tx history.
 // This would exclude transctions replaced by duplication as per BIP30.
-bool protocol_transaction_out::handle_receive_get_data(const code& ec,
+bool protocol_transaction_out::handle_receive_get_data(code const& ec,
     get_data_const_ptr message)
 {
     if (stopped(ec))
@@ -196,7 +196,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory)
 }
 
 // TODO: send block_transaction message as applicable.
-void protocol_transaction_out::send_transaction(const code& ec,
+void protocol_transaction_out::send_transaction(code const& ec,
     transaction_const_ptr message, size_t position, size_t /*height*/,
     inventory_ptr inventory)
 {
@@ -238,7 +238,7 @@ void protocol_transaction_out::send_transaction(const code& ec,
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-void protocol_transaction_out::handle_send_next(const code& ec,
+void protocol_transaction_out::handle_send_next(code const& ec,
     inventory_ptr inventory)
 {
     if (stopped(ec))
@@ -254,7 +254,7 @@ void protocol_transaction_out::handle_send_next(const code& ec,
 // Subscription.
 //-----------------------------------------------------------------------------
 
-bool protocol_transaction_out::handle_transaction_pool(const code& ec,
+bool protocol_transaction_out::handle_transaction_pool(code const& ec,
     transaction_const_ptr message)
 {
     if (stopped(ec))

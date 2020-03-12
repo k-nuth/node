@@ -78,12 +78,14 @@ options_metadata parser::load_options()
             default_value(false)->zero_tokens(),
         "Display command line options."
     )
+#if ! defined(KTH_DB_READONLY)
     (
         "initchain,i",
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
     ) 
+#endif // ! defined(KTH_DB_READONLY)    
     (
         BN_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->

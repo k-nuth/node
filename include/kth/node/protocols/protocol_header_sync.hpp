@@ -35,9 +35,9 @@ public:
 
 private:
     void send_get_headers(event_handler complete);
-    void handle_event(const code& ec, event_handler complete);
-    void headers_complete(const code& ec, event_handler handler);
-    bool handle_receive_headers(const code& ec, headers_const_ptr message,
+    void handle_event(code const& ec, event_handler complete);
+    void headers_complete(code const& ec, event_handler handler);
+    bool handle_receive_headers(code const& ec, headers_const_ptr message,
         event_handler complete);
 
     // Thread safe and guarded by sequential header sync.
