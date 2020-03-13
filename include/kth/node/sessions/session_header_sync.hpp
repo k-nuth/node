@@ -49,24 +49,24 @@ private:
 
     bool initialize();
 
-    void handle_started(const code& ec, result_handler handler);
+    void handle_started(code const& ec, result_handler handler);
 
     void new_connection(header_list::ptr row, result_handler handler);
 
-    void start_syncing(const code& ec, const config::authority& host,
+    void start_syncing(code const& ec, const config::authority& host,
         result_handler handler);
 
-    void handle_connect(const code& ec, network::channel::ptr channel,
+    void handle_connect(code const& ec, network::channel::ptr channel,
         header_list::ptr row, result_handler handler);
 
-    void handle_complete(const code& ec, header_list::ptr row,
+    void handle_complete(code const& ec, header_list::ptr row,
         result_handler handler);
 
-    void handle_channel_start(const code& ec, network::channel::ptr channel,
+    void handle_channel_start(code const& ec, network::channel::ptr channel,
         header_list::ptr row,
         result_handler handler);
 
-    void handle_channel_stop(const code& ec, header_list::ptr row);
+    void handle_channel_stop(code const& ec, header_list::ptr row);
 
     // Thread safe.
     check_list& hashes_;

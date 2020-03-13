@@ -35,7 +35,10 @@ public:
     /// Options.
     bool help;
 
+#if ! defined(KTH_DB_READONLY)
     bool initchain;
+#endif
+    
     bool settings;
     bool version;
 

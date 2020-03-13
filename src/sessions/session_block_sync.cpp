@@ -49,7 +49,7 @@ void session_block_sync::start(result_handler handler)
     session::start(CONCURRENT_DELEGATE2(handle_started, _1, handler));
 }
 
-void session_block_sync::handle_started(const code& ec, result_handler handler)
+void session_block_sync::handle_started(code const& ec, result_handler handler)
 {
     if (ec)
     {
@@ -108,7 +108,7 @@ void session_block_sync::new_connection(reservation::ptr row,
     session_batch::connect(BIND4(handle_connect, _1, _2, row, handler));
 }
 
-void session_block_sync::handle_connect(const code& ec, channel::ptr channel,
+void session_block_sync::handle_connect(code const& ec, channel::ptr channel,
     reservation::ptr row, result_handler handler)
 {
     if (ec)
@@ -151,7 +151,7 @@ void session_block_sync::attach_handshake_protocols(channel::ptr channel,
             ->start(handle_started);
 }
 
-void session_block_sync::handle_channel_start(const code& ec,
+void session_block_sync::handle_channel_start(code const& ec,
     channel::ptr channel, reservation::ptr row, result_handler handler)
 {
     // Treat a start failure just like a completion failure.
@@ -177,7 +177,7 @@ void session_block_sync::attach_protocols(channel::ptr channel,
         BIND3(handle_channel_complete, _1, row, handler));
 }
 
-void session_block_sync::handle_channel_complete(const code& ec,
+void session_block_sync::handle_channel_complete(code const& ec,
     reservation::ptr row, result_handler handler)
 {
     if (ec)
@@ -197,7 +197,7 @@ void session_block_sync::handle_channel_complete(const code& ec,
     handler(error::success);
 }
 
-void session_block_sync::handle_channel_stop(const code& ec,
+void session_block_sync::handle_channel_stop(code const& ec,
     reservation::ptr row)
 {
     LOG_INFO(LOG_NODE)
@@ -205,7 +205,7 @@ void session_block_sync::handle_channel_stop(const code& ec,
         << ec.message();
 }
 
-void session_block_sync::handle_complete(const code& ec,
+void session_block_sync::handle_complete(code const& ec,
     result_handler handler)
 {
     // Always stop but give sync priority over stop for reporting.
@@ -244,7 +244,7 @@ void session_block_sync::reset_timer()
     timer_->start(BIND1(handle_timer, _1));
 }
 
-void session_block_sync::handle_timer(const code& ec)
+void session_block_sync::handle_timer(code const& ec)
 {
     if (stopped())
         return;

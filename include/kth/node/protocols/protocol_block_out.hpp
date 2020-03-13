@@ -35,32 +35,32 @@ private:
     size_t locator_limit();
 
     void send_next_data(inventory_ptr inventory);
-    void send_block(const code& ec, block_const_ptr message,
+    void send_block(code const& ec, block_const_ptr message,
         size_t height, inventory_ptr inventory);
-    void send_merkle_block(const code& ec, merkle_block_const_ptr message,
+    void send_merkle_block(code const& ec, merkle_block_const_ptr message,
         size_t height, inventory_ptr inventory);
-    void send_compact_block(const code& ec, compact_block_const_ptr message,
+    void send_compact_block(code const& ec, compact_block_const_ptr message,
         size_t height, inventory_ptr inventory);
 
-    bool handle_receive_get_data(const code& ec,
+    bool handle_receive_get_data(code const& ec,
         get_data_const_ptr message);
-    bool handle_receive_get_blocks(const code& ec,
+    bool handle_receive_get_blocks(code const& ec,
         get_blocks_const_ptr message);
-    bool handle_receive_get_headers(const code& ec,
+    bool handle_receive_get_headers(code const& ec,
         get_headers_const_ptr message);
-    bool handle_receive_send_headers(const code& ec,
+    bool handle_receive_send_headers(code const& ec,
         send_headers_const_ptr message);
-    bool handle_receive_send_compact(const code& ec,
+    bool handle_receive_send_compact(code const& ec,
         send_compact_const_ptr message);
 
-    bool handle_receive_get_block_transactions(const code& ec, 
+    bool handle_receive_get_block_transactions(code const& ec, 
         get_block_transactions_const_ptr message);
 
-    void handle_fetch_locator_hashes(const code& ec, inventory_ptr message);
-    void handle_fetch_locator_headers(const code& ec, headers_ptr message);
+    void handle_fetch_locator_hashes(code const& ec, inventory_ptr message);
+    void handle_fetch_locator_headers(code const& ec, headers_ptr message);
 
-    void handle_stop(const code& ec);
-    void handle_send_next(const code& ec, inventory_ptr inventory);
+    void handle_stop(code const& ec);
+    void handle_send_next(code const& ec, inventory_ptr inventory);
     bool handle_reorganized(code ec, size_t fork_height,
         block_const_ptr_list_const_ptr incoming,
         block_const_ptr_list_const_ptr outgoing);

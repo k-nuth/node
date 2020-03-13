@@ -44,22 +44,22 @@ protected:
         reservation::ptr row, result_handler handler);
 
 private:
-    void handle_started(const code& ec, result_handler handler);
+    void handle_started(code const& ec, result_handler handler);
     void new_connection(reservation::ptr row, result_handler handler);
 
     // Sequence.
-    void handle_connect(const code& ec, network::channel::ptr channel,
+    void handle_connect(code const& ec, network::channel::ptr channel,
         reservation::ptr row, result_handler handler);
-    void handle_channel_start(const code& ec, network::channel::ptr channel,
+    void handle_channel_start(code const& ec, network::channel::ptr channel,
         reservation::ptr row, result_handler handler);
-    void handle_channel_complete(const code& ec, reservation::ptr row,
+    void handle_channel_complete(code const& ec, reservation::ptr row,
         result_handler handler);
-    void handle_channel_stop(const code& ec, reservation::ptr row);
-    void handle_complete(const code& ec, result_handler handler);
+    void handle_channel_stop(code const& ec, reservation::ptr row);
+    void handle_complete(code const& ec, result_handler handler);
 
     // Timers.
     void reset_timer();
-    void handle_timer(const code& ec);
+    void handle_timer(code const& ec);
 
     // These are thread safe.
     blockchain::fast_chain& chain_;

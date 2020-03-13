@@ -129,7 +129,7 @@ void protocol_block_in::send_get_blocks(const hash_digest& stop_hash) {
     chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
 }
 
-void protocol_block_in::handle_fetch_block_locator(const code& ec,
+void protocol_block_in::handle_fetch_block_locator(code const& ec,
     get_headers_ptr message, const hash_digest& stop_hash)
 {
     if (stopped(ec))
@@ -235,7 +235,7 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     return true;
 }
 
-void protocol_block_in::send_get_data(const code& ec, get_data_ptr message) {
+void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
     if (stopped(ec)) return;
 
     if (ec) {
@@ -299,7 +299,7 @@ void protocol_block_in::send_get_data(const code& ec, get_data_ptr message) {
 //-----------------------------------------------------------------------------
 
 // TODO: move not_found to a derived class protocol_block_in_70001.
-bool protocol_block_in::handle_receive_not_found(const code& ec,
+bool protocol_block_in::handle_receive_not_found(code const& ec,
     not_found_const_ptr message)
 {
     if (stopped(ec))
@@ -340,7 +340,7 @@ void protocol_block_in::organize_block(block_const_ptr message) {
     chain_.organize(message, BIND2(handle_store_block, _1, message));
 }
 
-bool protocol_block_in::handle_receive_block(const code& ec,
+bool protocol_block_in::handle_receive_block(code const& ec,
     block_const_ptr message)
 {
     if (stopped(ec))
@@ -402,7 +402,7 @@ bool protocol_block_in::handle_receive_block(const code& ec,
     return true;
 }
 
-bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_transactions_const_ptr message)
+bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_transactions_const_ptr message)
 {
     if (stopped(ec))
         return false;
@@ -467,7 +467,7 @@ bool protocol_block_in::handle_receive_block_transactions(const code& ec, block_
     return true;
 }
 
-void protocol_block_in::handle_fetch_block_locator_compact_block(const code& ec, get_headers_ptr message, const hash_digest& stop_hash) {
+void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, const hash_digest& stop_hash) {
     
     if (stopped(ec))
         return;
@@ -675,7 +675,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     } 
 }
 
-void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_digest& hash) {
+void protocol_block_in::send_get_data_compact_block(code const& ec, const hash_digest& hash) {
 
     hash_list hashes;
     hashes.push_back(hash);
@@ -689,7 +689,7 @@ void protocol_block_in::send_get_data_compact_block(const code& ec, const hash_d
 // The block has been saved to the block chain (or not).
 // This will be picked up by subscription in block_out and will cause the block
 // to be announced to non-originating peers.
-void protocol_block_in::handle_store_block(const code& ec, block_const_ptr message) {
+void protocol_block_in::handle_store_block(code const& ec, block_const_ptr message) {
     if (stopped(ec)) {
         return;
     }
@@ -741,7 +741,7 @@ void protocol_block_in::handle_store_block(const code& ec, block_const_ptr messa
 //-----------------------------------------------------------------------------
 
 // This is fired by the callback (i.e. base timer and stop handler).
-void protocol_block_in::handle_timeout(const code& ec)
+void protocol_block_in::handle_timeout(code const& ec)
 {
     if (stopped(ec))
     {

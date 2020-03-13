@@ -6,8 +6,7 @@
 
 #include <kth/domain.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace bc::asio;
 
@@ -31,13 +30,10 @@ settings::settings()
 // There are no current distinctions spanning chain contexts.
 settings::settings(config::settings context)
     : settings()
-{
-}
+{}
 
-duration settings::block_latency() const
-{
+duration settings::block_latency() const {
     return seconds(block_latency_seconds);
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

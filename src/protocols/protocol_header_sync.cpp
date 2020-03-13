@@ -79,7 +79,7 @@ void protocol_header_sync::send_get_headers(event_handler complete)
     SEND2(request, handle_send, _1, request.command);
 }
 
-bool protocol_header_sync::handle_receive_headers(const code& ec,
+bool protocol_header_sync::handle_receive_headers(code const& ec,
     headers_const_ptr message, event_handler complete)
 {
     if (stopped(ec))
@@ -121,7 +121,7 @@ bool protocol_header_sync::handle_receive_headers(const code& ec,
 }
 
 // This is fired by the base timer and stop handler.
-void protocol_header_sync::handle_event(const code& ec, event_handler complete)
+void protocol_header_sync::handle_event(code const& ec, event_handler complete)
 {
     if (stopped(ec))
         return;
@@ -153,7 +153,7 @@ void protocol_header_sync::handle_event(const code& ec, event_handler complete)
     }
 }
 
-void protocol_header_sync::headers_complete(const code& ec,
+void protocol_header_sync::headers_complete(code const& ec,
     event_handler handler)
 {
     // This is end of the header sync sequence.

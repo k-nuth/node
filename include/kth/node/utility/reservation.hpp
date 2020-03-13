@@ -17,22 +17,18 @@
 #include <kth/node/define.hpp>
 #include <kth/node/utility/performance.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class reservations;
 
 // Class to manage hashes during sync, thread safe.
-class BCN_API reservation
-  : public enable_shared_from_base<reservation>
-{
+class BCN_API reservation : public enable_shared_from_base<reservation> {
 public:
     typedef std::shared_ptr<reservation> ptr;
     typedef std::vector<reservation::ptr> list;
 
     /// Construct a block reservation with the specified identifier.
-    reservation(reservations& reservations, size_t slot,
-        uint32_t sync_timeout_seconds);
+    reservation(reservations& reservations, size_t slot, uint32_t sync_timeout_seconds);
 
     /// Ensure there are no remaining reserved hashes.
     ~reservation();
@@ -71,8 +67,10 @@ public:
     /// Add the block hash to the reservation.
     void insert(hash_digest&& hash, size_t height);
 
+#if ! defined(KTH_DB_READONLY)
     /// Add to the blockchain, with height determined by the reservation.
     void import(block_const_ptr block);
+#endif
 
     /// Determine if the reservation was partitioned and reset partition flag.
     bool toggle_partitioned();
@@ -97,19 +95,16 @@ protected:
     virtual std::chrono::high_resolution_clock::time_point now() const;
 
 private:
-    typedef struct
-    {
+    typedef struct {
         size_t events;
         uint64_t database;
         std::chrono::high_resolution_clock::time_point time;
     } import_record;
 
-    typedef std::vector<import_record> rate_history;
+    using rate_history = std::vector<import_record>;
 
     // A bidirection map is used for efficient hash and height retrieval.
-    typedef boost::bimaps::bimap<
-        boost::bimaps::unordered_set_of<hash_digest>,
-        boost::bimaps::set_of<size_t>> hash_heights;
+    using hash_heights = boost::bimaps::bimap<boost::bimaps::unordered_set_of<hash_digest>, boost::bimaps::set_of<size_t>>;
 
     // Return rate history to startup state.
     void clear_history();
@@ -144,8 +139,7 @@ private:
     const std::chrono::microseconds rate_window_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif
 

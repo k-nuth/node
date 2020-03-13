@@ -43,22 +43,22 @@ private:
     static void report(const chain::block& block);
 
     void send_get_blocks(const hash_digest& stop_hash);
-    void send_get_data(const code& ec, get_data_ptr message);
+    void send_get_data(code const& ec, get_data_ptr message);
 
-    bool handle_receive_block(const code& ec, block_const_ptr message);
-    bool handle_receive_compact_block(const code& ec, compact_block_const_ptr message);
-    bool handle_receive_block_transactions(const code& ec,block_transactions_const_ptr message);
-    bool handle_receive_headers(const code& ec, headers_const_ptr message);
-    bool handle_receive_inventory(const code& ec, inventory_const_ptr message);
-    bool handle_receive_not_found(const code& ec, not_found_const_ptr message);
-    void handle_store_block(const code& ec, block_const_ptr message);
-    void handle_fetch_block_locator(const code& ec, get_headers_ptr message, const hash_digest& stop_hash);
-    void handle_fetch_block_locator_compact_block(const code& ec, get_headers_ptr message, const hash_digest& stop_hash);
+    bool handle_receive_block(code const& ec, block_const_ptr message);
+    bool handle_receive_compact_block(code const& ec, compact_block_const_ptr message);
+    bool handle_receive_block_transactions(code const& ec,block_transactions_const_ptr message);
+    bool handle_receive_headers(code const& ec, headers_const_ptr message);
+    bool handle_receive_inventory(code const& ec, inventory_const_ptr message);
+    bool handle_receive_not_found(code const& ec, not_found_const_ptr message);
+    void handle_store_block(code const& ec, block_const_ptr message);
+    void handle_fetch_block_locator(code const& ec, get_headers_ptr message, const hash_digest& stop_hash);
+    void handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, const hash_digest& stop_hash);
 
-    void send_get_data_compact_block(const code& ec, const hash_digest& hash);
+    void send_get_data_compact_block(code const& ec, const hash_digest& hash);
 
-    void handle_timeout(const code& ec);
-    void handle_stop(const code& ec);
+    void handle_timeout(code const& ec);
+    void handle_stop(code const& ec);
 
     void organize_block(block_const_ptr message);
 

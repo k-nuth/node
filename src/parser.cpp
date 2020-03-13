@@ -78,12 +78,14 @@ options_metadata parser::load_options()
             default_value(false)->zero_tokens(),
         "Display command line options."
     )
+#if ! defined(KTH_DB_READONLY)
     (
         "initchain,i",
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
     ) 
+#endif // ! defined(KTH_DB_READONLY)    
     (
         BN_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->
@@ -300,11 +302,12 @@ options_metadata parser::load_settings()
         value<bool>(&configured.network.use_ipv6),
         "Node use ipv6."
     )
-    // (
-    //     "network.bitcoin_cash",
-    //     value<bool>(&configured.network.bitcoin_cash),
-    //     "Use Bitcoin Cash (true) or Bitcoin Legacy (false), defaults to false."
-    // )
+    (
+        "network.user_agent_backlist",
+        value<std::vector<std::string>>(&configured.network.user_agent_backlist),
+        "Blacklist user-agent starting with..."
+    )
+
 
 
     /* [database] */

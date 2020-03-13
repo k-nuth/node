@@ -31,6 +31,9 @@ class KnuthNodeConan(KnuthConanFile):
         "mempool": [True, False],
         "use_domain": [True, False],
         "db": ['legacy', 'legacy_full', 'pruned', 'default', 'full'],
+        "db_readonly": [True, False],
+        
+
         "cxxflags": "ANY",
         "cflags": "ANY",
         "glibcxx_supports_cxx11_abi": "ANY",
@@ -54,6 +57,7 @@ class KnuthNodeConan(KnuthConanFile):
         "mempool": False,
         "use_domain": True,
         "db": "default",
+        "db_readonly": False,
 
         "cxxflags": "_DUMMY_",
         "cflags": "_DUMMY_",
@@ -102,6 +106,10 @@ class KnuthNodeConan(KnuthConanFile):
                 self.options.db = "full"
 
         self.options["*"].mempool = self.options.mempool
+        
+        self.options["*"].db_readonly = self.options.db_readonly
+        self.output.info("Compiling with read-only DB: %s" % (self.options.db_readonly,))
+
         self.output.info("Compiling for currency: %s" % (self.options.currency,))
         self.output.info("Compiling with mempool: %s" % (self.options.mempool,))
 
@@ -114,7 +122,7 @@ class KnuthNodeConan(KnuthConanFile):
         # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
         cmake.definitions["WITH_KEOKEN"] = option_on_off(self.is_keoken)
         cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
-        cmake.definitions["USE_DOMAIN"] = option_on_off(True)
+        cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
 
         cmake.configure(source_dir=self.source_folder)
         if not self.options.cmake_export_compile_commands:
