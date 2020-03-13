@@ -48,16 +48,13 @@ full_node::~full_node()
 // Start.
 // ----------------------------------------------------------------------------
 
-void full_node::start(result_handler handler)
-{
-    if (!stopped())
-    {
+void full_node::start(result_handler handler) {
+    if ( ! stopped()) {
         handler(error::operation_failed);
         return;
     }
 
-    if (!chain_.start())
-    {
+    if ( ! chain_.start()) {
         LOG_ERROR(LOG_NODE) << "Failure starting blockchain.";
         handler(error::operation_failed);
         return;
