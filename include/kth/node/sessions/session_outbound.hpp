@@ -11,7 +11,7 @@
 #include <kth/node/define.hpp>
 #include <kth/node/sessions/session.hpp>
 
-namespace kth:node {
+namespace kth::node {
 
 class full_node;
 

@@ -16,7 +16,7 @@
 #include <kth/node/utility/check_list.hpp>
 #include <kth/node/utility/reservation.hpp>
 
-namespace kth:node {
+namespace kth::node {
 
 #define CLASS session_block_sync
 #define NAME "session_block_sync"
@@ -64,8 +64,7 @@ void session_block_sync::handle_started(code const& ec, result_handler handler) 
     }
 
     if ( ! reservations_.start()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Failed to set write lock.";
+        LOG_DEBUG(LOG_NODE) << "Failed to set write lock.";
         handler(error::operation_failed);
         return;
     }
@@ -73,7 +72,7 @@ void session_block_sync::handle_started(code const& ec, result_handler handler) 
     auto const complete = synchronize<result_handler>(BIND2(handle_complete, _1, handler), table.size(), NAME);
 
     // This is the end of the start sequence.
-    for (auto const row: table) {
+    for (auto const row : table) {
         new_connection(row, complete);
     }
 
