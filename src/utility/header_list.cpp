@@ -10,25 +10,22 @@
 #include <kth/node/define.hpp>
 #include <kth/node/utility/check_list.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace bc::chain;
 using namespace bc::config;
 
 // Locking is optimized for a single intended caller.
-header_list::header_list(size_t slot, const checkpoint& start,
-    const checkpoint& stop)
-  : height_(safe_add(start.height(), size_t(1))),
-    start_(start),
-    stop_(stop),
-    slot_(slot)
+header_list::header_list(size_t slot, const checkpoint& start, const checkpoint& stop)
+    : height_(safe_add(start.height(), size_t(1)))
+    , start_(start)
+    , stop_(stop)
+    , slot_(slot)
 {
     list_.reserve(safe_subtract(stop.height(), start.height()));
 }
 
-bool header_list::complete() const
-{
+bool header_list::complete() const {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section.
     shared_lock lock(mutex_);
@@ -37,18 +34,15 @@ bool header_list::complete() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-size_t header_list::slot() const
-{
+size_t header_list::slot() const {
     return slot_;
 }
 
-size_t header_list::first_height() const
-{
+size_t header_list::first_height() const {
     return height_;
 }
 
-hash_digest header_list::previous_hash() const
-{
+hash_digest header_list::previous_hash() const {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section.
     shared_lock lock(mutex_);
@@ -57,8 +51,7 @@ hash_digest header_list::previous_hash() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-size_t header_list::previous_height() const
-{
+size_t header_list::previous_height() const {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section.
     shared_lock lock(mutex_);
@@ -68,19 +61,16 @@ size_t header_list::previous_height() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-const hash_digest& header_list::stop_hash() const
-{
+hash_digest const& header_list::stop_hash() const {
     return stop_.hash();
 }
 
 // This is not thread safe, call only after complete.
-const chain::header::list& header_list::headers() const
-{
+const chain::header::list& header_list::headers() const {
     return list_;
 }
 
-bool header_list::merge(headers_const_ptr message)
-{
+bool header_list::merge(headers_const_ptr message) {
     auto const& headers = message->elements();
 
     ///////////////////////////////////////////////////////////////////////////
@@ -90,12 +80,10 @@ bool header_list::merge(headers_const_ptr message)
     auto const count = std::min(remaining(), headers.size());
     auto const end = headers.begin() + count;
 
-    for (auto it = headers.begin(); it != end; ++it)
-    {
+    for (auto it = headers.begin(); it != end; ++it) {
         auto const& header = *it;
 
-        if (!link(header) || !check(header) || !accept(header))
-        {
+        if ( ! link(header) || ! check(header) || ! accept(header)) {
             list_.clear();
             return false;
         }
@@ -131,32 +119,29 @@ bool header_list::merge(headers_const_ptr message)
 // private
 //-----------------------------------------------------------------------------
 
-size_t header_list::remaining() const
-{
+size_t header_list::remaining() const {
     // This difference is safe from underflow.
     return list_.capacity() - list_.size();
 }
 
-bool header_list::link(const chain::header& header) const
-{
-    if (list_.empty())
+bool header_list::link(const chain::header& header) const {
+    if (list_.empty()) {
         return header.previous_block_hash() == start_.hash();
+    }
 
     // Avoid copying and temporary reference assignment.
     return header.previous_block_hash() == list_.back().hash();
 }
 
-bool header_list::check(const header& header) const
-{
+bool header_list::check(const header& header) const {
     // This is a hack for successful compile - this is dead code.
     static auto const retarget = true;
 
     // This validates is_valid_proof_of_work and is_valid_time_stamp.
-    return !header.check(retarget);
+    return ! header.check(retarget);
 }
 
-bool header_list::accept(const header& header) const
-{
+bool header_list::accept(const header& header) const {
     //// Parallel header download precludes validation of minimum_version,
     //// work_required and median_time_past, however checkpoints are verified.
     ////return !header.accept(...);
@@ -165,5 +150,4 @@ bool header_list::accept(const header& header) const
     return remaining() > 1 || header.hash() == stop_.hash();
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

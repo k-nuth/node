@@ -5,40 +5,39 @@
 #include <kth/node/configuration.hpp>
 
 #include <cstddef>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 // Construct with defaults derived from given context.
 configuration::configuration(config::settings context)
-  : help(false)
+    : help(false)
 #if ! defined(KTH_DB_READONLY)
-  , initchain(false)
+    , initchain(false)
 #endif  
-  , settings(false)
-  , version(false)
-  , node(context)
-  , chain(context)
-  , database(context)
-  , network(context)
+    , settings(false)
+    , version(false)
+    , node(context)
+    , chain(context)
+    , database(context)
+    , network(context)
 {}
 
 // Copy constructor.
 configuration::configuration(const configuration& other)
-  : help(other.help)
+    : help(other.help)
 #if ! defined(KTH_DB_READONLY)  
-  , initchain(other.initchain)
+    , initchain(other.initchain)
 #endif  
-  , settings(other.settings)
-  , version(other.version)
-  , file(other.file)
-  , node(other.node)
-  , chain(other.chain)
-  , database(other.database)
-  , network(other.network)
+    , settings(other.settings)
+    , version(other.version)
+    , file(other.file)
+    , node(other.node)
+    , chain(other.chain)
+    , database(other.database)
+    , network(other.network)
 {}
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

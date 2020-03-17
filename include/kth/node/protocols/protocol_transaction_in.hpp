@@ -11,20 +11,16 @@
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
-class BCN_API protocol_transaction_in
-  : public network::protocol_events, track<protocol_transaction_in>
-{
+class BCN_API protocol_transaction_in : public network::protocol_events, track<protocol_transaction_in> {
 public:
-    typedef std::shared_ptr<protocol_transaction_in> ptr;
+    using ptr = std::shared_ptr<protocol_transaction_in>;
 
     /// Construct a transaction protocol instance.
-    protocol_transaction_in(full_node& network, network::channel::ptr channel,
-        blockchain::safe_chain& chain);
+    protocol_transaction_in(full_node& network, network::channel::ptr channel, blockchain::safe_chain& chain);
 
     /// Start the protocol.
     virtual void start();
@@ -34,10 +30,8 @@ private:
     void send_get_data(code const& ec, get_data_ptr message);
 
     bool handle_receive_inventory(code const& ec, inventory_const_ptr message);
-    bool handle_receive_transaction(code const& ec,
-        transaction_const_ptr message);
-    void handle_store_transaction(code const& ec,
-        transaction_const_ptr message);
+    bool handle_receive_transaction(code const& ec, transaction_const_ptr message);
+    void handle_store_transaction(code const& ec, transaction_const_ptr message);
 
     void handle_stop(const code&);
 
@@ -50,7 +44,6 @@ private:
     const bool peer_witness_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

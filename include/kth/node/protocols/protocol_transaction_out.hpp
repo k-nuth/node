@@ -12,42 +12,31 @@
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
-class BCN_API protocol_transaction_out
-  : public network::protocol_events, track<protocol_transaction_out>
-{
+class BCN_API protocol_transaction_out : public network::protocol_events, track<protocol_transaction_out> {
 public:
-    typedef std::shared_ptr<protocol_transaction_out> ptr;
+    using ptr = std::shared_ptr<protocol_transaction_out>;
 
     /// Construct a transaction protocol instance.
-    protocol_transaction_out(full_node& network, network::channel::ptr channel,
-        blockchain::safe_chain& chain);
+    protocol_transaction_out(full_node& network, network::channel::ptr channel, blockchain::safe_chain& chain);
 
     /// Start the protocol.
     virtual void start();
 
 private:
     void send_next_data(inventory_ptr inventory);
-    void send_transaction(code const& ec, transaction_const_ptr message,
-        size_t position, size_t height, inventory_ptr inventory);
+    void send_transaction(code const& ec, transaction_const_ptr message, size_t position, size_t height, inventory_ptr inventory);
 
-    bool handle_receive_get_data(code const& ec,
-        get_data_const_ptr message);
-    bool handle_receive_fee_filter(code const& ec,
-        fee_filter_const_ptr message);
-    bool handle_receive_memory_pool(code const& ec,
-        memory_pool_const_ptr message);
-
+    bool handle_receive_get_data(code const& ec, get_data_const_ptr message);
+    bool handle_receive_fee_filter(code const& ec, fee_filter_const_ptr message);
+    bool handle_receive_memory_pool(code const& ec, memory_pool_const_ptr message);
     void handle_fetch_mempool(code const& ec, inventory_ptr message);
-
     void handle_stop(code const& ec);
     void handle_send_next(code const& ec, inventory_ptr inventory);
-    bool handle_transaction_pool(code const& ec,
-        transaction_const_ptr message);
+    bool handle_transaction_pool(code const& ec, transaction_const_ptr message);
 
     // These are thread safe.
     blockchain::safe_chain& chain_;
@@ -57,7 +46,6 @@ private:
     const bool enable_witness_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

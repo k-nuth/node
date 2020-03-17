@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <utility>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
@@ -17,8 +18,7 @@
 #include <kth/node/settings.hpp>
 #include <kth/node/utility/check_list.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 #define CLASS session_header_sync
 #define NAME "session_header_sync"
@@ -37,15 +37,13 @@ static constexpr float back_off_factor = 0.75f;
 static constexpr uint32_t headers_per_second = 10000;
 
 // Sort is required here but not in configuration settings.
-session_header_sync::session_header_sync(full_node& network,
-    check_list& hashes, fast_chain& blockchain,
-    const checkpoint::list& checkpoints)
-  : session<network::session_outbound>(network, false),
-    hashes_(hashes),
-    minimum_rate_(headers_per_second),
-    chain_(blockchain),
-    checkpoints_(checkpoint::sort(checkpoints)),
-    CONSTRUCT_TRACK(session_header_sync)
+session_header_sync::session_header_sync(full_node& network, check_list& hashes, fast_chain& blockchain, const checkpoint::list& checkpoints)
+    : session<network::session_outbound>(network, false)
+    , hashes_(hashes)
+    , minimum_rate_(headers_per_second)
+    , chain_(blockchain)
+    , checkpoints_(checkpoint::sort(checkpoints))
+    , CONSTRUCT_TRACK(session_header_sync)
 {
     static_assert(back_off_factor < 1.0, "invalid back-off factor");
 }
@@ -53,26 +51,20 @@ session_header_sync::session_header_sync(full_node& network,
 // Start sequence.
 // ----------------------------------------------------------------------------
 
-void session_header_sync::start(result_handler handler)
-{
+void session_header_sync::start(result_handler handler) {
     session::start(CONCURRENT_DELEGATE2(handle_started, _1, handler));
 }
 
-void session_header_sync::handle_started(code const& ec,
-    result_handler handler)
-{
-    if (ec)
-    {
+void session_header_sync::handle_started(code const& ec, result_handler handler) {
+    if (ec) {
         handler(ec);
         return;
     }
 
     // TODO: expose header count and emit here.
-    LOG_INFO(LOG_NODE)
-        << "Getting headers.";
+    LOG_INFO(LOG_NODE) << "Getting headers.";
 
-    if (!initialize())
-    {
+    if ( ! initialize()) {
         handler(error::operation_failed);
         return;
     }
@@ -80,35 +72,28 @@ void session_header_sync::handle_started(code const& ec,
     auto const complete = synchronize(handler, headers_.size(), NAME);
 
     // This is the end of the start sequence.
-    for (auto const row: headers_)
+    for (auto const row: headers_) {
         new_connection(row, complete);
+    }
 }
 
 // Header sync sequence.
 // ----------------------------------------------------------------------------
 
-void session_header_sync::new_connection(header_list::ptr row,
-    result_handler handler)
-{
-    if (stopped())
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Suspending header slot (" << row->slot() << ").";
+void session_header_sync::new_connection(header_list::ptr row, result_handler handler) {
+    if (stopped()) {
+        LOG_DEBUG(LOG_NODE) << "Suspending header slot (" << row->slot() << ").";
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Starting header slot (" << row->slot() << ").";
+    LOG_DEBUG(LOG_NODE) << "Starting header slot (" << row->slot() << ").";
 
     // HEADER SYNC CONNECT
     session_batch::connect(BIND4(handle_connect, _1, _2, row, handler));
 }
 
-void session_header_sync::handle_connect(code const& ec, channel::ptr channel,
-    header_list::ptr row, result_handler handler)
-{
-    if (ec)
-    {
+void session_header_sync::handle_connect(code const& ec, channel::ptr channel, header_list::ptr row, result_handler handler) {
+    if (ec) {
         LOG_DEBUG(LOG_NODE)
             << "Failure connecting header slot (" << row->slot() << ") "
             << ec.message();
@@ -125,8 +110,7 @@ void session_header_sync::handle_connect(code const& ec, channel::ptr channel,
         BIND2(handle_channel_stop, _1, row));
 }
 
-void session_header_sync::attach_handshake_protocols(channel::ptr channel,
-    result_handler handle_started)
+void session_header_sync::attach_handshake_protocols(channel::ptr channel, result_handler handle_started)
 {
     // Don't use configured services, relay or min version for header sync.
     auto const relay = false;
@@ -137,22 +121,20 @@ void session_header_sync::attach_handshake_protocols(channel::ptr channel,
     auto const minimum_services = version::service::node_network;
 
     // The negotiated_version is initialized to the configured maximum.
-    if (channel->negotiated_version() >= version::level::bip61)
+    if (channel->negotiated_version() >= version::level::bip61) {
         attach<protocol_version_70002>(channel, own_version, own_services,
             invalid_services, minimum_version, minimum_services, relay)
             ->start(handle_started);
-    else
+    } else {
         attach<protocol_version_31402>(channel, own_version, own_services,
             invalid_services, minimum_version, minimum_services)
             ->start(handle_started);
+    }
 }
 
-void session_header_sync::handle_channel_start(code const& ec,
-    channel::ptr channel, header_list::ptr row, result_handler handler)
-{
+void session_header_sync::handle_channel_start(code const& ec, channel::ptr channel, header_list::ptr row, result_handler handler) {
     // Treat a start failure just like a completion failure.
-    if (ec)
-    {
+    if (ec) {
         handle_complete(ec, row, handler);
         return;
     }
@@ -160,26 +142,21 @@ void session_header_sync::handle_channel_start(code const& ec,
     attach_protocols(channel, row, handler);
 }
 
-void session_header_sync::attach_protocols(channel::ptr channel,
-    header_list::ptr row, result_handler handler)
-{
+void session_header_sync::attach_protocols(channel::ptr channel, header_list::ptr row, result_handler handler) {
     KTH_ASSERT(channel->negotiated_version() >= version::level::headers);
 
-    if (channel->negotiated_version() >= version::level::bip31)
+    if (channel->negotiated_version() >= version::level::bip31) {
         attach<protocol_ping_60001>(channel)->start();
-    else
+    } else {
         attach<protocol_ping_31402>(channel)->start();
+    }
 
     attach<protocol_address_31402>(channel)->start();
-    attach<protocol_header_sync>(channel, row, minimum_rate_)->start(
-        BIND3(handle_complete, _1, row, handler));
+    attach<protocol_header_sync>(channel, row, minimum_rate_)->start(BIND3(handle_complete, _1, row, handler));
 }
 
-void session_header_sync::handle_complete(code const& ec,
-    header_list::ptr row, result_handler handler)
-{
-    if (ec)
-    {
+void session_header_sync::handle_complete(code const& ec, header_list::ptr row, result_handler handler) {
+    if (ec) {
         // Reduce the rate minimum so that we don't get hung up.
         minimum_rate_ = static_cast<uint32_t>(minimum_rate_ * back_off_factor);
 
@@ -197,19 +174,17 @@ void session_header_sync::handle_complete(code const& ec,
     auto const& headers = row->headers();
 
     // Store the hash if there is a gap reservation.
-    for (auto const& header: headers)
+    for (auto const& header: headers) {
         hashes_.enqueue(header.hash(), height++);
+    }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Completed header slot (" << row->slot() << ")";
+    LOG_DEBUG(LOG_NODE) << "Completed header slot (" << row->slot() << ")";
 
     // This is the end of the header sync sequence.
     handler(error::success);
 }
 
-void session_header_sync::handle_channel_stop(code const& ec,
-    header_list::ptr row)
-{
+void session_header_sync::handle_channel_stop(code const& ec, header_list::ptr row) {
     LOG_DEBUG(LOG_NODE)
         << "Channel stopped on header slot (" << row->slot() << ") "
         << ec.message();
@@ -218,9 +193,8 @@ void session_header_sync::handle_channel_stop(code const& ec,
 // Utility.
 // ----------------------------------------------------------------------------
 
-bool session_header_sync::initialize()
-{
-    if (!hashes_.empty()) {
+bool session_header_sync::initialize() {
+    if ( ! hashes_.empty()) {
         LOG_ERROR(LOG_NODE)
             << "Block hash list must not be initialized.";
         return false;
@@ -250,5 +224,4 @@ bool session_header_sync::initialize()
     return true;
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

@@ -39,7 +39,7 @@ message::headers::ptr message_factory(size_t count)
 
 // Create a headers message of specified size, using specified previous hash.
 message::headers::ptr message_factory(size_t count,
-    const hash_digest& previous)
+    hash_digest const& previous)
 {
     auto previous_hash = previous;
     auto const headers = std::make_shared<message::headers>();
@@ -115,7 +115,7 @@ bool blockchain_fixture::get_next_gap(size_t& out_height,
     return false;
 }
 
-bool blockchain_fixture::get_block_exists(const hash_digest& block_hash) const
+bool blockchain_fixture::get_block_exists(hash_digest const& block_hash) const
 {
     return false;
 }
@@ -132,7 +132,7 @@ bool blockchain_fixture::get_header(header& out_header, size_t height) const
 }
 
 bool blockchain_fixture::get_height(size_t& out_height,
-    const hash_digest& block_hash) const
+    hash_digest const& block_hash) const
 {
     return false;
 }
@@ -174,19 +174,19 @@ bool blockchain_fixture::get_spender_hash(hash_digest& out_hash,
 }
 
 bool blockchain_fixture::get_is_unspent_transaction(
-    const hash_digest& transaction_hash) const
+    hash_digest const& transaction_hash) const
 {
     return false;
 }
 
 bool blockchain_fixture::get_transaction_height(size_t& out_block_height,
-    const hash_digest& transaction_hash) const
+    hash_digest const& transaction_hash) const
 {
     return false;
 }
 
 transaction_ptr blockchain_fixture::get_transaction(size_t& out_block_height,
-    const hash_digest& transaction_hash) const
+    hash_digest const& transaction_hash) const
 {
     return nullptr;
 }
@@ -210,7 +210,7 @@ bool blockchain_fixture::push(const block_const_ptr_list& blocks,
 }
 
 bool blockchain_fixture::pop(block_const_ptr_list& blocks,
-    const hash_digest& fork_hash)
+    hash_digest const& fork_hash)
 {
     return false;
 }

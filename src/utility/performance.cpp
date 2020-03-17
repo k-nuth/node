@@ -6,24 +6,19 @@
 
 #include <kth/domain.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
-double performance::normal() const
-{
+double performance::normal() const {
     // If numerator is small we can overflow (infinity).
     return divide<double>(events, static_cast<double>(window) - database);
 }
 
-double performance::total() const
-{
+double performance::total() const {
     return divide<double>(events, window);
 }
 
-double performance::ratio() const
-{
+double performance::ratio() const {
     return divide<double>(database, window);
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

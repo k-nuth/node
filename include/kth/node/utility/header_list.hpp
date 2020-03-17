@@ -11,19 +11,16 @@
 #include <kth/node/define.hpp>
 #include <kth/node/utility/check_list.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 /// A smart queue for chaining blockchain headers, thread safe.
 /// The peer should be stopped if merge fails.
-class BCN_API header_list
-{
+class BCN_API header_list {
 public:
-    typedef std::shared_ptr<header_list> ptr;
+    using ptr = std::shared_ptr<header_list>;
 
     /// Construct a list to fill the specified range of headers.
-    header_list(size_t slot, const config::checkpoint& start,
-        const config::checkpoint& stop);
+    header_list(size_t slot, const config::checkpoint& start, const config::checkpoint& stop);
 
     /// The list is fully populated.
     bool complete() const;
@@ -41,7 +38,7 @@ public:
     hash_digest previous_hash() const;
 
     /// The hash of the stop checkpoint.
-    const hash_digest& stop_hash() const;
+    hash_digest const& stop_hash() const;
 
     /// The ordered list of headers.
     /// This is not thread safe, call only after complete.
@@ -59,7 +56,7 @@ private:
     size_t remaining() const;
 
     /// The hash of the last header in the list (or the start hash).
-    const hash_digest& last() const;
+    hash_digest const& last() const;
 
     // Determine if the hash is linked to the preceding header.
     bool link(const chain::header& header) const;
@@ -80,8 +77,7 @@ private:
     const size_t slot_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif
 

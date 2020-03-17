@@ -11,17 +11,14 @@
 #include <kth/node/define.hpp>
 #include <kth/node/sessions/session.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
 /// Manual connections session, thread safe.
-class BCN_API session_manual
-  : public session<network::session_manual>, track<session_manual>
-{
+class BCN_API session_manual : public session<network::session_manual>, track<session_manual> {
 public:
-    typedef std::shared_ptr<session_manual> ptr;
+    using ptr = std::shared_ptr<session_manual>;
 
     /// Construct an instance.
     session_manual(full_node& network, blockchain::safe_chain& chain);
@@ -33,7 +30,6 @@ protected:
     blockchain::safe_chain& chain_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

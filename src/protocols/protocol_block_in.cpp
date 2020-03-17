@@ -18,8 +18,7 @@
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 #define NAME "block_in"
 #define CLASS protocol_block_in
@@ -30,7 +29,7 @@ using namespace bc::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
-inline 
+constexpr 
 bool is_witness(uint64_t services) {
 #ifdef KTH_CURRENCY_BCH
     return false;
@@ -39,7 +38,7 @@ bool is_witness(uint64_t services) {
 #endif
 }
 
-inline
+constexpr
 uint64_t get_compact_blocks_version() {
 #ifdef KTH_CURRENCY_BCH
         return 1;
@@ -48,9 +47,7 @@ uint64_t get_compact_blocks_version() {
 #endif
 }
 
-
-protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
-    safe_chain& chain)
+protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe_chain& chain)
   : protocol_timer(node, channel, false, NAME),
     node_(node),
     chain_(chain),
@@ -73,8 +70,7 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel,
     require_witness_(is_witness(node.network_settings().services)),
     peer_witness_(is_witness(channel->peer_version()->services())),
     CONSTRUCT_TRACK(protocol_block_in)
-{
-}
+{}
 
 // Start.
 //-----------------------------------------------------------------------------
@@ -85,8 +81,9 @@ void protocol_block_in::start() {
 
     // Do not process incoming blocks if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
-    if (require_witness_ && !peer_witness_)
+    if (require_witness_ && !peer_witness_) {
         return;
+    }
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -108,7 +105,7 @@ void protocol_block_in::start() {
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     if (compact_from_peer_) {
         if (chain_.is_stale()) {
-            //forze low bandwidth    
+            //force low bandwidth
             LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
             SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
         } else {
@@ -124,19 +121,17 @@ void protocol_block_in::start() {
 // Send get_[headers|blocks] sequence.
 //-----------------------------------------------------------------------------
 
-void protocol_block_in::send_get_blocks(const hash_digest& stop_hash) {
+void protocol_block_in::send_get_blocks(hash_digest const& stop_hash) {
     auto const heights = block::locator_heights(node_.top_block().height());
     chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
 }
 
-void protocol_block_in::handle_fetch_block_locator(code const& ec,
-    get_headers_ptr message, const hash_digest& stop_hash)
-{
-    if (stopped(ec))
+void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_ptr message, hash_digest const& stop_hash) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure generating block locator for ["
             << authority() << "] " << ec.message();
@@ -144,8 +139,9 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec,
         return;
     }
 
-    if (message->start_hashes().empty())
+    if (message->start_hashes().empty()) {
         return;
+    }
 
     auto const& last_hash = message->start_hashes().front();
 
@@ -153,14 +149,11 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec,
     auto const use_headers = negotiated_version() >= version::level::headers;
     auto const request_type = (use_headers ? "headers" : "inventory");
 
-    if (stop_hash == null_hash)
-    {
+    if (stop_hash == null_hash) {
         LOG_DEBUG(LOG_NODE)
             << "Ask [" << authority() << "] for " << request_type << " after ["
             << encode_hash(last_hash) << "]";
-    }
-    else
-    {
+    } else {
         LOG_DEBUG(LOG_NODE)
             << "Ask [" << authority() << "] for " << request_type << " from ["
             << encode_hash(last_hash) << "] through ["
@@ -169,11 +162,11 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec,
 
     message->set_stop_hash(stop_hash);
 
-    if (use_headers)
+    if (use_headers) {
         SEND2(*message, handle_send, _1, message->command);
-    else
-        SEND2(static_cast<get_blocks>(*message), handle_send, _1,
-            message->command);
+    } else {
+        SEND2(static_cast<get_blocks>(*message), handle_send, _1, message->command);
+    }
 }
 
 // Receive headers|inventory sequence.
@@ -236,7 +229,9 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
 }
 
 void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
-    if (stopped(ec)) return;
+    if (stopped(ec)) {
+        return;
+    }
 
     if (ec) {
         LOG_ERROR(LOG_NODE)
@@ -279,7 +274,7 @@ void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-#ifndef KTH_CURRENCY_BCH
+#if ! defined(KTH_CURRENCY_BCH)
     // Convert requested message types to corresponding witness types.
     if (require_witness_) {
         message->to_witness();
@@ -299,14 +294,12 @@ void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
 //-----------------------------------------------------------------------------
 
 // TODO: move not_found to a derived class protocol_block_in_70001.
-bool protocol_block_in::handle_receive_not_found(code const& ec,
-    not_found_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_not_found(code const& ec, not_found_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_DEBUG(LOG_NODE)
             << "Failure getting block not_found from [" << authority() << "] "
             << ec.message();
@@ -326,8 +319,9 @@ bool protocol_block_in::handle_receive_not_found(code const& ec,
     // The peer cannot locate one or more blocks that it told us it had.
     // This only results from reorganization assuming peer is proper.
     // Drop the peer so next channgel generates a new locator and backlog.
-    if (!hashes.empty())
+    if ( ! hashes.empty()) {
         stop(error::channel_stopped);
+    }
 
     return true;
 }
@@ -340,20 +334,20 @@ void protocol_block_in::organize_block(block_const_ptr message) {
     chain_.organize(message, BIND2(handle_store_block, _1, message));
 }
 
-bool protocol_block_in::handle_receive_block(code const& ec,
-    block_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     mutex.lock();
 
-    auto matched = !backlog_.empty() && backlog_.front() == message->hash();
+    auto matched = ! backlog_.empty() && backlog_.front() == message->hash();
 
-    if (matched)
+    if (matched) {
         backlog_.pop();
+    }
 
     // Empty after pop means we need to make a new request.
     auto const cleared = backlog_.empty();
@@ -369,8 +363,7 @@ bool protocol_block_in::handle_receive_block(code const& ec,
     // the current implementation performs well and drops peers no more
     // frequently than block announcements occur during initial block download,
     // and not typically after it is complete.
-    if (!matched)
-    {
+    if ( ! matched) {
         LOG_DEBUG(LOG_NODE)
             << "Block [" << encode_hash(message->hash())
             << "] unexpected or out of order from [" << authority() << "]";
@@ -378,8 +371,7 @@ bool protocol_block_in::handle_receive_block(code const& ec,
         return false;
     }
 
-    if (!require_witness_ && message->is_segregated())
-    {
+    if ( ! require_witness_ && message->is_segregated()) {
         LOG_DEBUG(LOG_NODE)
             << "Block [" << encode_hash(message->hash())
             << "] contains unrequested witness from [" << authority() << "]";
@@ -396,20 +388,20 @@ bool protocol_block_in::handle_receive_block(code const& ec,
     // So we rest the timer in case of cleared and for not cleared.
     reset_timer();
 
-    if (cleared)
+    if (cleared) {
         send_get_blocks(null_hash);
+    }
 
     return true;
 }
 
-bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_transactions_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_transactions_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
       
     auto it = compact_blocks_map_.find(message->block_hash());
     if (it == compact_blocks_map_.end()) {
-       
         LOG_DEBUG(LOG_NODE)
             << "Compact Block [" << encode_hash(message->block_hash())
             << "] The blocktxn received doesn't match with any temporal compact block [" << authority() << "]";
@@ -427,10 +419,8 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
     size_t tx_missing_offset = 0;
 
     for (size_t i = 0; i < txn_available.size(); i++) {
-        
         if ( ! txn_available[i].is_valid()) {
             if (vtx_missing.size() <= tx_missing_offset) {
-                
                 LOG_DEBUG(LOG_NODE)
                     << "Compact Block [" << encode_hash(message->block_hash())
                     << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
@@ -440,7 +430,6 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
                 compact_blocks_map_.erase(it);
                 return false;
             }
-
             txn_available[i] = std::move(vtx_missing[tx_missing_offset]);
             ++tx_missing_offset;
         } 
@@ -452,31 +441,28 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
             << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
         stop(error::channel_stopped);
 
-        //TODO(Mario) verify if necesary mutual exclusion
+        //TODO(Mario): verify if necesary mutual exclusion
         compact_blocks_map_.erase(it);
         return false;
     }
 
     auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
-        
     organize_block(tempblock);
-
     //TODO(Mario) verify if necesary mutual exclusion
     compact_blocks_map_.erase(it);
 
     return true;
 }
 
-void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, const hash_digest& stop_hash) {
-    
-    if (stopped(ec))
+void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, hash_digest const& stop_hash) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
-        << "Internal failure generating block locator (compact block) for ["
-        << authority() << "] " << ec.message();
+            << "Internal failure generating block locator (compact block) for ["
+            << authority() << "] " << ec.message();
         stop(ec);
         return;
     }
@@ -488,7 +474,6 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec,
     message->set_stop_hash(stop_hash);  
     SEND2(*message, handle_send, _1, message->command);
 
-
     LOG_DEBUG(LOG_NODE)
         << "Sended get header message compact blocks to ["
         << authority() << "] ";
@@ -496,7 +481,6 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec,
 }
 
 bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_block_const_ptr message) {
-    
     if (stopped(ec)) {
         return false;
     }
@@ -506,7 +490,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //the header of the compact block is the header of the block
     auto const& header_temp = message->header();    
 
-    if (!header_temp.is_valid()) {
+    if ( ! header_temp.is_valid()) {
         LOG_DEBUG(LOG_NODE)
             << "Compact Block [" << encode_hash(header_temp.hash())
             << "] The compact block header is invalid [" << authority() << "]";
@@ -525,7 +509,6 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //if we haven't the parent block already, send a get_header message
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
-        
         LOG_DEBUG(LOG_NODE)
             << "Compact Block parent block not exists [ " << encode_hash(header_temp.previous_block_hash())
             << " [" << authority() << "]";
@@ -549,7 +532,6 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
    
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
-
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
         
@@ -557,8 +539,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     int32_t lastprefilledindex = -1;
     
     for (size_t i = 0; i < prefiled_txs.size(); ++i) {
-       
-        if (!prefiled_txs[i].is_valid()) {
+        if ( ! prefiled_txs[i].is_valid()) {
             
             LOG_DEBUG(LOG_NODE)
             << "Compact Block [" << encode_hash(header_temp.hash())
@@ -675,8 +656,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     } 
 }
 
-void protocol_block_in::send_get_data_compact_block(code const& ec, const hash_digest& hash) {
-
+void protocol_block_in::send_get_data_compact_block(code const& ec, hash_digest const& hash) {
     hash_list hashes;
     hashes.push_back(hash);
 
@@ -705,8 +685,7 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
 
     if (ec == error::orphan_block ||
         ec == error::duplicate_block ||
-        ec == error::insufficient_work)
-    {
+        ec == error::insufficient_work) {
         LOG_DEBUG(LOG_NODE)
             << "Captured block [" << encoded << "] from [" << authority()
             << "] " << ec.message();
@@ -714,8 +693,7 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
     }
 
     // TODO: send reject as applicable.
-    if (ec)
-    {
+    if (ec) {
         LOG_DEBUG(LOG_NODE)
             << "Rejected block [" << encoded << "] from [" << authority()
             << "] " << ec.message();
@@ -741,24 +719,20 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
 //-----------------------------------------------------------------------------
 
 // This is fired by the callback (i.e. base timer and stop handler).
-void protocol_block_in::handle_timeout(code const& ec)
-{
-    if (stopped(ec))
-    {
+void protocol_block_in::handle_timeout(code const& ec) {
+    if (stopped(ec)) {
         // This may get called more than once per stop.
         handle_stop(ec);
         return;
     }
 
     // Since we need blocks do not stay connected to peer in bad version range.
-    if (!blocks_from_peer_)
-    {
+    if ( ! blocks_from_peer_) {
         stop(error::channel_stopped);
         return;
     }
 
-    if (ec && ec != error::channel_timeout)
-    {
+    if (ec && ec != error::channel_timeout) {
         LOG_DEBUG(LOG_NODE)
             << "Failure in block timer for [" << authority() << "] "
             << ec.message();
@@ -774,8 +748,7 @@ void protocol_block_in::handle_timeout(code const& ec)
     ///////////////////////////////////////////////////////////////////////////
 
     // Can only end up here if time was not extended.
-    if (!backlog_empty)
-    {
+    if ( ! backlog_empty) {
         LOG_DEBUG(LOG_NODE)
             << "Peer [" << authority()
             << "] exceeded configured block latency.";
@@ -785,8 +758,9 @@ void protocol_block_in::handle_timeout(code const& ec)
     // Can only end up here if peer did not respond to inventory or get_data.
     // At this point we are caught up with an honest peer. But if we are stale
     // we should try another peer and not just keep pounding this one.
-    if (chain_.is_stale())
+    if (chain_.is_stale()) {
         stop(error::channel_stopped);
+    }
 
     // If we are not stale then we are either good or stalled until peer sends
     // an announcement. There is no sense pinging a broken peer, so we either
@@ -797,8 +771,7 @@ void protocol_block_in::handle_timeout(code const& ec)
     // depends on requiring witness peers for explicitly outbound connections.
 }
 
-void protocol_block_in::handle_stop(const code&)
-{
+void protocol_block_in::handle_stop(const code&) {
     LOG_DEBUG(LOG_NETWORK)
         << "Stopped block_in protocol for [" << authority() << "].";
 }
@@ -806,8 +779,8 @@ void protocol_block_in::handle_stop(const code&)
 // Block reporting.
 //-----------------------------------------------------------------------------
 
-inline bool enabled(size_t height)
-{
+inline 
+bool enabled(size_t height) {
     // Vary the reporting performance reporting interval by height.
     auto const modulus =
         (height < 100000 ? 100 :
@@ -816,33 +789,28 @@ inline bool enabled(size_t height)
     return height % modulus == 0;
 }
 
-inline float difference(const asio::time_point& start,
-    const asio::time_point& end)
-{
+inline 
+float difference(const asio::time_point& start, const asio::time_point& end) {
     auto const elapsed = duration_cast<asio::microseconds>(end - start);
     return static_cast<float>(elapsed.count());
 }
 
-inline size_t unit_cost(const asio::time_point& start,
-    const asio::time_point& end, size_t value)
-{
+inline 
+size_t unit_cost(const asio::time_point& start, const asio::time_point& end, size_t value) {
     return static_cast<size_t>(std::round(difference(start, end) / value));
 }
 
-inline size_t total_cost_ms(const asio::time_point& start,
-    const asio::time_point& end)
-{
+inline 
+size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end) {
     static constexpr size_t microseconds_per_millisecond = 1000;
     return unit_cost(start, end, microseconds_per_millisecond);
 }
 
-void protocol_block_in::report(const chain::block& block)
-{
+void protocol_block_in::report(const chain::block& block) {
     KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
 
-    if (enabled(height))
-    {
+    if (enabled(height)) {
         auto const& times = block.validation;
         auto const now = asio::steady_clock::now();
         auto const transactions = block.transactions().size();
@@ -851,8 +819,7 @@ void protocol_block_in::report(const chain::block& block)
         // Subtract total deserialization time from start of validation because
         // the wait time is between end_deserialize and start_check. This lets
         // us simulate block announcement validation time as there is no wait.
-        auto const start_validate = times.start_check -
-            (times.end_deserialize - times.start_deserialize);
+        auto const start_validate = times.start_check - (times.end_deserialize - times.start_deserialize);
 
         boost::format format("Block [%|i|] %|5i| txs %|5i| ins "
             "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
@@ -893,5 +860,4 @@ void protocol_block_in::report(const chain::block& block)
     }
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

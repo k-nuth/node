@@ -12,8 +12,7 @@
 #include <kth/node/protocols/protocol_transaction_in.hpp>
 #include <kth/node/protocols/protocol_transaction_out.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace bc::blockchain;
 using namespace bc::message;
@@ -21,23 +20,23 @@ using namespace bc::network;
 using namespace std::placeholders;
 
 session_outbound::session_outbound(full_node& network, safe_chain& chain)
-  : session<network::session_outbound>(network, true),
-    chain_(chain),
-    CONSTRUCT_TRACK(node::session_outbound)
-{
-}
+    : session<network::session_outbound>(network, true)
+    , chain_(chain)
+    , CONSTRUCT_TRACK(node::session_outbound)
+{}
 
-void session_outbound::attach_protocols(channel::ptr channel)
-{
+void session_outbound::attach_protocols(channel::ptr channel) {
     auto const version = channel->negotiated_version();
 
-    if (version >= version::level::bip31)
+    if (version >= version::level::bip31) {
         attach<protocol_ping_60001>(channel)->start();
-    else
+    } else {
         attach<protocol_ping_31402>(channel)->start();
+    }
 
-    if (version >= message::version::level::bip61)
+    if (version >= message::version::level::bip61) {
         attach<protocol_reject_70002>(channel)->start();
+    }
 
     attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_in>(channel, chain_)->start();
@@ -46,5 +45,4 @@ void session_outbound::attach_protocols(channel::ptr channel)
     attach<protocol_transaction_out>(channel, chain_)->start();
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

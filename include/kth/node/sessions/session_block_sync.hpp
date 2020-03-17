@@ -17,43 +17,34 @@
 #include <kth/node/utility/reservation.hpp>
 #include <kth/node/utility/reservations.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
 /// Class to manage initial block download connections, thread safe.
-class BCN_API session_block_sync
-  : public session<network::session_outbound>, track<session_block_sync>
-{
+class BCN_API session_block_sync : public session<network::session_outbound>, track<session_block_sync> {
 public:
-    typedef std::shared_ptr<session_block_sync> ptr;
+    using ptr = std::shared_ptr<session_block_sync>;
 
-    session_block_sync(full_node& network, check_list& hashes,
-        blockchain::fast_chain& chain, const settings& settings);
+    session_block_sync(full_node& network, check_list& hashes, blockchain::fast_chain& chain, const settings& settings);
 
     void start(result_handler handler) override;
 
 protected:
     /// Overridden to attach and start specialized handshake.
-    void attach_handshake_protocols(network::channel::ptr channel,
-        result_handler handle_started) override;
+    void attach_handshake_protocols(network::channel::ptr channel, result_handler handle_started) override;
 
     /// Override to attach and start specialized protocols after handshake.
-    virtual void attach_protocols(network::channel::ptr channel,
-        reservation::ptr row, result_handler handler);
+    virtual void attach_protocols(network::channel::ptr channel, reservation::ptr row, result_handler handler);
 
 private:
     void handle_started(code const& ec, result_handler handler);
     void new_connection(reservation::ptr row, result_handler handler);
 
     // Sequence.
-    void handle_connect(code const& ec, network::channel::ptr channel,
-        reservation::ptr row, result_handler handler);
-    void handle_channel_start(code const& ec, network::channel::ptr channel,
-        reservation::ptr row, result_handler handler);
-    void handle_channel_complete(code const& ec, reservation::ptr row,
-        result_handler handler);
+    void handle_connect(code const& ec, network::channel::ptr channel, reservation::ptr row, result_handler handler);
+    void handle_channel_start(code const& ec, network::channel::ptr channel, reservation::ptr row, result_handler handler);
+    void handle_channel_complete(code const& ec, reservation::ptr row, result_handler handler);
     void handle_channel_stop(code const& ec, reservation::ptr row);
     void handle_complete(code const& ec, result_handler handler);
 
@@ -67,8 +58,7 @@ private:
     deadline::ptr timer_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif
 

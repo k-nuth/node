@@ -9,12 +9,10 @@
 #include <kth/domain.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 /// Common database configuration settings, properties not thread safe.
-class BCN_API settings
-{
+class BCN_API settings {
 public:
     settings();
     settings(config::settings context);
@@ -44,7 +42,6 @@ public:
     asio::duration block_latency() const;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

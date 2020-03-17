@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <memory>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
@@ -15,8 +16,7 @@
 #include <kth/node/utility/check_list.hpp>
 #include <kth/node/utility/reservation.hpp>
 
-namespace kth {
-namespace node {
+namespace kth:node {
 
 #define CLASS session_block_sync
 #define NAME "session_block_sync"
@@ -30,60 +30,52 @@ using namespace std::placeholders;
 // The interval in which all-channel block download performance is tested.
 static const asio::seconds regulator_interval(5);
 
-session_block_sync::session_block_sync(full_node& network, check_list& hashes,
-    fast_chain& chain, const settings& settings)
-  : session<network::session_outbound>(network, false),
-    chain_(chain),
-    reservations_(hashes, chain, settings),
-    CONSTRUCT_TRACK(session_block_sync)
-{
-}
+session_block_sync::session_block_sync(full_node& network, check_list& hashes, fast_chain& chain, const settings& settings)
+    : session<network::session_outbound>(network, false)
+    , chain_(chain)
+    , reservations_(hashes, chain, settings)
+    , CONSTRUCT_TRACK(session_block_sync)
+{}
 
 // Start sequence.
 // ----------------------------------------------------------------------------
 
-void session_block_sync::start(result_handler handler)
-{
+void session_block_sync::start(result_handler handler) {
     // TODO: create session_timer base class and pass interval via start.
     timer_ = std::make_shared<deadline>(pool_, regulator_interval);
     session::start(CONCURRENT_DELEGATE2(handle_started, _1, handler));
 }
 
-void session_block_sync::handle_started(code const& ec, result_handler handler)
-{
-    if (ec)
-    {
+void session_block_sync::handle_started(code const& ec, result_handler handler) {
+    if (ec) {
         handler(ec);
         return;
     }
 
     // TODO: expose block count from reservations and emit here.
-    LOG_INFO(LOG_NODE)
-        << "Getting blocks.";
+    LOG_INFO(LOG_NODE) << "Getting blocks.";
 
     // Copy the reservations table.
     auto const table = reservations_.table();
 
-    if (table.empty())
-    {
+    if (table.empty()) {
         handler(error::success);
         return;
     }
 
-    if (!reservations_.start())
-    {
+    if ( ! reservations_.start()) {
         LOG_DEBUG(LOG_NODE)
             << "Failed to set write lock.";
         handler(error::operation_failed);
         return;
     }
 
-    auto const complete = synchronize<result_handler>(
-        BIND2(handle_complete, _1, handler), table.size(), NAME);
+    auto const complete = synchronize<result_handler>(BIND2(handle_complete, _1, handler), table.size(), NAME);
 
     // This is the end of the start sequence.
-    for (auto const row: table)
+    for (auto const row: table) {
         new_connection(row, complete);
+    }
 
     ////reset_timer();
 }
@@ -91,28 +83,20 @@ void session_block_sync::handle_started(code const& ec, result_handler handler)
 // Block sync sequence.
 // ----------------------------------------------------------------------------
 
-void session_block_sync::new_connection(reservation::ptr row,
-    result_handler handler)
-{
-    if (stopped())
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Suspending block slot (" << row ->slot() << ").";
+void session_block_sync::new_connection(reservation::ptr row, result_handler handler) {
+    if (stopped()) {
+        LOG_DEBUG(LOG_NODE) << "Suspending block slot (" << row ->slot() << ").";
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Starting block slot (" << row->slot() << ").";
+    LOG_DEBUG(LOG_NODE) << "Starting block slot (" << row->slot() << ").";
 
     // BLOCK SYNC CONNECT
     session_batch::connect(BIND4(handle_connect, _1, _2, row, handler));
 }
 
-void session_block_sync::handle_connect(code const& ec, channel::ptr channel,
-    reservation::ptr row, result_handler handler)
-{
-    if (ec)
-    {
+void session_block_sync::handle_connect(code const& ec, channel::ptr channel, reservation::ptr row, result_handler handler) {
+    if (ec) {
         LOG_DEBUG(LOG_NODE)
             << "Failure connecting block slot (" << row->slot() << ") "
             << ec.message();
@@ -129,9 +113,7 @@ void session_block_sync::handle_connect(code const& ec, channel::ptr channel,
         BIND2(handle_channel_stop, _1, row));
 }
 
-void session_block_sync::attach_handshake_protocols(channel::ptr channel,
-    result_handler handle_started)
-{
+void session_block_sync::attach_handshake_protocols(channel::ptr channel, result_handler handle_started) {
     // Don't use configured services or relay for block sync.
     auto const relay = false;
     auto const own_version = settings_.protocol_maximum;
@@ -141,22 +123,16 @@ void session_block_sync::attach_handshake_protocols(channel::ptr channel,
     auto const minimum_services = version::service::node_network;
 
     // The negotiated_version is initialized to the configured maximum.
-    if (channel->negotiated_version() >= version::level::bip61)
-        attach<protocol_version_70002>(channel, own_version, own_services,
-            invalid_services, minimum_version, minimum_services, relay)
-            ->start(handle_started);
-    else
-        attach<protocol_version_31402>(channel, own_version, own_services,
-            invalid_services, minimum_version, minimum_services)
-            ->start(handle_started);
+    if (channel->negotiated_version() >= version::level::bip61) {
+        attach<protocol_version_70002>(channel, own_version, own_services, invalid_services, minimum_version, minimum_services, relay) ->start(handle_started);
+    } else {
+        attach<protocol_version_31402>(channel, own_version, own_services, invalid_services, minimum_version, minimum_services)->start(handle_started);
+    }
 }
 
-void session_block_sync::handle_channel_start(code const& ec,
-    channel::ptr channel, reservation::ptr row, result_handler handler)
-{
+void session_block_sync::handle_channel_start(code const& ec, channel::ptr channel, reservation::ptr row, result_handler handler) {
     // Treat a start failure just like a completion failure.
-    if (ec)
-    {
+    if (ec) {
         handle_channel_complete(ec, row, handler);
         return;
     }
@@ -164,24 +140,19 @@ void session_block_sync::handle_channel_start(code const& ec,
     attach_protocols(channel, row, handler);
 }
 
-void session_block_sync::attach_protocols(channel::ptr channel,
-    reservation::ptr row, result_handler handler)
-{
-    if (channel->negotiated_version() >= version::level::bip31)
+void session_block_sync::attach_protocols(channel::ptr channel, reservation::ptr row, result_handler handler) {
+    if (channel->negotiated_version() >= version::level::bip31) {
         attach<protocol_ping_60001>(channel)->start();
-    else
+    } else {
         attach<protocol_ping_31402>(channel)->start();
+    }
 
     attach<protocol_address_31402>(channel)->start();
-    attach<protocol_block_sync>(channel, row)->start(
-        BIND3(handle_channel_complete, _1, row, handler));
+    attach<protocol_block_sync>(channel, row)->start(BIND3(handle_channel_complete, _1, row, handler));
 }
 
-void session_block_sync::handle_channel_complete(code const& ec,
-    reservation::ptr row, result_handler handler)
-{
-    if (ec)
-    {
+void session_block_sync::handle_channel_complete(code const& ec, reservation::ptr row, result_handler handler) {
+    if (ec) {
         // There is no failure scenario, we ignore the result code here.
         new_connection(row, handler);
         return;
@@ -190,45 +161,35 @@ void session_block_sync::handle_channel_complete(code const& ec,
     timer_->stop();
     reservations_.remove(row);
 
-    LOG_DEBUG(LOG_NODE)
-        << "Completed block slot (" << row->slot() << ")";
+    LOG_DEBUG(LOG_NODE) << "Completed block slot (" << row->slot() << ")";
 
     // This is the end of the block sync sequence.
     handler(error::success);
 }
 
-void session_block_sync::handle_channel_stop(code const& ec,
-    reservation::ptr row)
-{
+void session_block_sync::handle_channel_stop(code const& ec, reservation::ptr row) {
     LOG_INFO(LOG_NODE)
         << "Channel stopped on block slot (" << row->slot() << ") "
         << ec.message();
 }
 
-void session_block_sync::handle_complete(code const& ec,
-    result_handler handler)
-{
+void session_block_sync::handle_complete(code const& ec, result_handler handler) {
     // Always stop but give sync priority over stop for reporting.
     auto const stop = reservations_.stop();
 
-    if (ec)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Failed to complete block sync: " << ec.message();
+    if (ec) {
+        LOG_DEBUG(LOG_NODE) << "Failed to complete block sync: " << ec.message();
         handler(ec);
         return;
     }
 
-    if (!stop)
-    {
-        LOG_DEBUG(LOG_NODE)
-            << "Failed to reset write lock: " << ec.message();
+    if ( ! stop) {
+        LOG_DEBUG(LOG_NODE) << "Failed to reset write lock: " << ec.message();
         handler(error::operation_failed);
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Completed block sync.";
+    LOG_DEBUG(LOG_NODE) << "Completed block sync.";
     handler(ec);
 }
 
@@ -236,21 +197,20 @@ void session_block_sync::handle_complete(code const& ec,
 // ----------------------------------------------------------------------------
 
 // private:
-void session_block_sync::reset_timer()
-{
-    if (stopped())
+void session_block_sync::reset_timer() {
+    if (stopped()) {
         return;
+    }
 
     timer_->start(BIND1(handle_timer, _1));
 }
 
-void session_block_sync::handle_timer(code const& ec)
-{
-    if (stopped())
+void session_block_sync::handle_timer(code const& ec) {
+    if (stopped()) {
         return;
+    }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Fired session_block_sync timer: " << ec.message();
+    LOG_DEBUG(LOG_NODE) << "Fired session_block_sync timer: " << ec.message();
 
     ////// TODO: If (total database time as a fn of total time) add a channel.
     ////// TODO: push into reservations_ implementation.
@@ -265,5 +225,4 @@ void session_block_sync::handle_timer(code const& ec)
     reset_timer();
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

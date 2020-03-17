@@ -231,7 +231,7 @@ bool reservations::reserve(reservation::ptr minimal) {
     }
 
     // This may become empty between insert and this test, which is okay.
-    return !minimal->empty();
+    return ! minimal->empty();
 }
 
 // Exposed for test to be able to control the request size.

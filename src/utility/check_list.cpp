@@ -9,13 +9,11 @@
 #include <boost/bimap/support/lambda.hpp>
 #include <kth/blockchain.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace bc::database;
 
-bool check_list::empty() const
-{
+bool check_list::empty() const {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     shared_lock lock(mutex_);
@@ -24,8 +22,7 @@ bool check_list::empty() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-size_t check_list::size() const
-{
+size_t check_list::size() const {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     shared_lock lock(mutex_);
@@ -34,8 +31,7 @@ size_t check_list::size() const
     ///////////////////////////////////////////////////////////////////////////
 }
 
-void check_list::reserve(const heights& heights)
-{
+void check_list::reserve(const heights& heights) {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     unique_lock lock(mutex_);
@@ -50,8 +46,7 @@ void check_list::reserve(const heights& heights)
 }
 
 
-void check_list::enqueue(hash_digest&& hash, size_t height)
-{
+void check_list::enqueue(hash_digest&& hash, size_t height) {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     unique_lock lock(mutex_);
@@ -60,23 +55,24 @@ void check_list::enqueue(hash_digest&& hash, size_t height)
     auto const it = checks_.right.find(height);
 
     // Ignore the entry if it is not reserved.
-    if (it == checks_.right.end())
+    if (it == checks_.right.end()) {
         return;
+    }
 
     KTH_ASSERT(it->second == null_hash);
     checks_.right.modify_data(it, _data = std::move(hash));
     ///////////////////////////////////////////////////////////////////////////
 }
 
-bool check_list::dequeue(hash_digest& out_hash, size_t& out_height)
-{
+bool check_list::dequeue(hash_digest& out_hash, size_t& out_height) {
     ///////////////////////////////////////////////////////////////////////////
     // Critical Section
     unique_lock lock(mutex_);
 
     // Overlocking to reduce code in the dominant path.
-    if (checks_.empty())
+    if (checks_.empty()) {
         return false;
+    }
 
     auto it = checks_.right.begin();
     out_height = it->first;
@@ -86,5 +82,4 @@ bool check_list::dequeue(hash_digest& out_hash, size_t& out_height)
     ///////////////////////////////////////////////////////////////////////////
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

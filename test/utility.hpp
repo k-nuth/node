@@ -29,7 +29,7 @@ extern const config::checkpoint::list one_check;
 // Create a headers message of specified size, using specified previous hash.
 extern message::headers::ptr message_factory(size_t count);
 extern message::headers::ptr message_factory(size_t count,
-    const hash_digest& previous);
+    hash_digest const& previous);
 
 class reservation_fixture
   : public reservation
@@ -58,10 +58,10 @@ public:
     // ------------------------------------------------------------------------
     bool get_gap_range(size_t& out_first, size_t& out_last) const;
     bool get_next_gap(size_t& out_height, size_t start_height) const;
-    bool get_block_exists(const hash_digest& block_hash) const;
+    bool get_block_exists(hash_digest const& block_hash) const;
     bool get_fork_work(uint256_t& out_difficulty, size_t height) const;
     bool get_header(chain::header& out_header, size_t height) const;
-    bool get_height(size_t& out_height, const hash_digest& block_hash) const;
+    bool get_height(size_t& out_height, hash_digest const& block_hash) const;
     bool get_bits(uint32_t& out_bits, const size_t& height) const;
     bool get_timestamp(uint32_t& out_timestamp, const size_t& height) const;
     bool get_version(uint32_t& out_version, const size_t& height) const;
@@ -70,18 +70,18 @@ public:
         size_t& out_position, const chain::output_point& outpoint) const;
     bool get_spender_hash(hash_digest& out_hash,
         const chain::output_point& outpoint) const;
-    bool get_is_unspent_transaction(const hash_digest& transaction_hash) const;
+    bool get_is_unspent_transaction(hash_digest const& transaction_hash) const;
     bool get_transaction_height(size_t& out_block_height,
-        const hash_digest& transaction_hash) const;
+        hash_digest const& transaction_hash) const;
     transaction_ptr get_transaction(size_t& out_block_height,
-        const hash_digest& transaction_hash) const;
+        hash_digest const& transaction_hash) const;
 
     // Setters.
     // ------------------------------------------------------------------------
     bool stub(header_const_ptr header, size_t height);
     bool fill(block_const_ptr block, size_t height);
     bool push(const block_const_ptr_list& blocks, size_t height);
-    bool pop(block_const_ptr_list& out_blocks, const hash_digest& fork_hash);
+    bool pop(block_const_ptr_list& out_blocks, hash_digest const& fork_hash);
 
 private:
     bool import_result_;

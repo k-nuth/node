@@ -34,15 +34,14 @@ static constexpr size_t minimum_history = 3;
 // Simple conversion factor, since we trace in micro and report in seconds.
 static constexpr size_t micro_per_second = 1000 * 1000;
 
-reservation::reservation(reservations& reservations, size_t slot,
-    uint32_t sync_timeout_seconds)
-  : rate_({ true, 0, 0, 0 }),
-    stopped_(false),
-    pending_(true),
-    partitioned_(false),
-    reservations_(reservations),
-    slot_(slot),
-    rate_window_(minimum_history * sync_timeout_seconds * micro_per_second)
+reservation::reservation(reservations& reservations, size_t slot, uint32_t sync_timeout_seconds)
+    : rate_({ true, 0, 0, 0 })
+    , stopped_(false)
+    , pending_(true)
+    , partitioned_(false)
+    , reservations_(reservations)
+    , slot_(slot)
+    , rate_window_(minimum_history * sync_timeout_seconds * micro_per_second)
 {}
 
 reservation::~reservation() {
@@ -351,7 +350,7 @@ bool reservation::toggle_partitioned() {
 // Give the minimal row ~ half of our hashes, return false if minimal is empty.
 bool reservation::partition(reservation::ptr minimal) {
     // This assumes that partition has been called under a table mutex.
-    if (!minimal->empty()) {
+    if ( ! minimal->empty()) {
         return true;
     }
 
@@ -399,7 +398,7 @@ bool reservation::partition(reservation::ptr minimal) {
     return populated;
 }
 
-bool reservation::find_height_and_erase(const hash_digest& hash, size_t& out_height) {
+bool reservation::find_height_and_erase(hash_digest const& hash, size_t& out_height) {
     // Critical Section
     ///////////////////////////////////////////////////////////////////////////
     hash_mutex_.lock_upgrade();

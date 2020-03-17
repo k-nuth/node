@@ -29,8 +29,8 @@ using namespace bc::network;
 using namespace boost::adaptors;
 using namespace std::placeholders;
 
-inline bool is_witness(uint64_t services)
-{
+constexpr
+bool is_witness(uint64_t services) {
 #ifdef KTH_CURRENCY_BCH
     return false;
 #else
@@ -38,8 +38,7 @@ inline bool is_witness(uint64_t services)
 #endif
 }
 
-protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
-    safe_chain& chain)
+protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel, safe_chain& chain)
   : protocol_events(node, channel, NAME),
     node_(node),
     last_locator_top_(null_hash),
@@ -49,9 +48,9 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
     compact_to_peer_(false),
     compact_high_bandwidth_(true),
 #ifdef KTH_CURRENCY_BCH
-        compact_version_(1),
+    compact_version_(1),
 #else
-        compact_version_(2),
+    compact_version_(2),
 #endif
     // TODO: move send_headers to a derived class protocol_block_out_70012.
     headers_to_peer_(false),
@@ -59,27 +58,23 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel,
     // Witness requests must be allowed if advertising the service.
     enable_witness_(is_witness(node.network_settings().services)),
     CONSTRUCT_TRACK(protocol_block_out)
-{
-}
+{}
 
 // Start.
 //-----------------------------------------------------------------------------
 
-void protocol_block_out::start()
-{
+void protocol_block_out::start() {
     protocol_events::start(BIND1(handle_stop, _1));
 
     // TODO: Do not enable bip152 protocol level until fully-implemented.
     // TODO: move send_compact to a derived class protocol_block_out_70014.
-    if (negotiated_version() >= version::level::bip152)
-    {
+    if (negotiated_version() >= version::level::bip152) {
         // Announce compact vs. header/inventory if compact_to_peer_ is set.
         SUBSCRIBE2(send_compact, handle_receive_send_compact, _1, _2);
     }
 
     // TODO: move send_headers to a derived class protocol_block_out_70012.
-    if (negotiated_version() >= version::level::bip130)
-    {
+    if (negotiated_version() >= version::level::bip130) {
         // Announce headers vs. inventory if headers_to_peer_ is set.
         SUBSCRIBE2(send_headers, handle_receive_send_headers, _1, _2);
     }
@@ -99,11 +94,10 @@ void protocol_block_out::start()
 //-----------------------------------------------------------------------------
 
 // TODO: move send_compact to a derived class protocol_block_out_70014.
-bool protocol_block_out::handle_receive_send_compact(code const& ec,
-    send_compact_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_receive_send_compact(code const& ec, send_compact_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     compact_to_peer_ = true;
     compact_high_bandwidth_ = message->high_bandwidth_mode();
@@ -112,11 +106,10 @@ bool protocol_block_out::handle_receive_send_compact(code const& ec,
 }
 
 // TODO: move send_headers to a derived class protocol_block_out_70012.
-bool protocol_block_out::handle_receive_send_headers(code const& ec,
-    send_headers_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_receive_send_headers(code const& ec, send_headers_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     // Block annoucements will be headers messages instead of inventory.
     headers_to_peer_ = true;
@@ -127,16 +120,14 @@ bool protocol_block_out::handle_receive_send_headers(code const& ec,
 //-----------------------------------------------------------------------------
 
 // TODO: move get_headers to a derived class protocol_block_out_31800.
-bool protocol_block_out::handle_receive_get_headers(code const& ec,
-    get_headers_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_receive_get_headers(code const& ec, get_headers_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     auto const size = message->start_hashes().size();
 
-    if (size > max_locator)
-    {
+    if (size > max_locator) {
         LOG_WARNING(LOG_NODE)
             << "Excessive get_headers locator size ("
             << size << ") from [" << authority() << "]";
@@ -144,8 +135,7 @@ bool protocol_block_out::handle_receive_get_headers(code const& ec,
         return false;
     }
 
-    if (size > locator_limit())
-    {
+    if (size > locator_limit()) {
         LOG_DEBUG(LOG_NODE)
             << "Disallowed get_headers locator size ("
             << size << ") from [" << authority() << "]";
@@ -161,14 +151,12 @@ bool protocol_block_out::handle_receive_get_headers(code const& ec,
 }
 
 // TODO: move headers to a derived class protocol_block_out_31800.
-void protocol_block_out::handle_fetch_locator_headers(code const& ec,
-    headers_ptr message)
-{
-    if (stopped(ec))
+void protocol_block_out::handle_fetch_locator_headers(code const& ec, headers_ptr message) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating locator block headers for ["
             << authority() << "] " << ec.message();
@@ -181,8 +169,9 @@ void protocol_block_out::handle_fetch_locator_headers(code const& ec,
     // Respond to get_headers with headers.
     SEND2(*message, handle_send, _1, message->command);
 
-    if (message->elements().empty())
+    if (message->elements().empty()) {
         return;
+    }
 
     // Allow a peer to sync despite our being stale.
     ////if (chain_.is_stale())
@@ -240,7 +229,6 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
             chain::transaction::list txs_list(indexes.size());
 
             for (size_t i = 0; i < indexes.size(); i++) {
-                
                 if (indexes[i] >= block->transactions().size()) {
                    LOG_WARNING(LOG_NODE)
                         << "Compact Blocks index is greater than transactions size"
@@ -264,16 +252,14 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
 // Receive get_blocks sequence.
 //-----------------------------------------------------------------------------
 
-bool protocol_block_out::handle_receive_get_blocks(code const& ec,
-    get_blocks_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_receive_get_blocks(code const& ec, get_blocks_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     auto const size = message->start_hashes().size();
 
-    if (size > max_locator)
-    {
+    if (size > max_locator) {
         LOG_WARNING(LOG_NODE)
             << "Excessive get_blocks locator size ("
             << size << ") from [" << authority() << "]";
@@ -281,8 +267,7 @@ bool protocol_block_out::handle_receive_get_blocks(code const& ec,
         return false;
     }
 
-    if (size > locator_limit())
-    {
+    if (size > locator_limit()) {
         LOG_DEBUG(LOG_NODE)
             << "Disallowed get_blocks locator size ("
             << size << ") from [" << authority() << "]";
@@ -303,14 +288,12 @@ bool protocol_block_out::handle_receive_get_blocks(code const& ec,
     return true;
 }
 
-void protocol_block_out::handle_fetch_locator_hashes(code const& ec,
-    inventory_ptr message)
-{
-    if (stopped(ec))
+void protocol_block_out::handle_fetch_locator_hashes(code const& ec, inventory_ptr message) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating locator block hashes for ["
             << authority() << "] " << ec.message();
@@ -318,8 +301,9 @@ void protocol_block_out::handle_fetch_locator_hashes(code const& ec,
         return;
     }
 
-    if (message->inventories().empty())
+    if (message->inventories().empty()) {
         return;
+    }
 
     // Allow a peer to sync despite our being stale.
     ////if (chain_.is_stale())
@@ -332,22 +316,18 @@ void protocol_block_out::handle_fetch_locator_hashes(code const& ec,
     last_locator_top_.store(message->inventories().front().hash());
 }
 
-
-
 // Receive get_data sequence.
 //-----------------------------------------------------------------------------
 
 // TODO: move compact_block to derived class protocol_block_out_70014.
 // TODO: move filtered_block to derived class protocol_block_out_70001.
-bool protocol_block_out::handle_receive_get_data(code const& ec,
-    get_data_const_ptr message)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_receive_get_data(code const& ec, get_data_const_ptr message) {
+    if (stopped(ec)) {
         return false;
+    }
 
     // TODO: consider rejecting the message for duplicated entries.
-    if (message->inventories().size() > max_get_data)
-    {
+    if (message->inventories().size() > max_get_data) {
         LOG_WARNING(LOG_NODE)
             << "Invalid get_data size (" << message->inventories().size()
             << ") from [" << authority() << "]";
@@ -368,18 +348,20 @@ bool protocol_block_out::handle_receive_get_data(code const& ec,
     // Peer may request compact only after receipt of a send_compact message.
 
     // Reverse copy the block elements of the const inventory.
-    for (auto const inventory: reverse(message->inventories()))
-        if (inventory.is_block_type())
+    for (auto const inventory: reverse(message->inventories())) {
+        if (inventory.is_block_type()) {
             response->inventories().push_back(inventory);
+        }
+    }
 
     send_next_data(response);
     return true;
 }
 
-void protocol_block_out::send_next_data(inventory_ptr inventory)
-{
-    if (inventory->inventories().empty())
+void protocol_block_out::send_next_data(inventory_ptr inventory) {
+    if (inventory->inventories().empty()) {
         return;
+    }
 
     // The order is reversed so that we can pop from the back.
     auto const& entry = inventory->inventories().back();
@@ -396,45 +378,39 @@ void protocol_block_out::send_next_data(inventory_ptr inventory)
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        }
-        case inventory::type_id::block: {
+        } case inventory::type_id::block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 6";
             //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        }
-        case inventory::type_id::filtered_block: {
+        } case inventory::type_id::filtered_block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 7";
             //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
 #endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        }
-        case inventory::type_id::compact_block: {
+        } case inventory::type_id::compact_block: {
             //LOG_INFO(LOG_NODE) << "asm int $3 - 8";
             //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_compact_block(entry.hash(), BIND4(send_compact_block, _1, _2, _3, inventory));
 #endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        }
-        default: {
+        } default: {
             KTH_ASSERT_MSG(false, "improperly-filtered inventory");
         }
     }
 }
 
-void protocol_block_out::send_block(code const& ec, block_const_ptr message,
-    size_t, inventory_ptr inventory)
-{
-    if (stopped(ec))
+void protocol_block_out::send_block(code const& ec, block_const_ptr message, size_t, inventory_ptr inventory) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec == error::not_found)
-    {
+    if (ec == error::not_found) {
         LOG_DEBUG(LOG_NODE)
             << "Block requested by [" << authority() << "] not found.";
 
@@ -446,8 +422,7 @@ void protocol_block_out::send_block(code const& ec, block_const_ptr message,
         return;
     }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating block requested by ["
             << authority() << "] " << ec.message();
@@ -459,14 +434,12 @@ void protocol_block_out::send_block(code const& ec, block_const_ptr message,
 }
 
 // TODO: move merkle_block to derived class protocol_block_out_70001.
-void protocol_block_out::send_merkle_block(code const& ec,
-    merkle_block_const_ptr message, size_t, inventory_ptr inventory)
-{
-    if (stopped(ec))
+void protocol_block_out::send_merkle_block(code const& ec, merkle_block_const_ptr message, size_t, inventory_ptr inventory) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec == error::not_found)
-    {
+    if (ec == error::not_found) {
         LOG_DEBUG(LOG_NODE)
             << "Merkle block requested by [" << authority() << "] not found.";
 
@@ -478,8 +451,7 @@ void protocol_block_out::send_merkle_block(code const& ec,
         return;
     }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating merkle block requested by ["
             << authority() << "] " << ec.message();
@@ -491,14 +463,12 @@ void protocol_block_out::send_merkle_block(code const& ec,
 }
 
 // TODO: move compact_block to derived class protocol_block_out_70014.
-void protocol_block_out::send_compact_block(code const& ec,
-    compact_block_const_ptr message, size_t, inventory_ptr inventory)
-{
-    if (stopped(ec))
+void protocol_block_out::send_compact_block(code const& ec, compact_block_const_ptr message, size_t, inventory_ptr inventory) {
+    if (stopped(ec)) {
         return;
+    }
 
-    if (ec == error::not_found)
-    {
+    if (ec == error::not_found) {
         LOG_DEBUG(LOG_NODE)
             << "Compact block requested by [" << authority() << "] not found.";
 
@@ -510,8 +480,7 @@ void protocol_block_out::send_compact_block(code const& ec,
         return;
     }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Internal failure locating compact block requested by ["
             << authority() << "] " << ec.message();
@@ -522,11 +491,10 @@ void protocol_block_out::send_compact_block(code const& ec,
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-void protocol_block_out::handle_send_next(code const& ec,
-    inventory_ptr inventory)
-{
-    if (stopped(ec))
+void protocol_block_out::handle_send_next(code const& ec, inventory_ptr inventory) {
+    if (stopped(ec)) {
         return;
+    }
 
     KTH_ASSERT(!inventory->inventories().empty());
     inventory->inventories().pop_back();
@@ -540,14 +508,12 @@ void protocol_block_out::handle_send_next(code const& ec,
 
 // TODO: add consideration for catch-up, where we may not want to announce.
 // We never announce or inventory an orphan, only indexed blocks.
-bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
-    block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr)
-{
-    if (stopped(ec))
+bool protocol_block_out::handle_reorganized(code ec, size_t fork_height, block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr) {
+    if (stopped(ec)) {
         return false;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Failure handling reorganization: " << ec.message();
         stop(ec);
@@ -555,38 +521,37 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     }
 
     // Nothing to do, a channel is stopping but it's not this one.
-    if (!incoming || incoming->empty())
+    if ( ! incoming || incoming->empty()) {
         return true;
+    }
 
     // Do not announce blocks to peer if too far behind.
-    if (chain_.is_stale())
+    if (chain_.is_stale()) {
         return true;
+    }
 
     // TODO: consider always sending the last block as compact if enabled.
-    if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1)
-    {
+    if (compact_to_peer_ && compact_high_bandwidth_ && incoming->size() == 1) {
         // TODO: move compact_block to a derived class protocol_block_in_70014.
         auto const block = incoming->front();
 
-        if (block->validation.originator != nonce())
-        {
+        if (block->validation.originator != nonce()) {
             compact_block announce = compact_block::factory_from_block(*block);  
             SEND2(announce, handle_send, _1, announce.command);
         }
 
         return true;
-    }
-    else if (headers_to_peer_)
-    {
+    } else if (headers_to_peer_) {
         // TODO: move headers to a derived class protocol_block_in_70012.
         headers announce;
 
-        for (auto const block: *incoming)
-            if (block->validation.originator != nonce())
+        for (auto const block: *incoming) {
+            if (block->validation.originator != nonce()) {
                 announce.elements().push_back(block->header());
+            }
+        }
 
-        if (!announce.elements().empty())
-        {
+        if ( ! announce.elements().empty()) {
             SEND2(announce, handle_send, _1, announce.command);
             ////auto const hash = announce.elements().front().hash();
             ////LOG_DEBUG(LOG_NODE)
@@ -595,33 +560,26 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
         }
 
         return true;
-    }
-    else
-    {
+    } else {
         inventory announce;
 
-        for (auto const block: *incoming)
+        for (auto const block: *incoming) {
             if (block->validation.originator != nonce()) {
 #ifdef KTH_CURRENCY_BCH
-                announce.inventories().push_back(
-                    { inventory::type_id::block, block->header().hash() });
+                announce.inventories().push_back({ inventory::type_id::block, block->header().hash() });
 #else
         // TODO: the witness flag should only be set if the block is segregated?
         //// block->is_segregated() ? inventory::type_id::witness_block : inventory::type_id::block
                 if (enable_witness_){
-                    announce.inventories().push_back(
-                            { inventory::type_id::witness_block, block->header().hash() });
+                    announce.inventories().push_back({ inventory::type_id::witness_block, block->header().hash() });
                 } else {
-                    announce.inventories().push_back(
-                            { inventory::type_id::block, block->header().hash() });
+                    announce.inventories().push_back({ inventory::type_id::block, block->header().hash() });
                 }
 #endif
             }
+        }
 
-
-
-        if (!announce.inventories().empty())
-        {
+        if ( ! announce.inventories().empty()) {
             SEND2(announce, handle_send, _1, announce.command);
             ////auto const hash = announce.inventories().front().hash();
             ////LOG_DEBUG(LOG_NODE)
@@ -633,8 +591,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height,
     }
 }
 
-void protocol_block_out::handle_stop(const code&)
-{
+void protocol_block_out::handle_stop(const code&) {
     chain_.unsubscribe();
 
     LOG_DEBUG(LOG_NETWORK)
@@ -657,8 +614,7 @@ void protocol_block_out::handle_stop(const code&)
 // 2^n for n where n > 1 where the sum is < 500 - 10. So Bitcoin reorganization
 // is protocol-limited to depth 256 + 10 = 266, unless nodes grow forks by
 // generating fork-relative locators.
-size_t protocol_block_out::locator_limit()
-{
+size_t protocol_block_out::locator_limit() {
     auto const height = node_.top_block().height();
     return safe_add(chain::block::locator_size(height), size_t(1));
 }

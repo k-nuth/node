@@ -50,8 +50,7 @@ void protocol_block_sync::start(event_handler handler) {
 // Peer sync sequence.
 // ----------------------------------------------------------------------------
 
-void protocol_block_sync::send_get_blocks(event_handler complete, bool reset)
-{
+void protocol_block_sync::send_get_blocks(event_handler complete, bool reset) {
     if (stopped()) {
         return;
     }

@@ -5,11 +5,11 @@
 
 #include <kth/node/version.hpp>
 
-namespace kth { namespace node {
+namespace kth::node {
 
 char const* version() {
     return KTH_NODE_VERSION;
 }
 
-}} // namespace kth::node
+} // namespace kth::node
 

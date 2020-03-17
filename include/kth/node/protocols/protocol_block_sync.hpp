@@ -12,21 +12,17 @@
 #include <kth/node/define.hpp>
 #include <kth/node/utility/reservation.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
 /// Blocks sync protocol, thread safe.
-class BCN_API protocol_block_sync
-  : public network::protocol_timer, public track<protocol_block_sync>
-{
+class BCN_API protocol_block_sync : public network::protocol_timer, public track<protocol_block_sync> {
 public:
-    typedef std::shared_ptr<protocol_block_sync> ptr;
+    using ptr = std::shared_ptr<protocol_block_sync>;
 
     /// Construct a block sync protocol instance.
-    protocol_block_sync(full_node& network, network::channel::ptr channel,
-        reservation::ptr row);
+    protocol_block_sync(full_node& network, network::channel::ptr channel, reservation::ptr row);
 
     /// Start the protocol.
     virtual void start(event_handler handler);
@@ -35,13 +31,11 @@ private:
     void send_get_blocks(event_handler complete, bool reset);
     void handle_event(code const& ec, event_handler complete);
     void blocks_complete(code const& ec, event_handler handler);
-    bool handle_receive_block(code const& ec, block_const_ptr message,
-        event_handler complete);
+    bool handle_receive_block(code const& ec, block_const_ptr message, event_handler complete);
 
     reservation::ptr reservation_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

@@ -11,9 +11,6 @@
 #include <kth/node/define.hpp>
 #include <kth/node/settings.hpp>
 
-namespace kth {
-namespace node {
-
 // Not localizable.
 #define BN_HELP_VARIABLE "help"
 #define BN_SETTINGS_VARIABLE "settings"
@@ -25,9 +22,11 @@ namespace node {
 // This must match the case of the env var.
 #define BN_ENVIRONMENT_VARIABLE_PREFIX "BN_"
 
+
+namespace kth::node {
+
 /// Full node configuration, thread safe.
-class BCN_API configuration
-{
+class BCN_API configuration {
 public:
     configuration(config::settings context);
     configuration(const configuration& other);
@@ -52,7 +51,6 @@ public:
     network::settings network;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

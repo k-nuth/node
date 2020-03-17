@@ -20,8 +20,7 @@
 // #include <knuth/keoken/manager.hpp>
 // #endif
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 struct multi_crypto_setter {
     multi_crypto_setter(network::settings const& net_settings) {
@@ -39,27 +38,16 @@ struct multi_crypto_setter {
             default: 
                 set_cashaddr_prefix("");
         }
-
-
-#elif defined(KTH_CURRENCY_BTC)
-        // set_network(net_settings.identifier);
-        // set_cashaddr_prefix("");
-#else //KTH_CURRENCY_BCH
-        // set_network(net_settings.identifier);
-        // set_cashaddr_prefix("");
-#endif //KTH_CURRENCY_BCH
+#endif
     }
 };
 
 /// A full node on the Bitcoin P2P network.
-class BCN_API full_node
-    : public multi_crypto_setter
-    , public network::p2p
-{
+class BCN_API full_node : public multi_crypto_setter, public network::p2p {
 public:
-    typedef std::shared_ptr<full_node> ptr;
-    typedef blockchain::block_chain::reorganize_handler reorganize_handler;
-    typedef blockchain::block_chain::transaction_handler transaction_handler;
+    using ptr = std::shared_ptr<full_node>;
+    using reorganize_handler = blockchain::block_chain::reorganize_handler;
+    using transaction_handler = blockchain::block_chain::transaction_handler;
 
     /// Construct the full node.
     full_node(const configuration& configuration);
@@ -93,17 +81,21 @@ public:
     // ------------------------------------------------------------------------
 
     /// Node configuration settings.
-    virtual const node::settings& node_settings() const;
+    virtual 
+    const node::settings& node_settings() const;
 
     /// Node configuration settings.
-    virtual const blockchain::settings& chain_settings() const;
+    virtual 
+    const blockchain::settings& chain_settings() const;
 
     /// Blockchain query interface.
-    virtual blockchain::safe_chain& chain();
+    virtual 
+    blockchain::safe_chain& chain();
 
     /// Blockchain.
     //TODO: remove this function and use safe_chain in the rpc lib
-    virtual blockchain::block_chain& chain_kth();
+    virtual 
+    blockchain::block_chain& chain_kth();
 
 // #ifdef WITH_KEOKEN
 //     knuth::keoken::manager<knuth::keoken::state_delegated>& keoken_manager();
@@ -113,21 +105,23 @@ public:
     // ------------------------------------------------------------------------
 
     /// Subscribe to blockchain reorganization and stop events.
-    virtual void subscribe_blockchain(reorganize_handler&& handler);
+    virtual 
+    void subscribe_blockchain(reorganize_handler&& handler);
 
     /// Subscribe to transaction pool acceptance and stop events.
-    virtual void subscribe_transaction(transaction_handler&& handler);
+    virtual 
+    void subscribe_transaction(transaction_handler&& handler);
 
     // Init node utils.
     // ------------------------------------------------------------------------
-    static chain::block get_genesis_block(blockchain::settings const& settings);
+    static 
+    chain::block get_genesis_block(blockchain::settings const& settings);
 
 
 protected:
     /// Attach a node::session to the network, caller must start the session.
-    template <class Session, typename... Args>
-    typename Session::ptr attach(Args&&... args)
-    {
+    template <typename Session, typename... Args>
+    typename Session::ptr attach(Args&&... args) {
         return std::make_shared<Session>(*this, std::forward<Args>(args)...);
     }
 
@@ -138,19 +132,19 @@ protected:
     network::session_outbound::ptr attach_outbound_session() override;
 
     /// Override to attach specialized node sessions.
-    virtual session_header_sync::ptr attach_header_sync_session();
-    virtual session_block_sync::ptr attach_block_sync_session();
+    virtual 
+    session_header_sync::ptr attach_header_sync_session();
+    
+    virtual 
+    session_block_sync::ptr attach_block_sync_session();
 
     ///For mining
     blockchain::block_chain chain_;
 
 private:
-    typedef message::block::ptr_list block_ptr_list;
+    using block_ptr_list = message::block::ptr_list;
 
-    bool handle_reorganized(code ec, size_t fork_height,
-        block_const_ptr_list_const_ptr incoming,
-        block_const_ptr_list_const_ptr outgoing);
-
+    bool handle_reorganized(code ec, size_t fork_height, block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr outgoing);
     void handle_headers_synchronized(code const& ec, result_handler handler);
     void handle_network_stopped(code const& ec, result_handler handler);
 
@@ -163,13 +157,8 @@ private:
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
     const blockchain::settings& chain_settings_;
-
-// #ifdef WITH_KEOKEN
-//     knuth::keoken::manager<knuth::keoken::state_delegated> keoken_manager_;
-// #endif
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

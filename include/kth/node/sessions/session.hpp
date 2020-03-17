@@ -9,40 +9,31 @@
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 class full_node;
 
 /// Intermediate session base class template.
 /// This avoids having to make network::session into a template.
 template <class Session>
-class BCN_API session
-  : public Session
-{
+class BCN_API session : public Session {
 protected:
     /// Construct an instance.
     session(full_node& node, bool notify_on_connect)
-      : Session(node, notify_on_connect), node_(node)
-    {
-    }
+        : Session(node, notify_on_connect), node_(node)
+    {}
 
     /// Attach a protocol to a channel, caller must start the channel.
     template <class Protocol, typename... Args>
-    typename Protocol::ptr attach(network::channel::ptr channel,
-        Args&&... args)
-    {
-        return std::make_shared<Protocol>(node_, channel,
-            std::forward<Args>(args)...);
+    typename Protocol::ptr attach(network::channel::ptr channel, Args&&... args) {
+        return std::make_shared<Protocol>(node_, channel, std::forward<Args>(args)...);
     }
 
 private:
-
     // This is thread safe.
     full_node& node_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

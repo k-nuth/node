@@ -11,11 +11,9 @@
 #include <kth/blockchain.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
-class BCN_API performance
-{
+class BCN_API performance {
 public:
 
     /// The normalized rate derived from the performance values.
@@ -35,14 +33,13 @@ public:
 
 // Coerce division into double and error into zero.
 template<typename Quotient, typename Dividend, typename Divisor>
-static Quotient divide(Dividend dividend, Divisor divisor)
-{
+static 
+Quotient divide(Dividend dividend, Divisor divisor) {
     auto const quotient = static_cast<Quotient>(dividend) / divisor;
     return std::isnan(quotient) || std::isinf(quotient) ? 0.0 : quotient;
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif
 

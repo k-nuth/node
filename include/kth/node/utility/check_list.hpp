@@ -12,12 +12,10 @@
 #include <kth/database.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 /// A thread safe checkpoint queue.
-class BCN_API check_list
-{
+class BCN_API check_list {
 public:
 
 #ifdef KTH_DB_LEGACY
@@ -46,15 +44,12 @@ public:
 
 private:
     // A bidirection map is used for efficient hash and height retrieval.
-    typedef boost::bimaps::bimap<
-        boost::bimaps::unordered_set_of<hash_digest>,
-        boost::bimaps::set_of<size_t>> checks;
+    using checks = boost::bimaps::bimap<boost::bimaps::unordered_set_of<hash_digest>, boost::bimaps::set_of<size_t>> ;
 
     checks checks_;
     mutable shared_mutex mutex_;
 };
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

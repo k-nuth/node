@@ -11,8 +11,10 @@
 #define KTH_NODE_VERSION "0.0.0"
 #endif
 
-namespace kth { namespace node {
+namespace kth::node {
+
 char const* version();
-}} // namespace kth::node
+
+} // namespace kth::node
  
 #endif //KTH_NODE_VERSION_HPP_

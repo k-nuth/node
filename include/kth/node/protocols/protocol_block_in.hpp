@@ -13,36 +13,33 @@
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 struct temp_compact_block {
      chain::header header;
      std::vector<chain::transaction> transactions;
- };
+};
 
 class full_node;
 
-class BCN_API protocol_block_in
-  : public network::protocol_timer, track<protocol_block_in>
-{
+class BCN_API protocol_block_in : public network::protocol_timer, track<protocol_block_in> {
 public:
-    typedef std::shared_ptr<protocol_block_in> ptr;
+    using ptr = std::shared_ptr<protocol_block_in>;
 
-    using compact_block_map = std::unordered_map<hash_digest,temp_compact_block>;
+    using compact_block_map = std::unordered_map<hash_digest, temp_compact_block>;
     /// Construct a block protocol instance.
-    protocol_block_in(full_node& network, network::channel::ptr channel,
-        blockchain::safe_chain& chain);
+    protocol_block_in(full_node& network, network::channel::ptr channel, blockchain::safe_chain& chain);
 
     /// Start the protocol.
     virtual void start();
 
 private:
-    typedef std::queue<hash_digest> hash_queue;
+    using hash_queue = std::queue<hash_digest>;
 
-    static void report(const chain::block& block);
+    static 
+    void report(const chain::block& block);
 
-    void send_get_blocks(const hash_digest& stop_hash);
+    void send_get_blocks(hash_digest const& stop_hash);
     void send_get_data(code const& ec, get_data_ptr message);
 
     bool handle_receive_block(code const& ec, block_const_ptr message);
@@ -52,10 +49,10 @@ private:
     bool handle_receive_inventory(code const& ec, inventory_const_ptr message);
     bool handle_receive_not_found(code const& ec, not_found_const_ptr message);
     void handle_store_block(code const& ec, block_const_ptr message);
-    void handle_fetch_block_locator(code const& ec, get_headers_ptr message, const hash_digest& stop_hash);
-    void handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, const hash_digest& stop_hash);
+    void handle_fetch_block_locator(code const& ec, get_headers_ptr message, hash_digest const& stop_hash);
+    void handle_fetch_block_locator_compact_block(code const& ec, get_headers_ptr message, hash_digest const& stop_hash);
 
-    void send_get_data_compact_block(code const& ec, const hash_digest& hash);
+    void send_get_data_compact_block(code const& ec, hash_digest const& hash);
 
     void handle_timeout(code const& ec);
     void handle_stop(code const& ec);
@@ -79,13 +76,9 @@ private:
     compact_block_map compact_blocks_map_;
 
     bool compact_blocks_high_bandwidth_set_;
-
     // TODO(Mario) compact blocks version 1 hardcoded, change to 2 when segwit is implemented
-    
 };
 
-
-} // namespace node
-} // namespace kth
+} // namespace kth::node
 
 #endif

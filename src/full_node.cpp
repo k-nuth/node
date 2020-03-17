@@ -17,8 +17,7 @@
 #include <kth/node/sessions/session_manual.hpp>
 #include <kth/node/sessions/session_outbound.hpp>
 
-namespace kth {
-namespace node {
+namespace kth::node {
 
 using namespace bc::blockchain;
 using namespace bc::chain;
@@ -38,8 +37,7 @@ full_node::full_node(const configuration& configuration)
 // #endif
 {}
 
-full_node::~full_node()
-{
+full_node::~full_node() {
     // LOG_INFO(LOG_NODE) << "full_node::~full_node()";
     // std::cout << "full_node::~full_node() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     full_node::close();
@@ -68,10 +66,8 @@ void full_node::start(result_handler handler) {
 // Run sequence.
 // ----------------------------------------------------------------------------
 
-void full_node::run(result_handler handler)
-{
-    if (stopped())
-    {
+void full_node::run(result_handler handler) {
+    if (stopped()) {
         handler(error::service_stopped);
         return;
     }
@@ -99,9 +95,7 @@ void full_node::run(result_handler handler)
     ////        this, _1, handler));
 }
 
-void full_node::handle_headers_synchronized(code const& ec,
-    result_handler handler)
-{
+void full_node::handle_headers_synchronized(code const& ec, result_handler handler) {
     ////if (stopped())
     ////{
     ////    handler(error::service_stopped);
@@ -161,15 +155,12 @@ void full_node::handle_running(code const& ec, result_handler handler) {
 }
 
 // A typical reorganization consists of one incoming and zero outgoing blocks.
-bool full_node::handle_reorganized(code ec, size_t fork_height,
-    block_const_ptr_list_const_ptr incoming,
-    block_const_ptr_list_const_ptr outgoing)
-{
-    if (stopped() || ec == error::service_stopped)
+bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr outgoing) {
+    if (stopped() || ec == error::service_stopped) {
         return false;
+    }
 
-    if (ec)
-    {
+    if (ec) {
         LOG_ERROR(LOG_NODE)
             << "Failure handling reorganization: " << ec.message();
         stop();
@@ -177,13 +168,15 @@ bool full_node::handle_reorganized(code ec, size_t fork_height,
     }
 
     // Nothing to do here.
-    if (!incoming || incoming->empty())
+    if ( ! incoming || incoming->empty()) {
         return true;
+    }
 
-    for (auto const block: *outgoing)
+    for (auto const block: *outgoing) {
         LOG_DEBUG(LOG_NODE)
             << "Reorganization moved block to orphan pool ["
             << encode_hash(block->header().hash()) << "]";
+    }
 
     auto const height = safe_add(fork_height, incoming->size());
 
@@ -197,72 +190,65 @@ bool full_node::handle_reorganized(code ec, size_t fork_height,
 
 // Must not connect until running, otherwise imports may conflict with sync.
 // But we establish the session in network so caller doesn't need to run.
-network::session_manual::ptr full_node::attach_manual_session()
-{
+network::session_manual::ptr full_node::attach_manual_session() {
     return attach<node::session_manual>(chain_);
 }
 
-network::session_inbound::ptr full_node::attach_inbound_session()
-{
+network::session_inbound::ptr full_node::attach_inbound_session() {
     return attach<node::session_inbound>(chain_);
 }
 
-network::session_outbound::ptr full_node::attach_outbound_session()
-{
+network::session_outbound::ptr full_node::attach_outbound_session() {
     return attach<node::session_outbound>(chain_);
 }
 
-session_header_sync::ptr full_node::attach_header_sync_session()
-{
-    return attach<session_header_sync>(hashes_, chain_,
-        chain_.chain_settings().checkpoints);
+session_header_sync::ptr full_node::attach_header_sync_session() {
+    return attach<session_header_sync>(hashes_, chain_, chain_.chain_settings().checkpoints);
 }
 
-session_block_sync::ptr full_node::attach_block_sync_session()
-{
+session_block_sync::ptr full_node::attach_block_sync_session() {
     return attach<session_block_sync>(hashes_, chain_, node_settings_);
 }
 
 // Shutdown
 // ----------------------------------------------------------------------------
 
-bool full_node::stop()
-{
+bool full_node::stop() {
     // Suspend new work last so we can use work to clear subscribers.
     auto const p2p_stop = p2p::stop();
     auto const chain_stop = chain_.stop();
 
-    if (!p2p_stop)
-        LOG_ERROR(LOG_NODE)
-            << "Failed to stop network.";
+    if ( ! p2p_stop) {
+        LOG_ERROR(LOG_NODE) << "Failed to stop network.";
+    }
 
-    if (!chain_stop)
-        LOG_ERROR(LOG_NODE)
-            << "Failed to stop blockchain.";
+    if ( ! chain_stop) {
+        LOG_ERROR(LOG_NODE) << "Failed to stop blockchain.";
+    }
 
     return p2p_stop && chain_stop;
 }
 
 // This must be called from the thread that constructed this class (see join).
-bool full_node::close()
-{
+bool full_node::close() {
     // LOG_INFO(LOG_NODE) << "full_node::close()";
     // std::cout << "full_node::close() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     
     // Invoke own stop to signal work suspension.
-    if (!full_node::stop())
+    if ( ! full_node::stop()) {
         return false;
+    }
 
     auto const p2p_close = p2p::close();
     auto const chain_close = chain_.close();
 
-    if (!p2p_close)
-        LOG_ERROR(LOG_NODE)
-            << "Failed to close network.";
+    if ( ! p2p_close) {
+        LOG_ERROR(LOG_NODE) << "Failed to close network.";
+    }
 
-    if (!chain_close)
-        LOG_ERROR(LOG_NODE)
-            << "Failed to close blockchain.";
+    if ( ! chain_close) {
+        LOG_ERROR(LOG_NODE) << "Failed to close blockchain.";
+    }
 
     return p2p_close && chain_close;
 }
@@ -270,13 +256,11 @@ bool full_node::close()
 // Properties.
 // ----------------------------------------------------------------------------
 
-const node::settings& full_node::node_settings() const
-{
+node::settings const& full_node::node_settings() const {
     return node_settings_;
 }
 
-const blockchain::settings& full_node::chain_settings() const
-{
+blockchain::settings const& full_node::chain_settings() const {
     return chain_settings_;
 }
 
@@ -298,13 +282,11 @@ block_chain& full_node::chain_kth() {
 // Subscriptions.
 // ----------------------------------------------------------------------------
 
-void full_node::subscribe_blockchain(reorganize_handler&& handler)
-{
+void full_node::subscribe_blockchain(reorganize_handler&& handler) {
     chain().subscribe_blockchain(std::move(handler));
 }
 
-void full_node::subscribe_transaction(transaction_handler&& handler)
-{
+void full_node::subscribe_transaction(transaction_handler&& handler) {
     chain().subscribe_transaction(std::move(handler));
 }
 
@@ -317,14 +299,12 @@ chain::block full_node::get_genesis_block(blockchain::settings const& settings) 
     bool const retarget = settings.retarget;
     auto const mainnet = retarget && !testnet_blocks;
 
-    if (!mainnet && !testnet_blocks) {
+    if ( ! mainnet && ! testnet_blocks) {
         ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
         return chain::block::genesis_regtest();
     }
 
     return testnet_blocks ? chain::block::genesis_testnet() : chain::block::genesis_mainnet();
-
 }
 
-} // namespace node
-} // namespace kth
+} // namespace kth::node

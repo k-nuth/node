@@ -24,8 +24,8 @@ class reservations;
 // Class to manage hashes during sync, thread safe.
 class BCN_API reservation : public enable_shared_from_base<reservation> {
 public:
-    typedef std::shared_ptr<reservation> ptr;
-    typedef std::vector<reservation::ptr> list;
+    using ptr = std::shared_ptr<reservation>;
+    using list = std::vector<reservation::ptr>;
 
     /// Construct a block reservation with the specified identifier.
     reservation(reservations& reservations, size_t slot, uint32_t sync_timeout_seconds);
@@ -92,7 +92,8 @@ protected:
     std::chrono::microseconds rate_window() const;
 
     // Isolation of side effect to enable unit testing.
-    virtual std::chrono::high_resolution_clock::time_point now() const;
+    virtual 
+    std::chrono::high_resolution_clock::time_point now() const;
 
 private:
     typedef struct {
@@ -110,7 +111,7 @@ private:
     void clear_history();
 
     // Get the height of the block hash, remove and return true if it is found.
-    bool find_height_and_erase(const hash_digest& hash, size_t& out_height);
+    bool find_height_and_erase(hash_digest const& hash, size_t& out_height);
 
     // Update rate history to reflect an additional block of the given size.
     void update_rate(size_t events, const std::chrono::microseconds& database);
