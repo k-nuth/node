@@ -568,7 +568,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
             file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
 
             if (file == load_error::non_existing_file) {
-                LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
+                LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
                 return false;
             }
         }
@@ -601,7 +601,7 @@ bool parser::parse_from_file(boost::filesystem::path const& config_path, std::os
         auto file = load_configuration_variables_path(variables, config_path);
 
         if (file == load_error::non_existing_file) {
-            LOG_ERROR(LOG_NODE) << "Config file provided does not exists.";
+            LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
             return false;
         }
 

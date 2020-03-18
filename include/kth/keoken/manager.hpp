@@ -139,9 +139,9 @@ private:
         processed_height_ = fork_height - 1;
 
         // for (auto const block: *outgoing)
-        //     LOG_DEBUG(LOG_NODE)
-        //         << "Reorganization moved block to orphan pool ["
-        //         << encode_hash(block->header().hash()) << "]";
+        //     LOG_DEBUG(LOG_NODE
+        //        , "Reorganization moved block to orphan pool ["
+        //        , encode_hash(block->header().hash()), "]");
         // auto const height = safe_add(fork_height, incoming->size());
         // set_top_block({ incoming->back()->hash(), height });
 

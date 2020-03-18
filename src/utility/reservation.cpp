@@ -116,16 +116,16 @@ bool reservation::expired() const {
     auto const below_average = deviation < 0;
     auto const expired = below_average && outlier;
 
-    ////LOG_DEBUG(LOG_NODE)
-    ////    << "Statistics for slot (" << slot() << ")"
-    ////    << " adj:" << (normal_rate * micro_per_second)
-    ////    << " avg:" << (statistics.arithmentic_mean * micro_per_second)
-    ////    << " dev:" << (deviation * micro_per_second)
-    ////    << " sdv:" << (statistics.standard_deviation * micro_per_second)
-    ////    << " cnt:" << (statistics.active_count)
-    ////    << " neg:" << (below_average ? "T" : "F")
-    ////    << " out:" << (outlier ? "T" : "F")
-    ////    << " exp:" << (expired ? "T" : "F");
+    ////LOG_DEBUG(LOG_NODE
+    ////   , "Statistics for slot (", slot(), ")"
+    ////   , " adj:", (normal_rate * micro_per_second)
+    ////   , " avg:", (statistics.arithmentic_mean * micro_per_second)
+    ////   , " dev:", (deviation * micro_per_second)
+    ////   , " sdv:", (statistics.standard_deviation * micro_per_second)
+    ////   , " cnt:", (statistics.active_count)
+    ////   , " neg:", (below_average ? "T" : "F")
+    ////   , " out:", (outlier ? "T" : "F")
+    ////   , " exp:", (expired ? "T" : "F"));
 
     return expired;
 }
@@ -181,12 +181,12 @@ void reservation::update_rate(size_t events, const microseconds& database) {
     history_mutex_.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-    ////LOG_DEBUG(LOG_NODE)
-    ////    << "Records (" << slot() << ") "
-    ////    << " size: " << rate.events
-    ////    << " time: " << divide<double>(rate.window, micro_per_second)
-    ////    << " cost: " << divide<double>(rate.database, micro_per_second)
-    ////    << " full: " << (full ? "true" : "false");
+    ////LOG_DEBUG(LOG_NODE
+    ////   , "Records (", slot(), ") "
+    ////   , " size: ", rate.events
+    ////   , " time: ", divide<double>(rate.window, micro_per_second)
+    ////   , " cost: ", divide<double>(rate.database, micro_per_second)
+    ////   , " full: ", (full ? "true" : "false"));
 
     // Update the rate cache.
     set_rate(std::move(rate));
@@ -270,9 +270,9 @@ void reservation::import(block_const_ptr block) {
     auto const encoded = encode_hash(hash);
 
     if ( ! find_height_and_erase(hash, height)) {
-        LOG_DEBUG(LOG_NODE)
-            << "Ignoring unsolicited block (" << slot() << ") ["
-            << encoded << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Ignoring unsolicited block (", slot(), ") ["
+           , encoded, "]");
         return;
     }
 
@@ -291,16 +291,16 @@ void reservation::import(block_const_ptr block) {
         static auto const formatter =
             "Imported block #%06i (%02i) [%s] %06.2f %05.2f%%";
 
-        LOG_INFO(LOG_NODE)
-            << boost::format(formatter) % height % slot() % encoded %
-            (record.total() * micro_per_second) % (record.ratio() * 100);
+        LOG_INFO(LOG_NODE
+           , boost::format(formatter) % height % slot() % encoded %
+            (record.total() * micro_per_second) % (record.ratio() * 100));
     } else {
         // This could also result from a block import failure resulting from
         // inserting at a height that is already populated, but that should be
         // precluded by the implementation. This is the only other failure.
-        LOG_DEBUG(LOG_NODE)
-            << "Stopped before importing block (" << slot() << ") ["
-            << encoded << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Stopped before importing block (", slot(), ") ["
+           , encoded, "]");
     }
 
     populate();
@@ -390,9 +390,9 @@ bool reservation::partition(reservation::ptr minimal) {
     ///////////////////////////////////////////////////////////////////////////
 
     if (populated) {
-        LOG_DEBUG(LOG_NODE)
-            << "Moved [" << minimal->size() << "] blocks from slot (" << slot()
-            << ") to (" << minimal->slot() << ") leaving [" << size() << "].";
+        LOG_DEBUG(LOG_NODE
+           , "Moved [", minimal->size(), "] blocks from slot (", slot()
+           , ") to (", minimal->slot(), ") leaving [", size(), "].");
     }
 
     return populated;

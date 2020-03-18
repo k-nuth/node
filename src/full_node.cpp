@@ -38,7 +38,7 @@ full_node::full_node(const configuration& configuration)
 {}
 
 full_node::~full_node() {
-    // LOG_INFO(LOG_NODE) << "full_node::~full_node()";
+    // LOG_INFO(LOG_NODE, "full_node::~full_node()");
     // std::cout << "full_node::~full_node() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     full_node::close();
 }
@@ -53,7 +53,7 @@ void full_node::start(result_handler handler) {
     }
 
     if ( ! chain_.start()) {
-        LOG_ERROR(LOG_NODE) << "Failure starting blockchain.";
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
         handler(error::operation_failed);
         return;
     }
@@ -104,8 +104,8 @@ void full_node::handle_headers_synchronized(code const& ec, result_handler handl
 
     ////if (ec)
     ////{
-    ////    LOG_ERROR(LOG_NODE)
-    ////        << "Failure synchronizing headers: " << ec.message();
+    ////    LOG_ERROR(LOG_NODE
+    ////       , "Failure synchronizing headers: ", ec.message());
     ////    handler(ec);
     ////    return;
     ////}
@@ -126,8 +126,7 @@ void full_node::handle_running(code const& ec, result_handler handler) {
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Failure synchronizing blocks: " << ec.message();
+        LOG_ERROR(LOG_NODE, "Failure synchronizing blocks: ", ec.message());
         handler(ec);
         return;
     }
@@ -137,14 +136,14 @@ void full_node::handle_running(code const& ec, result_handler handler) {
 
     if ( ! chain_.get_last_height(top_height) ||
          ! chain_.get_block_hash(top_hash, top_height)) {
-        LOG_ERROR(LOG_NODE) << "The blockchain is corrupt.";
+        LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
         handler(error::operation_failed);
         return;
     }
 
     set_top_block({ std::move(top_hash), top_height });
 
-    LOG_INFO(LOG_NODE) << "Node start height is (" << top_height << ").";
+    LOG_INFO(LOG_NODE, "Node start height is (", top_height, ").");
 
     subscribe_blockchain(
         std::bind(&full_node::handle_reorganized, this, _1, _2, _3, _4));
@@ -161,8 +160,7 @@ bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Failure handling reorganization: " << ec.message();
+        LOG_ERROR(LOG_NODE, "Failure handling reorganization: ", ec.message());
         stop();
         return false;
     }
@@ -173,9 +171,9 @@ bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_
     }
 
     for (auto const block: *outgoing) {
-        LOG_DEBUG(LOG_NODE)
-            << "Reorganization moved block to orphan pool ["
-            << encode_hash(block->header().hash()) << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Reorganization moved block to orphan pool ["
+           , encode_hash(block->header().hash()), "]");
     }
 
     auto const height = safe_add(fork_height, incoming->size());
@@ -219,11 +217,11 @@ bool full_node::stop() {
     auto const chain_stop = chain_.stop();
 
     if ( ! p2p_stop) {
-        LOG_ERROR(LOG_NODE) << "Failed to stop network.";
+        LOG_ERROR(LOG_NODE, "Failed to stop network.");
     }
 
     if ( ! chain_stop) {
-        LOG_ERROR(LOG_NODE) << "Failed to stop blockchain.";
+        LOG_ERROR(LOG_NODE, "Failed to stop blockchain.");
     }
 
     return p2p_stop && chain_stop;
@@ -231,7 +229,7 @@ bool full_node::stop() {
 
 // This must be called from the thread that constructed this class (see join).
 bool full_node::close() {
-    // LOG_INFO(LOG_NODE) << "full_node::close()";
+    // LOG_INFO(LOG_NODE, "full_node::close()");
     // std::cout << "full_node::close() -- std::this_thread::get_id(): " << std::this_thread::get_id() << std::endl;
     
     // Invoke own stop to signal work suspension.
@@ -243,11 +241,11 @@ bool full_node::close() {
     auto const chain_close = chain_.close();
 
     if ( ! p2p_close) {
-        LOG_ERROR(LOG_NODE) << "Failed to close network.";
+        LOG_ERROR(LOG_NODE, "Failed to close network.");
     }
 
     if ( ! chain_close) {
-        LOG_ERROR(LOG_NODE) << "Failed to close blockchain.";
+        LOG_ERROR(LOG_NODE, "Failed to close blockchain.");
     }
 
     return p2p_close && chain_close;

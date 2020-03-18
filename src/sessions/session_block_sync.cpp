@@ -53,7 +53,7 @@ void session_block_sync::handle_started(code const& ec, result_handler handler) 
     }
 
     // TODO: expose block count from reservations and emit here.
-    LOG_INFO(LOG_NODE) << "Getting blocks.";
+    LOG_INFO(LOG_NODE, "Getting blocks.");
 
     // Copy the reservations table.
     auto const table = reservations_.table();
@@ -64,7 +64,7 @@ void session_block_sync::handle_started(code const& ec, result_handler handler) 
     }
 
     if ( ! reservations_.start()) {
-        LOG_DEBUG(LOG_NODE) << "Failed to set write lock.";
+        LOG_DEBUG(LOG_NODE, "Failed to set write lock.");
         handler(error::operation_failed);
         return;
     }
@@ -84,11 +84,11 @@ void session_block_sync::handle_started(code const& ec, result_handler handler) 
 
 void session_block_sync::new_connection(reservation::ptr row, result_handler handler) {
     if (stopped()) {
-        LOG_DEBUG(LOG_NODE) << "Suspending block slot (" << row ->slot() << ").";
+        LOG_DEBUG(LOG_NODE, "Suspending block slot (", row ->slot(), ").");
         return;
     }
 
-    LOG_DEBUG(LOG_NODE) << "Starting block slot (" << row->slot() << ").";
+    LOG_DEBUG(LOG_NODE, "Starting block slot (", row->slot(), ").");
 
     // BLOCK SYNC CONNECT
     session_batch::connect(BIND4(handle_connect, _1, _2, row, handler));
@@ -96,16 +96,16 @@ void session_block_sync::new_connection(reservation::ptr row, result_handler han
 
 void session_block_sync::handle_connect(code const& ec, channel::ptr channel, reservation::ptr row, result_handler handler) {
     if (ec) {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure connecting block slot (" << row->slot() << ") "
-            << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Failure connecting block slot (", row->slot(), ") "
+           , ec.message());
         new_connection(row, handler);
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Connected block slot (" << row->slot() << ") ["
-        << channel->authority() << "]";
+    LOG_DEBUG(LOG_NODE
+       , "Connected block slot (", row->slot(), ") ["
+       , channel->authority(), "]");
 
     register_channel(channel,
         BIND4(handle_channel_start, _1, channel, row, handler),
@@ -160,16 +160,16 @@ void session_block_sync::handle_channel_complete(code const& ec, reservation::pt
     timer_->stop();
     reservations_.remove(row);
 
-    LOG_DEBUG(LOG_NODE) << "Completed block slot (" << row->slot() << ")";
+    LOG_DEBUG(LOG_NODE, "Completed block slot (", row->slot(), ")");
 
     // This is the end of the block sync sequence.
     handler(error::success);
 }
 
 void session_block_sync::handle_channel_stop(code const& ec, reservation::ptr row) {
-    LOG_INFO(LOG_NODE)
-        << "Channel stopped on block slot (" << row->slot() << ") "
-        << ec.message();
+    LOG_INFO(LOG_NODE
+       , "Channel stopped on block slot (", row->slot(), ") "
+       , ec.message());
 }
 
 void session_block_sync::handle_complete(code const& ec, result_handler handler) {
@@ -177,18 +177,18 @@ void session_block_sync::handle_complete(code const& ec, result_handler handler)
     auto const stop = reservations_.stop();
 
     if (ec) {
-        LOG_DEBUG(LOG_NODE) << "Failed to complete block sync: " << ec.message();
+        LOG_DEBUG(LOG_NODE, "Failed to complete block sync: ", ec.message());
         handler(ec);
         return;
     }
 
     if ( ! stop) {
-        LOG_DEBUG(LOG_NODE) << "Failed to reset write lock: " << ec.message();
+        LOG_DEBUG(LOG_NODE, "Failed to reset write lock: ", ec.message());
         handler(error::operation_failed);
         return;
     }
 
-    LOG_DEBUG(LOG_NODE) << "Completed block sync.";
+    LOG_DEBUG(LOG_NODE, "Completed block sync.");
     handler(ec);
 }
 
@@ -209,7 +209,7 @@ void session_block_sync::handle_timer(code const& ec) {
         return;
     }
 
-    LOG_DEBUG(LOG_NODE) << "Fired session_block_sync timer: " << ec.message();
+    LOG_DEBUG(LOG_NODE, "Fired session_block_sync timer: ", ec.message());
 
     ////// TODO: If (total database time as a fn of total time) add a channel.
     ////// TODO: push into reservations_ implementation.

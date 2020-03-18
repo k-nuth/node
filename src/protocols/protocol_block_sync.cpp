@@ -56,8 +56,7 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset) {
     }
 
     if (reservation_->stopped()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Stopping complete slot (" << reservation_->slot() << ").";
+        LOG_DEBUG(LOG_NODE, "Stopping complete slot (", reservation_->slot(), ").");
         complete(error::success);
         return;
     }
@@ -70,9 +69,9 @@ void protocol_block_sync::send_get_blocks(event_handler complete, bool reset) {
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Sending request of " << request.inventories().size()
-        << " hashes for slot (" << reservation_->slot() << ").";
+    LOG_DEBUG(LOG_NODE
+       , "Sending request of ", request.inventories().size()
+       , " hashes for slot (", reservation_->slot(), ").");
 
     SEND2(request, handle_send, _1, request.command);
 }
@@ -86,7 +85,7 @@ bool protocol_block_sync::handle_receive_block(code const& ec, block_const_ptr m
         return false;
     }
 
-    LOG_INFO(LOG_NODE) << "protocol_block_sync::handle_receive_block ***********************************************************";
+    LOG_INFO(LOG_NODE, "protocol_block_sync::handle_receive_block ***********************************************************");
 
 #if ! defined(KTH_DB_READONLY)
     // Add the block to the blockchain store.
@@ -94,7 +93,7 @@ bool protocol_block_sync::handle_receive_block(code const& ec, block_const_ptr m
 #endif    
 
     if (reservation_->toggle_partitioned()) {
-        LOG_DEBUG(LOG_NODE) << "Restarting partitioned slot (" << reservation_->slot() << ").";
+        LOG_DEBUG(LOG_NODE, "Restarting partitioned slot (", reservation_->slot(), ").");
         complete(error::channel_stopped);
         return false;
     }
@@ -111,9 +110,9 @@ void protocol_block_sync::handle_event(code const& ec, event_handler complete) {
     }
 
     if (ec && ec != error::channel_timeout) {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure in block sync timer for slot (" << reservation_->slot()
-            << ") " << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Failure in block sync timer for slot (", reservation_->slot()
+           , ") ", ec.message());
         complete(ec);
         return;
     }
@@ -122,13 +121,13 @@ void protocol_block_sync::handle_event(code const& ec, event_handler complete) {
     // combination with this channel's peer not responding to the last request.
     // Causing a successful stop here prevents channel startup just to stop.
     if (reservation_->stopped()) {
-        LOG_DEBUG(LOG_NODE) << "Stopping complete slot (" << reservation_->slot() << ").";
+        LOG_DEBUG(LOG_NODE, "Stopping complete slot (", reservation_->slot(), ").");
         complete(error::success);
         return;
     }
 
     if (reservation_->expired()) {
-        LOG_DEBUG(LOG_NODE) << "Restarting slow slot (" << reservation_->slot() << ")";
+        LOG_DEBUG(LOG_NODE, "Restarting slow slot (", reservation_->slot(), ")");
         complete(error::channel_timeout);
         return;
     }

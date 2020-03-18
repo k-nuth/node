@@ -106,10 +106,10 @@ void protocol_block_in::start() {
     if (compact_from_peer_) {
         if (chain_.is_stale()) {
             //force low bandwidth
-            LOG_INFO(LOG_NODE) << "The chain is stale, send sendcmcpt low bandwidth ["<< authority() << "]";
+            LOG_INFO(LOG_NODE, "The chain is stale, send sendcmcpt low bandwidth [", authority(), "]");
             SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
         } else {
-            LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with configured setting ["<< authority() << "]";
+            LOG_INFO(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
             SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
         } 
@@ -132,9 +132,9 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_p
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Internal failure generating block locator for ["
-            << authority() << "] " << ec.message();
+        LOG_ERROR(LOG_NODE
+           , "Internal failure generating block locator for ["
+           , authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -150,14 +150,14 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_p
     auto const request_type = (use_headers ? "headers" : "inventory");
 
     if (stop_hash == null_hash) {
-        LOG_DEBUG(LOG_NODE)
-            << "Ask [" << authority() << "] for " << request_type << " after ["
-            << encode_hash(last_hash) << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Ask [", authority(), "] for ", request_type, " after ["
+           , encode_hash(last_hash), "]");
     } else {
-        LOG_DEBUG(LOG_NODE)
-            << "Ask [" << authority() << "] for " << request_type << " from ["
-            << encode_hash(last_hash) << "] through ["
-            << encode_hash(stop_hash) << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Ask [", authority(), "] for ", request_type, " from ["
+           , encode_hash(last_hash), "] through ["
+           , encode_hash(stop_hash), "]");
     }
 
     message->set_stop_hash(stop_hash);
@@ -182,7 +182,7 @@ bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr
 
     // We don't want to request a batch of headers out of order.
     if ( ! message->is_sequential()) {
-        LOG_WARNING(LOG_NODE) << "Block headers out of order from [" << authority() << "].";
+        LOG_WARNING(LOG_NODE, "Block headers out of order from [", authority(), "].");
         stop(error::channel_stopped);
         return false;
     }
@@ -192,10 +192,10 @@ bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr
     auto const response = std::make_shared<get_data>();
 
     if (compact_from_peer_) {
-        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_headers (compactblock) [" << authority() << "] ";
+        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_headers (compactblock) [", authority(), "] ");
         message->to_inventory(response->inventories(), inventory::type_id::compact_block);
     } else {
-        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_headers (block) [" << authority() << "] ";
+        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_headers (block) [", authority(), "] ");
         message->to_inventory(response->inventories(), inventory::type_id::block);
     }
    
@@ -215,10 +215,10 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     auto const response = std::make_shared<get_data>();
     
     if (compact_from_peer_) {
-        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_inventory (compactblock) [" << authority() << "] ";
+        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_inventory (compactblock) [", authority(), "] ");
         message->reduce(response->inventories(), inventory::type_id::compact_block);
     } else {
-        // LOG_INFO(LOG_NODE) << " protocol_block_in::handle_receive_inventory (block) [" << authority() << "] ";
+        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_inventory (block) [", authority(), "] ");
         message->reduce(response->inventories(), inventory::type_id::block);
     }
     
@@ -234,9 +234,9 @@ void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Internal failure filtering block hashes for ["
-            << authority() << "] " << ec.message();
+        LOG_ERROR(LOG_NODE
+           , "Internal failure filtering block hashes for ["
+           , authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -248,7 +248,7 @@ void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
     if (compact_from_peer_) {
         if (node_.node_settings().compact_blocks_high_bandwidth) {
             if ( ! compact_blocks_high_bandwidth_set_ && ! chain_.is_stale() ) {
-                LOG_INFO(LOG_NODE) << "The chain is not stale, send sendcmcpt with high bandwidth ["<< authority() << "]";
+                LOG_INFO(LOG_NODE, "The chain is not stale, send sendcmcpt with high bandwidth [", authority(), "]");
                 SEND2((send_compact{true, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
                 compact_blocks_high_bandwidth_set_ = true;
             }
@@ -300,9 +300,9 @@ bool protocol_block_in::handle_receive_not_found(code const& ec, not_found_const
     }
 
     if (ec) {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure getting block not_found from [" << authority() << "] "
-            << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Failure getting block not_found from [", authority(), "] "
+           , ec.message());
         stop(ec);
         return false;
     }
@@ -311,9 +311,9 @@ bool protocol_block_in::handle_receive_not_found(code const& ec, not_found_const
     message->to_hashes(hashes, inventory::type_id::block);
 
     for (auto const& hash : hashes) {
-        LOG_DEBUG(LOG_NODE)
-            << "Block not_found [" << encode_hash(hash) << "] from ["
-            << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Block not_found [", encode_hash(hash), "] from ["
+           , authority(), "]");
     }
 
     // The peer cannot locate one or more blocks that it told us it had.
@@ -364,17 +364,17 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
     // frequently than block announcements occur during initial block download,
     // and not typically after it is complete.
     if ( ! matched) {
-        LOG_DEBUG(LOG_NODE)
-            << "Block [" << encode_hash(message->hash())
-            << "] unexpected or out of order from [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Block [", encode_hash(message->hash())
+           , "] unexpected or out of order from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
 
     if ( ! require_witness_ && message->is_segregated()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Block [" << encode_hash(message->hash())
-            << "] contains unrequested witness from [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Block [", encode_hash(message->hash())
+           , "] contains unrequested witness from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -402,9 +402,9 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
       
     auto it = compact_blocks_map_.find(message->block_hash());
     if (it == compact_blocks_map_.end()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(message->block_hash())
-            << "] The blocktxn received doesn't match with any temporal compact block [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Compact Block [", encode_hash(message->block_hash())
+           , "] The blocktxn received doesn't match with any temporal compact block [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -421,9 +421,9 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
     for (size_t i = 0; i < txn_available.size(); i++) {
         if ( ! txn_available[i].is_valid()) {
             if (vtx_missing.size() <= tx_missing_offset) {
-                LOG_DEBUG(LOG_NODE)
-                    << "Compact Block [" << encode_hash(message->block_hash())
-                    << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+                LOG_DEBUG(LOG_NODE
+                   , "Compact Block [", encode_hash(message->block_hash())
+                   , "] The offset ", tx_missing_offset, " is invalid [", authority(), "]");
                 stop(error::channel_stopped);
 
                 //TODO(Mario) verify if necesary mutual exclusion
@@ -436,9 +436,9 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
     }
   
     if (vtx_missing.size() != tx_missing_offset) {
-       LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(message->block_hash())
-            << "] The offset " << tx_missing_offset << " is invalid [" << authority() << "]";
+       LOG_DEBUG(LOG_NODE
+           , "Compact Block [", encode_hash(message->block_hash())
+           , "] The offset ", tx_missing_offset, " is invalid [", authority(), "]");
         stop(error::channel_stopped);
 
         //TODO(Mario): verify if necesary mutual exclusion
@@ -460,9 +460,9 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec,
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Internal failure generating block locator (compact block) for ["
-            << authority() << "] " << ec.message();
+        LOG_ERROR(LOG_NODE
+           , "Internal failure generating block locator (compact block) for ["
+           , authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -474,9 +474,9 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec,
     message->set_stop_hash(stop_hash);  
     SEND2(*message, handle_send, _1, message->command);
 
-    LOG_DEBUG(LOG_NODE)
-        << "Sended get header message compact blocks to ["
-        << authority() << "] ";
+    LOG_DEBUG(LOG_NODE
+       , "Sended get header message compact blocks to ["
+       , authority(), "]");
 
 }
 
@@ -491,9 +491,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     auto const& header_temp = message->header();    
 
     if ( ! header_temp.is_valid()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(header_temp.hash())
-            << "] The compact block header is invalid [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Compact Block [", encode_hash(header_temp.hash())
+           , "] The compact block header is invalid [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -503,30 +503,27 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
-    //LOG_INFO(LOG_NODE) << "asm int $3 - 0";
+    //LOG_INFO(LOG_NODE, "asm int $3 - 0");
     //asm("int $3");  //TODO(fernando): remover
             
     //if we haven't the parent block already, send a get_header message
     // and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
-        LOG_DEBUG(LOG_NODE)
-            << "Compact Block parent block not exists [ " << encode_hash(header_temp.previous_block_hash())
-            << " [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Compact Block parent block not exists [ ", encode_hash(header_temp.previous_block_hash())
+           , " [", authority(), "]");
         
         if ( ! chain_.is_stale() ) {
-            
-            LOG_DEBUG(LOG_NODE)
-            << "The chain isn't stale sending getheaders message [" << authority() << "]";
-            
+            LOG_DEBUG(LOG_NODE, "The chain isn't stale sending getheaders message [", authority(), "]");
             auto const heights = block::locator_heights(node_.top_block().height());
             chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
         } 
         return true;
     }
     //  else {
-    //     LOG_INFO(LOG_NODE)
-    //         << "Compact Block parent block EXISTS [ " << encode_hash(header_temp.previous_block_hash())
-    //         << " [" << authority() << "]";
+    //     LOG_INFO(LOG_NODE
+    //        , "Compact Block parent block EXISTS [ ", encode_hash(header_temp.previous_block_hash())
+    //        , " [", authority(), "]");
     // }
         
    
@@ -541,9 +538,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     for (size_t i = 0; i < prefiled_txs.size(); ++i) {
         if ( ! prefiled_txs[i].is_valid()) {
             
-            LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(header_temp.hash())
-            << "] The prefilled transaction is invalid [" << authority() << "]";
+            LOG_DEBUG(LOG_NODE
+                , "Compact Block [", encode_hash(header_temp.hash())
+                , "] The prefilled transaction is invalid [", authority(), "]");
             stop(error::channel_stopped);
             return false;
         }
@@ -555,9 +552,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
         
         if (lastprefilledindex > std::numeric_limits<uint16_t>::max()) {
-            LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(header_temp.hash())
-            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            LOG_DEBUG(LOG_NODE
+                , "Compact Block [", encode_hash(header_temp.hash())
+                , "] The prefilled index ", lastprefilledindex, " is out of range [", authority(), "]");
             stop(error::channel_stopped);
             return false;
         }
@@ -568,9 +565,9 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             // then we have txn for which we have neither a prefilled txn or a
             // shorttxid!
 
-            LOG_DEBUG(LOG_NODE)
-            << "Compact Block [" << encode_hash(header_temp.hash())
-            << "] The prefilled index " << lastprefilledindex << " is out of range [" << authority() << "]";
+            LOG_DEBUG(LOG_NODE
+                , "Compact Block [", encode_hash(header_temp.hash())
+                , "] The prefilled index ", lastprefilledindex, " is out of range [", authority(), "]");
             stop(error::channel_stopped);
             return false;
         }
@@ -607,7 +604,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             // Duplicate txindexes, the block is now in-flight, so
             // just request it.
             
-            LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+            LOG_INFO(LOG_NODE, "Compact Block, sendening getdata for hash (", encode_hash(header_temp.hash()), ") to [", authority(), "]");
             send_get_data_compact_block(ec, header_temp.hash());
             
             return true;
@@ -620,12 +617,12 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     // overkill.
     if (shorttxids.size() != short_ids.size()) {
         // Short ID collision
-        LOG_INFO(LOG_NODE) << "Compact Block, sendening getdata for hash (" << encode_hash(header_temp.hash()) << ") to [" << authority() << "]";
+        LOG_INFO(LOG_NODE, "Compact Block, sendening getdata for hash (", encode_hash(header_temp.hash()), ") to [", authority(), "]");
         send_get_data_compact_block(ec, header_temp.hash());
         return true;
     }
 
-    //LOG_INFO(LOG_NODE) << "asm int $3 - 1";
+    //LOG_INFO(LOG_NODE, "asm int $3 - 1");
     //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
 #if defined(KTH_DB_TRANSACTION_UNCONFIRMED) || defined(KTH_DB_NEW_FULL)
@@ -686,17 +683,17 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
     if (ec == error::orphan_block ||
         ec == error::duplicate_block ||
         ec == error::insufficient_work) {
-        LOG_DEBUG(LOG_NODE)
-            << "Captured block [" << encoded << "] from [" << authority()
-            << "] " << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Captured block [", encoded, "] from [", authority()
+           , "] ", ec.message());
         return;
     }
 
     // TODO: send reject as applicable.
     if (ec) {
-        LOG_DEBUG(LOG_NODE)
-            << "Rejected block [" << encoded << "] from [" << authority()
-            << "] " << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Rejected block [", encoded, "] from [", authority()
+           , "] ", ec.message());
         stop(ec);
         return;
     }
@@ -707,10 +704,10 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
     // Show that diplayed forks may be missing activations due to checkpoints.
     auto const checked = state->is_under_checkpoint() ? "*" : "";
 
-    LOG_DEBUG(LOG_NODE)
-        << "Connected block [" << encoded << "] at height [" << state->height()
-        << "] from [" << authority() << "] (" << state->enabled_forks()
-        << checked << ", " << state->minimum_version() << ").";
+    LOG_DEBUG(LOG_NODE
+       , "Connected block [", encoded, "] at height [", state->height()
+       , "] from [", authority(), "] (", state->enabled_forks()
+       , checked, ", ", state->minimum_version(), ").");
 
     report(*message);
 }
@@ -733,9 +730,9 @@ void protocol_block_in::handle_timeout(code const& ec) {
     }
 
     if (ec && ec != error::channel_timeout) {
-        LOG_DEBUG(LOG_NODE)
-            << "Failure in block timer for [" << authority() << "] "
-            << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Failure in block timer for [", authority(), "] "
+           , ec.message());
         stop(ec);
         return;
     }
@@ -749,9 +746,9 @@ void protocol_block_in::handle_timeout(code const& ec) {
 
     // Can only end up here if time was not extended.
     if ( ! backlog_empty) {
-        LOG_DEBUG(LOG_NODE)
-            << "Peer [" << authority()
-            << "] exceeded configured block latency.";
+        LOG_DEBUG(LOG_NODE
+           , "Peer [", authority()
+           , "] exceeded configured block latency.");
         stop(ec);
     }
 
@@ -772,8 +769,7 @@ void protocol_block_in::handle_timeout(code const& ec) {
 }
 
 void protocol_block_in::handle_stop(const code&) {
-    LOG_DEBUG(LOG_NETWORK)
-        << "Stopped block_in protocol for [" << authority() << "].";
+    LOG_DEBUG(LOG_NETWORK, "Stopped block_in protocol for [", authority(), "].");
 }
 
 // Block reporting.
@@ -825,8 +821,8 @@ void protocol_block_in::report(const chain::block& block) {
             "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
             "%|4i| aus %|4i| sus %|4i| dus %|f|");
 
-        LOG_INFO(LOG_BLOCKCHAIN)
-            << (format % height % transactions % inputs %
+        LOG_INFO(LOG_BLOCKCHAIN
+            , (format % height % transactions % inputs %
 
             // wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check) %
@@ -856,7 +852,7 @@ void protocol_block_in::report(const chain::block& block) {
             unit_cost(times.start_push, times.end_push, inputs) %
 
             // this block transaction cache efficiency (hits/queries)
-            block.validation.cache_efficiency);
+            block.validation.cache_efficiency));
     }
 }
 

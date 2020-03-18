@@ -132,9 +132,9 @@ bool protocol_transaction_out::handle_receive_get_data(code const& ec, get_data_
     }
 
     if (message->inventories().size() > max_get_data) {
-        LOG_WARNING(LOG_NODE)
-            << "Invalid get_data size (" << message->inventories().size()
-            << ") from [" << authority() << "]";
+        LOG_WARNING(LOG_NODE
+           , "Invalid get_data size (", message->inventories().size()
+           , ") from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -168,14 +168,14 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
                 return;
             }
 
-            //LOG_INFO(LOG_NODE) << "asm int $3 - 11";
+            //LOG_INFO(LOG_NODE, "asm int $3 - 11");
             //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::transaction: {
-            //LOG_INFO(LOG_NODE) << "asm int $3 - 12";
+            //LOG_INFO(LOG_NODE, "asm int $3 - 12");
             //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
@@ -193,7 +193,7 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
         return;
     }
 
-    //LOG_INFO(LOG_NODE) << "asm int $3 - 13";
+    //LOG_INFO(LOG_NODE, "asm int $3 - 13");
     //asm("int $3");  //TODO(fernando): remover
     
     // Treat already confirmed transactions as not found.
@@ -206,8 +206,7 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
                     ;
                     
     if (ec == error::not_found || confirmed) {
-        LOG_DEBUG(LOG_NODE)
-            << "Transaction requested by [" << authority() << "] not found.";
+        LOG_DEBUG(LOG_NODE, "Transaction requested by [", authority(), "] not found.");
 
         // TODO: move not_found to derived class protocol_block_out_70001.
         KTH_ASSERT(!inventory->inventories().empty());
@@ -218,9 +217,9 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Internal failure locating transaction requested by ["
-            << authority() << "] " << ec.message();
+        LOG_ERROR(LOG_NODE
+           , "Internal failure locating transaction requested by ["
+           , authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -249,8 +248,7 @@ bool protocol_transaction_out::handle_transaction_pool(code const& ec, transacti
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Failure handling transaction notification: " << ec.message();
+        LOG_ERROR(LOG_NODE, "Failure handling transaction notification: ", ec.message());
         stop(ec);
         return false;
     }
@@ -289,16 +287,16 @@ bool protocol_transaction_out::handle_transaction_pool(code const& ec, transacti
     inventory const announce {{id, message->hash()}};
     SEND2(announce, handle_send, _1, announce.command);
 
-    ////LOG_DEBUG(LOG_NODE)
-    ////    << "Announced tx [" << encode_hash(message->hash()) << "] to ["
-    ////    << authority() << "].";
+    ////LOG_DEBUG(LOG_NODE
+    ////   , "Announced tx [", encode_hash(message->hash()), "] to ["
+    ////   , authority(), "].");
     return true;
 }
 
 void protocol_transaction_out::handle_stop(const code&) {
     chain_.unsubscribe();
 
-    LOG_DEBUG(LOG_NETWORK) << "Stopped transaction_out protocol for [" << authority() << "].";
+    LOG_DEBUG(LOG_NETWORK, "Stopped transaction_out protocol for [", authority(), "].");
 }
 
 } // namespace kth::node

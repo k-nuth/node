@@ -109,7 +109,7 @@ bool protocol_transaction_in::handle_receive_inventory(code const& ec, inventory
     // TODO: move relay to a derived class protocol_transaction_in_70001.
     // Prior to this level transaction relay is not configurable.
     if ( ! relay_from_peer_ && ! response->inventories().empty()) {
-        LOG_WARNING(LOG_NODE) << "Unexpected transaction inventory from [" << authority() << "]";
+        LOG_WARNING(LOG_NODE, "Unexpected transaction inventory from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -134,9 +134,9 @@ void protocol_transaction_in::send_get_data(code const& ec, get_data_ptr message
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE)
-            << "Internal failure filtering transaction hashes for ["
-            << authority() << "] " << ec.message();
+        LOG_ERROR(LOG_NODE
+           , "Internal failure filtering transaction hashes for ["
+           , authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -165,16 +165,15 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
     // TODO: move relay to a derived class protocol_transaction_in_70001.
     // Prior to this level transaction relay is not configurable.
     if ( ! relay_from_peer_) {
-        LOG_DEBUG(LOG_NODE)
-            << "Unexpected transaction relay from [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE, "Unexpected transaction relay from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
 
     if ( ! require_witness_ && message->is_segregated()) {
-        LOG_DEBUG(LOG_NODE)
-            << "Transaction [" << encode_hash(message->hash())
-            << "] contains unrequested witness from [" << authority() << "]";
+        LOG_DEBUG(LOG_NODE
+           , "Transaction [", encode_hash(message->hash())
+           , "] contains unrequested witness from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -217,15 +216,15 @@ void protocol_transaction_in::handle_store_transaction(code const& ec, transacti
     if (ec) {
         // This should not happen with a single peer since we filter inventory.
         // However it will happen when a block or another peer's tx intervenes.
-        LOG_DEBUG(LOG_NODE)
-            << "Dropped transaction [" << encoded << "] from [" << authority()
-            << "] " << ec.message();
+        LOG_DEBUG(LOG_NODE
+           , "Dropped transaction [", encoded, "] from [", authority()
+           , "] ", ec.message());
         return;
     }
 
-    LOG_DEBUG(LOG_NODE)
-        << "Stored transaction [" << encoded << "] from [" << authority()
-        << "].";
+    LOG_DEBUG(LOG_NODE
+       , "Stored transaction [", encoded, "] from [", authority()
+       , "].");
 }
 
 // This will get chatty if the peer sends mempool response out of order.
@@ -258,8 +257,7 @@ void protocol_transaction_in::send_get_transactions(transaction_const_ptr messag
 //-----------------------------------------------------------------------------
 
 void protocol_transaction_in::handle_stop(const code&) {
-    LOG_DEBUG(LOG_NETWORK)
-        << "Stopped transaction_in protocol for [" << authority() << "].";
+    LOG_DEBUG(LOG_NETWORK, "Stopped transaction_in protocol for [", authority(), "].");
 }
 
 } // namespace kth::node
