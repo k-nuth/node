@@ -39,6 +39,7 @@ class KnuthNodeConan(KnuthConanFile):
         "glibcxx_supports_cxx11_abi": "ANY",
         "cmake_export_compile_commands": [True, False],
         "binlog": [True, False],
+        "use_libmdbx": [True, False],
     }
     # "with_remote_blockchain": [True, False],
     # "with_remote_database": [True, False],
@@ -65,6 +66,7 @@ class KnuthNodeConan(KnuthConanFile):
         "glibcxx_supports_cxx11_abi": "_DUMMY_",
         "cmake_export_compile_commands": False,
         "binlog": False,
+        "use_libmdbx": False,
     }
 
     # "with_remote_blockchain=False",
@@ -115,6 +117,13 @@ class KnuthNodeConan(KnuthConanFile):
         self.output.info("Compiling for currency: %s" % (self.options.currency,))
         self.output.info("Compiling with mempool: %s" % (self.options.mempool,))
 
+        self.options["*"].binlog = self.options.binlog
+        self.output.info("Compiling with binlog: %s" % (self.options.binlog,))
+
+        self.options["*"].use_libmdbx = self.options.use_libmdbx
+        self.output.info("Compiling with use_libmdbx: %s" % (self.options.use_libmdbx,))
+
+
     def package_id(self):
         KnuthConanFile.package_id(self)
 
@@ -126,6 +135,7 @@ class KnuthNodeConan(KnuthConanFile):
         cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
         cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
         cmake.definitions["BINLOG"] = option_on_off(self.options.binlog)
+        cmake.definitions["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
 
         cmake.configure(source_dir=self.source_folder)
         if not self.options.cmake_export_compile_commands:
