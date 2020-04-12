@@ -12,7 +12,11 @@
 #include <iomanip>
 #include <memory>
 #include <string>
-#include <boost/format.hpp>
+
+// #include <boost/format.hpp>
+
+#include <fmt/core.h>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
@@ -817,42 +821,78 @@ void protocol_block_in::report(const chain::block& block) {
         // us simulate block announcement validation time as there is no wait.
         auto const start_validate = times.start_check - (times.end_deserialize - times.start_deserialize);
 
-        boost::format format("Block [%|i|] %|5i| txs %|5i| ins "
-            "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
-            "%|4i| aus %|4i| sus %|4i| dus %|f|");
+        // fmt::format format("Block [%|i|] %|5i| txs %|5i| ins "
+        //     "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
+        //     "%|4i| aus %|4i| sus %|4i| dus %|f|");
 
-        LOG_INFO(LOG_BLOCKCHAIN
-            , (format % height % transactions % inputs %
+        // LOG_INFO(LOG_BLOCKCHAIN
+        //     , (format % height % transactions % inputs %
+
+        //     // wait total (ms)
+        //     total_cost_ms(times.end_deserialize, times.start_check) %
+
+        //     // validation total (ms)
+        //     total_cost_ms(start_validate, times.start_notify) %
+
+        //     // validation per input (µs)
+        //     unit_cost(start_validate, times.start_notify, inputs) %
+
+        //     // deserialization (read) per input (µs)
+        //     unit_cost(times.start_deserialize, times.end_deserialize, inputs) %
+
+        //     // check per input (µs)
+        //     unit_cost(times.start_check, times.start_populate, inputs) %
+
+        //     // population per input (µs)
+        //     unit_cost(times.start_populate, times.start_accept, inputs) %
+
+        //     // accept per input (µs)
+        //     unit_cost(times.start_accept, times.start_connect, inputs) %
+
+        //     // connect (script) per input (µs)
+        //     unit_cost(times.start_connect, times.start_notify, inputs) %
+
+        //     // deposit per input (µs)
+        //     unit_cost(times.start_push, times.end_push, inputs) %
+
+        //     // this block transaction cache efficiency (hits/queries)
+        //     block.validation.cache_efficiency));
+
+        auto formatted = fmt::format("Block [%|i|] %|5i| txs %|5i| ins "
+            "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
+            "%|4i| aus %|4i| sus %|4i| dus %|f|", height, transactions, inputs, 
 
             // wait total (ms)
-            total_cost_ms(times.end_deserialize, times.start_check) %
+            total_cost_ms(times.end_deserialize, times.start_check),
 
             // validation total (ms)
-            total_cost_ms(start_validate, times.start_notify) %
+            total_cost_ms(start_validate, times.start_notify),
 
             // validation per input (µs)
-            unit_cost(start_validate, times.start_notify, inputs) %
+            unit_cost(start_validate, times.start_notify, inputs),
 
             // deserialization (read) per input (µs)
-            unit_cost(times.start_deserialize, times.end_deserialize, inputs) %
+            unit_cost(times.start_deserialize, times.end_deserialize, inputs),
 
             // check per input (µs)
-            unit_cost(times.start_check, times.start_populate, inputs) %
+            unit_cost(times.start_check, times.start_populate, inputs),
 
             // population per input (µs)
-            unit_cost(times.start_populate, times.start_accept, inputs) %
+            unit_cost(times.start_populate, times.start_accept, inputs),
 
             // accept per input (µs)
-            unit_cost(times.start_accept, times.start_connect, inputs) %
+            unit_cost(times.start_accept, times.start_connect, inputs),
 
             // connect (script) per input (µs)
-            unit_cost(times.start_connect, times.start_notify, inputs) %
+            unit_cost(times.start_connect, times.start_notify, inputs),
 
             // deposit per input (µs)
-            unit_cost(times.start_push, times.end_push, inputs) %
+            unit_cost(times.start_push, times.end_push, inputs),
 
             // this block transaction cache efficiency (hits/queries)
-            block.validation.cache_efficiency));
+            block.validation.cache_efficiency);
+        
+        LOG_INFO(LOG_BLOCKCHAIN, formatted);
     }
 }
 

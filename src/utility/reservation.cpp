@@ -9,7 +9,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
-#include <boost/format.hpp>
+// #include <boost/format.hpp>
+
+#include <fmt/core.h>
+
 #include <kth/domain.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/utility/performance.hpp>
@@ -288,12 +291,14 @@ void reservation::import(block_const_ptr block) {
         static auto const unit_size = 1u;
         update_rate(unit_size, cost);
         auto const record = rate();
-        static auto const formatter =
-            "Imported block #%06i (%02i) [%s] %06.2f %05.2f%%";
+        auto formatted = fmt::format("Imported block #%06i (%02i) [%s] %06.2f %05.2f%%", 
+            height, slot(), encoded, record.total() * micro_per_second, record.ratio() * 100);
+        LOG_INFO(LOG_NODE, formatted);
 
-        LOG_INFO(LOG_NODE
-           , boost::format(formatter) % height % slot() % encoded %
-            (record.total() * micro_per_second) % (record.ratio() * 100));
+        // static auto const formatter = "Imported block #%06i (%02i) [%s] %06.2f %05.2f%%";
+        // LOG_INFO(LOG_NODE
+        //    , boost::format(formatter) % height % slot() % encoded %
+        //     (record.total() * micro_per_second) % (record.ratio() * 100));
     } else {
         // This could also result from a block import failure resulting from
         // inserting at a height that is already populated, but that should be
