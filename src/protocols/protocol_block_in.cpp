@@ -713,7 +713,12 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
        , "] from [", authority(), "] (", state->enabled_forks()
        , checked, ", ", state->minimum_version(), ").");
 
+
+#if defined(KTH_STATISTICS_ENABLED)
+    report(*message, node_);
+#else
     report(*message);
+#endif
 }
 
 // Subscription.
@@ -806,61 +811,56 @@ size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end)
     return unit_cost(start, end, microseconds_per_millisecond);
 }
 
-void protocol_block_in::report(const chain::block& block) {
+//static
+
+#if defined(KTH_STATISTICS_ENABLED)
+void protocol_block_in::report(chain::block const& block, full_node& node) {
+#else
+void protocol_block_in::report(chain::block const& block) {
+#endif
     KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
 
+#if defined(KTH_STATISTICS_ENABLED)
+    if (true) {
+#else
     if (enabled(height)) {
+#endif
         auto const& times = block.validation;
         auto const now = asio::steady_clock::now();
         auto const transactions = block.transactions().size();
         auto const inputs = std::max(block.total_inputs(), size_t(1));
+        auto const outputs = size_t{1};
+
+        // // auto const outputs = std::max(block.total_outputs(), size_t(1));
+        // // auto [inputs, outputs] = block.total_inputs_outputs();
+        // auto [inputs, outputs] = chain::total_inputs_outputs(block);
+
+        // inputs = std::max(inputs, size_t(1));
+        // outputs = std::max(outputs, size_t(1));
 
         // Subtract total deserialization time from start of validation because
         // the wait time is between end_deserialize and start_check. This lets
         // us simulate block announcement validation time as there is no wait.
         auto const start_validate = times.start_check - (times.end_deserialize - times.start_deserialize);
 
-        // fmt::format format("Block [%|i|] %|5i| txs %|5i| ins "
-        //     "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
-        //     "%|4i| aus %|4i| sus %|4i| dus %|f|");
+#if defined(KTH_STATISTICS_ENABLED)
+        node.collect_statistics(height, transactions, inputs, outputs,
+            total_cost_ms(times.end_deserialize, times.start_check),
+            total_cost_ms(start_validate, times.start_notify),
+            unit_cost(start_validate, times.start_notify, inputs),
+            unit_cost(times.start_deserialize, times.end_deserialize, inputs),
+            unit_cost(times.start_check, times.start_populate, inputs),
+            unit_cost(times.start_populate, times.start_accept, inputs),
+            unit_cost(times.start_accept, times.start_connect, inputs),
+            unit_cost(times.start_connect, times.start_notify, inputs),
+            unit_cost(times.start_push, times.end_push, inputs),
+            block.validation.cache_efficiency);
+#endif
 
-        // LOG_INFO(LOG_BLOCKCHAIN
-        //     , (format % height % transactions % inputs %
-
-        //     // wait total (ms)
-        //     total_cost_ms(times.end_deserialize, times.start_check) %
-
-        //     // validation total (ms)
-        //     total_cost_ms(start_validate, times.start_notify) %
-
-        //     // validation per input (µs)
-        //     unit_cost(start_validate, times.start_notify, inputs) %
-
-        //     // deserialization (read) per input (µs)
-        //     unit_cost(times.start_deserialize, times.end_deserialize, inputs) %
-
-        //     // check per input (µs)
-        //     unit_cost(times.start_check, times.start_populate, inputs) %
-
-        //     // population per input (µs)
-        //     unit_cost(times.start_populate, times.start_accept, inputs) %
-
-        //     // accept per input (µs)
-        //     unit_cost(times.start_accept, times.start_connect, inputs) %
-
-        //     // connect (script) per input (µs)
-        //     unit_cost(times.start_connect, times.start_notify, inputs) %
-
-        //     // deposit per input (µs)
-        //     unit_cost(times.start_push, times.end_push, inputs) %
-
-        //     // this block transaction cache efficiency (hits/queries)
-        //     block.validation.cache_efficiency));
-
-        auto formatted = fmt::format("Block [%|i|] %|5i| txs %|5i| ins "
-            "%|4i| wms %|5i| vms %|4i| vus %|4i| rus %|4i| cus %|4i| pus "
-            "%|4i| aus %|4i| sus %|4i| dus %|f|", height, transactions, inputs, 
+        auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
+            "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
+            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs, 
 
             // wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check),
@@ -891,8 +891,14 @@ void protocol_block_in::report(const chain::block& block) {
 
             // this block transaction cache efficiency (hits/queries)
             block.validation.cache_efficiency);
-        
+
+#if defined(KTH_STATISTICS_ENABLED)
+        if (enabled(height)) {
+            LOG_DEBUG(LOG_BLOCKCHAIN, formatted);
+        }
+#else
         LOG_INFO(LOG_BLOCKCHAIN, formatted);
+#endif
     }
 }
 

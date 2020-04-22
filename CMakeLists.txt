@@ -175,6 +175,14 @@ if (USE_LIBMDBX)
   add_definitions(-DKTH_USE_LIBMDBX)
 endif()
 
+# Implement --statistics.
+#------------------------------------------------------------------------------
+option(STATISTICS "Collect statistics." OFF)
+if (STATISTICS)
+  add_definitions(-DKTH_STATISTICS_ENABLED)
+endif()
+
+
 
 
 set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")

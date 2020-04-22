@@ -40,6 +40,7 @@ class KnuthNodeConan(KnuthConanFile):
         "cmake_export_compile_commands": [True, False],
         "binlog": [True, False],
         "use_libmdbx": [True, False],
+        "statistics": [True, False],
     }
     # "with_remote_blockchain": [True, False],
     # "with_remote_database": [True, False],
@@ -67,6 +68,7 @@ class KnuthNodeConan(KnuthConanFile):
         "cmake_export_compile_commands": False,
         "binlog": False,
         "use_libmdbx": False,
+        "statistics": False,
     }
 
     # "with_remote_blockchain=False",
@@ -91,6 +93,9 @@ class KnuthNodeConan(KnuthConanFile):
         self.requires("boost/1.72.0@kth/stable")
         self.requires("blockchain/0.X@%s/%s" % (self.user, self.channel))
         self.requires("network/0.X@%s/%s" % (self.user, self.channel))
+
+        if self.options.statistics:
+            self.requires("tabulate/1.0@")
 
     def config_options(self):
         KnuthConanFile.config_options(self)
@@ -136,6 +141,7 @@ class KnuthNodeConan(KnuthConanFile):
         cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
         cmake.definitions["BINLOG"] = option_on_off(self.options.binlog)
         cmake.definitions["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
+        cmake.definitions["STATISTICS"] = option_on_off(self.options.statistics)
 
         cmake.configure(source_dir=self.source_folder)
         if not self.options.cmake_export_compile_commands:

@@ -17,6 +17,23 @@
 #include <kth/node/sessions/session_manual.hpp>
 #include <kth/node/sessions/session_outbound.hpp>
 
+#if defined(KTH_STATISTICS_ENABLED)
+#include <tabulate/table.hpp>
+
+tabulate::Row& last(tabulate::Table& table) {
+    auto const l = table.end();
+    auto f = table.begin();
+    auto p = f;
+    ++f;
+
+    while (f != l) {
+        p = f;
+        ++f;
+    } 
+    return *p;    
+}
+#endif
+
 namespace kth::node {
 
 using namespace bc::blockchain;
@@ -304,5 +321,239 @@ chain::block full_node::get_genesis_block(blockchain::settings const& settings) 
 
     return testnet_blocks ? chain::block::genesis_testnet() : chain::block::genesis_mainnet();
 }
+
+
+#if defined(KTH_STATISTICS_ENABLED)
+
+#if defined(_WIN32)
+
+void screen_clear() {
+    COORD topLeft  = { 0, 0 };
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO screen;
+    DWORD written;
+
+    GetConsoleScreenBufferInfo(console, &screen);
+    FillConsoleOutputCharacterA(
+        console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+    );
+    FillConsoleOutputAttribute(
+        console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
+        screen.dwSize.X * screen.dwSize.Y, topLeft, &written
+    );
+    SetConsoleCursorPosition(console, topLeft);
+}
+
+
+#else
+
+// #include <iostream>
+// void screen_clear() {
+//     // CSI[2J clears screen, CSI[H moves the cursor to top-left corner
+//     std::cout << "\x1B[2J\x1B[H";
+// }
+
+#include <cstdio>
+void screen_clear() {
+    printf("\033c");
+}
+#endif
+
+
+//TODO(fernando): could be outside the class
+void full_node::print_stat_item_sum(tabulate::Table& stats, size_t from, size_t to, 
+                        double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
+                        double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
+                        double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
+                        double accum_connect_per_input, double accum_deposit_per_input) const {
+    stats.add_row({
+        fmt::format("{}-{}", from, to)
+        , "Sum"
+        , fmt::format("{:.0f}", accum_transactions)
+        , fmt::format("{:.0f}", accum_inputs)
+        , fmt::format("{:.0f}", accum_outputs)
+        , fmt::format("{:.0f}", accum_wait_total)
+        , fmt::format("{:.0f}", accum_validation_total)
+        , fmt::format("{:.0f}", accum_validation_per_input)
+        , fmt::format("{:.0f}", accum_deserialization_per_input)
+        , fmt::format("{:.0f}", accum_check_per_input)
+        , fmt::format("{:.0f}", accum_population_per_input)
+        , fmt::format("{:.0f}", accum_accept_per_input)
+        , fmt::format("{:.0f}", accum_connect_per_input)
+        , fmt::format("{:.0f}", accum_deposit_per_input)});
+
+    // last(stats)
+    //     .format()
+    //     .hide_border_top();
+}
+
+// +---------------+--------+----------------+----------------+--------------+--------------+--------------+--------------+--------------+--------------+------------+------------+-------------+----------------+
+// |     Blocks    |        |       Txs      |       Ins      |     Outs     |   Wait(ms)   |    Val(ms)   |  Val/In(us)  | Deser/In(us) | Check/In(us) | Pop/In(us) | Acc/In(us) | Conn/In(us) |   Dep/In(us)   |
+// | 250000-259999 | Sum    | 2908680.000000 | 6443324.000000 | 10000.000000 | 18894.000000 | 32935.000000 | 57795.000000 | 43758.000000 | 12590.000000 | 315.000000 | 108.000000 |  101.000000 | 1315664.000000 |
+// | 250000-259999 | Mean   |     290.868000 |     644.332400 |     1.000000 |     1.889400 |     3.293500 |     5.779500 |     4.375800 |     1.259000 |   0.031500 |   0.010800 |    0.010100 |     131.566400 |
+// | 250000-259999 | Median |     241.962427 |     544.131233 |     1.000000 |     1.572434 |     2.994203 |     5.000129 |     4.000001 |     0.999999 |   0.000000 |   0.000000 |    0.000000 |     103.086477 |
+// | 250000-259999 | StDev  |     226.992902 |     492.214726 |     0.000000 |     1.409953 |     2.527765 |     6.666403 |     5.388514 |     1.746031 |   0.385127 |   0.148612 |    0.140712 |     440.845418 |
+// +---------------+--------+----------------+----------------+--------------+--------------+--------------+--------------+--------------+--------------+------------+------------+-------------+----------------+
+
+// Knuth node
+// Version
+// DB Mode
+// Options
+
+// Synchronizing chain: xxxxx of xxxxx (xx%)
+
+// Peers
+
+// Stats
+
+
+//TODO(fernando): could be outside the class
+void full_node::print_stat_item(tabulate::Table& stats, size_t from, size_t to, std::string const& cat, 
+                        double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
+                        double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
+                        double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
+                        double accum_connect_per_input, double accum_deposit_per_input) const {
+    stats.add_row({
+        fmt::format("{}-{}", from, to)
+        , cat
+        , fmt::format("{:.2f}", accum_transactions)
+        , fmt::format("{:.2f}", accum_inputs)
+        , fmt::format("{:.2f}", accum_outputs)
+        , fmt::format("{:f}", accum_wait_total)
+        , fmt::format("{:f}", accum_validation_total)
+        , fmt::format("{:f}", accum_validation_per_input)
+        , fmt::format("{:f}", accum_deserialization_per_input)
+        , fmt::format("{:f}", accum_check_per_input)
+        , fmt::format("{:f}", accum_population_per_input)
+        , fmt::format("{:f}", accum_accept_per_input)
+        , fmt::format("{:f}", accum_connect_per_input)
+        , fmt::format("{:f}", accum_deposit_per_input)});
+
+    last(stats)
+        .format()
+        .hide_border_top();
+}
+
+void full_node::print_statistics(size_t height) const {
+    using boost::accumulators::mean;
+    using boost::accumulators::median;
+    using boost::accumulators::sum;
+
+    auto from1 = (height / accum_blocks_1_) * accum_blocks_1_;
+    // auto from2 = (height / accum_blocks_2_) * accum_blocks_2_;
+
+    tabulate::Table stats;
+    stats.add_row({"Blocks"
+        ,""
+        , "Txs", "Ins", "Outs"
+        , "Wait(ms)"
+        , "Val(ms)"
+        , "Val/In(us)"
+        , "Deser/In(us)"
+        , "Check/In(us)"
+        , "Pop/In(us)"
+        , "Acc/In(us)"
+        , "Conn/In(us)"
+        , "Dep/In(us)"});
+
+
+    // auto formatted = fmt::format("Sum [{}-{}] {:f} txs {:f} ins "
+    //     "{:f} wms {:f} vms {:f} vus {:f} rus {:f} cus {:f} pus "
+    //     "{:f} aus {:f} sus {:f} dus {:f}", 
+    //     from1, height, 
+    //     boost::accumulators::sum(stats_current1_accum_transactions_),
+    //     boost::accumulators::sum(stats_current1_accum_inputs_),
+    //     boost::accumulators::sum(stats_current1_accum_wait_total_ms_),
+    //     boost::accumulators::sum(stats_current1_accum_validation_total_ms_),
+    //     boost::accumulators::sum(stats_current1_accum_validation_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_deserialization_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_check_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_population_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_accept_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_connect_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_deposit_per_input_us_),
+    //     boost::accumulators::sum(stats_current1_accum_cache_efficiency_));
+    
+    // LOG_INFO(LOG_BLOCKCHAIN, "************************************************************************************************************************");
+    // LOG_INFO(LOG_BLOCKCHAIN, "Stats:");
+    // LOG_INFO(LOG_BLOCKCHAIN, formatted);
+
+    print_stat_item_sum(stats, from1, height, 
+        sum(stats_current1_accum_transactions_),
+        sum(stats_current1_accum_inputs_),
+        sum(stats_current1_accum_outputs_),
+        sum(stats_current1_accum_wait_total_ms_),
+        sum(stats_current1_accum_validation_total_ms_),
+        sum(stats_current1_accum_validation_per_input_us_),
+        sum(stats_current1_accum_deserialization_per_input_us_),
+        sum(stats_current1_accum_check_per_input_us_),
+        sum(stats_current1_accum_population_per_input_us_),
+        sum(stats_current1_accum_accept_per_input_us_),
+        sum(stats_current1_accum_connect_per_input_us_),
+        sum(stats_current1_accum_deposit_per_input_us_));
+
+    print_stat_item(stats, from1, height, "Mean",
+        mean(stats_current1_accum_transactions_),
+        mean(stats_current1_accum_inputs_),
+        mean(stats_current1_accum_outputs_),
+        mean(stats_current1_accum_wait_total_ms_),
+        mean(stats_current1_accum_validation_total_ms_),
+        mean(stats_current1_accum_validation_per_input_us_),
+        mean(stats_current1_accum_deserialization_per_input_us_),
+        mean(stats_current1_accum_check_per_input_us_),
+        mean(stats_current1_accum_population_per_input_us_),
+        mean(stats_current1_accum_accept_per_input_us_),
+        mean(stats_current1_accum_connect_per_input_us_),
+        mean(stats_current1_accum_deposit_per_input_us_));
+
+    print_stat_item(stats, from1, height, "Median",
+        median(stats_current1_accum_transactions_),
+        median(stats_current1_accum_inputs_),
+        median(stats_current1_accum_outputs_),
+        median(stats_current1_accum_wait_total_ms_),
+        median(stats_current1_accum_validation_total_ms_),
+        median(stats_current1_accum_validation_per_input_us_),
+        median(stats_current1_accum_deserialization_per_input_us_),
+        median(stats_current1_accum_check_per_input_us_),
+        median(stats_current1_accum_population_per_input_us_),
+        median(stats_current1_accum_accept_per_input_us_),
+        median(stats_current1_accum_connect_per_input_us_),
+        median(stats_current1_accum_deposit_per_input_us_));
+
+    stdev_sample stdev;
+    print_stat_item(stats, from1, height, "StDev", 
+        stdev(stats_current1_accum_transactions_),
+        stdev(stats_current1_accum_inputs_),
+        stdev(stats_current1_accum_outputs_),
+        stdev(stats_current1_accum_wait_total_ms_),
+        stdev(stats_current1_accum_validation_total_ms_),
+        stdev(stats_current1_accum_validation_per_input_us_),
+        stdev(stats_current1_accum_deserialization_per_input_us_),
+        stdev(stats_current1_accum_check_per_input_us_),
+        stdev(stats_current1_accum_population_per_input_us_),
+        stdev(stats_current1_accum_accept_per_input_us_),
+        stdev(stats_current1_accum_connect_per_input_us_),
+        stdev(stats_current1_accum_deposit_per_input_us_));
+    
+
+    for (size_t i = 2; i < 14; ++i) {
+        stats.column(i).format().font_align(tabulate::FontAlign::right);
+    }
+
+    for (size_t i = 0; i < 14; ++i) {
+        stats[0][i].format()
+            .font_color(tabulate::Color::yellow)
+            .font_align(tabulate::FontAlign::center)
+            .font_style({tabulate::FontStyle::bold});
+    }
+
+    screen_clear();
+    std::cout << stats << "\n\n";
+
+    // LOG_INFO(LOG_BLOCKCHAIN, "************************************************************************************************************************");
+}
+
+#endif
+
 
 } // namespace kth::node
