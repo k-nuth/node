@@ -11,6 +11,7 @@
 #include <utility>
 // #include <boost/format.hpp>
 
+#define FMT_HEADER_ONLY
 #include <fmt/core.h>
 
 #include <kth/domain.hpp>
