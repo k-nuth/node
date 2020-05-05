@@ -15,7 +15,7 @@
 
 // #include <boost/format.hpp>
 
-#define FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY 1
 #include <fmt/core.h>
 
 #include <kth/blockchain.hpp>
