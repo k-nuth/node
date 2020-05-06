@@ -5,7 +5,10 @@
 #ifndef KTH_NODE_CONFIGURATION_HPP
 #define KTH_NODE_CONFIGURATION_HPP
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
+
+// #include <boost/filesystem.hpp>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
@@ -42,7 +45,7 @@ public:
     bool version;
 
     /// Options and environment vars.
-    boost::filesystem::path file;
+    std::filesystem::path file;
 
     /// Settings.
     node::settings node;

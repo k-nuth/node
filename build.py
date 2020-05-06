@@ -64,7 +64,7 @@ if __name__ == "__main__":
                     # options_keoken["%s:db" % name] = "full"
 
                     opts_bch_domain = copy.deepcopy(options)
-                    opts_bch_domain["%s:use_domain" % name] = "True"
+                    # opts_bch_domain["%s:use_domain" % name] = "True"
                     
                     handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
                     # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, options_keoken, env_vars, build_requires)
