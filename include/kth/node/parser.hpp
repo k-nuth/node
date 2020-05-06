@@ -26,7 +26,7 @@ public:
     bool parse(int argc, char const* argv[], std::ostream& error);
 
     // virtual 
-    bool parse_from_file(boost::filesystem::path const& config_path, std::ostream& error);
+    bool parse_from_file(std::filesystem::path const& config_path, std::ostream& error);
     
     /// Load command line options (named).
     // virtual 

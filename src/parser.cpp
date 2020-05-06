@@ -5,10 +5,11 @@
 #include <kth/node/parser.hpp>
 
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <string>
 
-#include <boost/filesystem.hpp>
+// #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <kth/blockchain.hpp>
@@ -24,7 +25,7 @@
 
 namespace kth::node {
 
-using namespace boost::filesystem;
+using namespace std::filesystem;
 using namespace boost::program_options;
 using namespace bc::config;
 
@@ -599,7 +600,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
     return true;
 }
 
-bool parser::parse_from_file(boost::filesystem::path const& config_path, std::ostream& error) {
+bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostream& error) {
     try {
         variables_map variables;
 

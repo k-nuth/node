@@ -88,7 +88,6 @@ class KnuthNodeConan(KnuthConanFile):
         return self.options.currency == "BCH" and self.options.get_safe("keoken")
 
     def requirements(self):
-        self.requires("boost/1.73.0@kth/stable")
         self.requires("blockchain/0.X@%s/%s" % (self.user, self.channel))
         self.requires("network/0.X@%s/%s" % (self.user, self.channel))
 
