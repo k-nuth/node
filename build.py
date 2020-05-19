@@ -27,7 +27,7 @@ if __name__ == "__main__":
             if ci_currency is None:
                 # opts_bch_keoken = copy.deepcopy(options)
                 opts_bch_no_keoken = copy.deepcopy(options)
-                opts_btc = copy.deepcopy(options)
+                # opts_btc = copy.deepcopy(options)
                 # opts_ltc = copy.deepcopy(options)
 
                 # opts_bch_keoken["%s:currency" % name] = "BCH"
@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 opts_bch_no_keoken["%s:currency" % name] = "BCH"
                 opts_bch_no_keoken["%s:keoken" % name] = False
 
-                opts_btc["%s:currency" % name] = "BTC"
+                # opts_btc["%s:currency" % name] = "BTC"
                 # opts_ltc["%s:currency" % name] = "LTC"
 
                 # opts_bch_domain = copy.deepcopy(opts_bch_no_keoken)
@@ -46,15 +46,15 @@ if __name__ == "__main__":
                 # opts_btc_full = copy.deepcopy(opts_btc)
                 # opts_btc_full["%s:db" % name] = "full"
 
-                opts_bch_full = copy.deepcopy(opts_bch_no_keoken)
-                opts_bch_full["%s:db" % name] = "full"
+                # opts_bch_full = copy.deepcopy(opts_bch_no_keoken)
+                # opts_bch_full["%s:db" % name] = "full"
 
-                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_full, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_full, env_vars, build_requires)
                 # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_btc_full, env_vars, build_requires)
                 # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
                 # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_keoken, env_vars, build_requires)
                 handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_no_keoken, env_vars, build_requires)
-                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_btc, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_btc, env_vars, build_requires)
                 # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_ltc, env_vars, build_requires)
             else:
                 options["%s:currency" % name] = ci_currency
@@ -69,10 +69,10 @@ if __name__ == "__main__":
                     handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_bch_domain, env_vars, build_requires)
                     # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, options_keoken, env_vars, build_requires)
 
-                opts_db_full = copy.deepcopy(options)
-                opts_db_full["%s:db" % name] = "full"
+                # opts_db_full = copy.deepcopy(options)
+                # opts_db_full["%s:db" % name] = "full"
 
-                handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_db_full, env_vars, build_requires)
+                # handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, opts_db_full, env_vars, build_requires)
                 handle_microarchs("%s:march_id" % name, march_ids, filtered_builds, settings, options, env_vars, build_requires)
 
 
