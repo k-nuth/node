@@ -448,17 +448,26 @@ if (WITH_TESTS)
           test/settings.cpp
           test/utility.cpp
           test/utility.hpp)
+
   target_link_libraries(kth_node_test PUBLIC kth-node)
   _group_sources(kth_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
+        
+  target_include_directories(kth_node_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test>)
 
-  _add_tests(kth_node_test
-          configuration_tests
-          node_tests
-          #header_queue_tests
-          performance_tests
-          #reservation_tests
-          #reservations_tests
-          settings_tests)
+  include(CTest)
+  include(Catch)
+  catch_discover_tests(kth_node_test)
+
+
+  # _add_tests(kth_node_test
+  #         configuration_tests
+  #         node_tests
+  #         #header_queue_tests
+  #         performance_tests
+  #         #reservation_tests
+  #         #reservations_tests
+  #         settings_tests)
 endif()
 
 
