@@ -16,12 +16,11 @@
 #include <knuth/keoken/node_constants.hpp>
 #include <knuth/keoken/state_delegated.hpp>
 
-namespace kth {
-namespace keoken {
+namespace kth::keoken {
 
 template <typename State>
 class BCN_API base_manager {
-    using payment_address = bc::wallet::payment_address;
+    using payment_address = kth::wallet::payment_address;
 public:
     using get_assets_by_address_list = typename State::get_assets_by_address_list;
     using get_assets_list = typename State::get_assets_list;
