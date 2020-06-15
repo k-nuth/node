@@ -6,19 +6,20 @@
 #define KTH_NODE_PARSER_HPP
 
 #include <ostream>
+
 #include <kth/domain.hpp>
+#include <kth/domain/config/parser.hpp>
+
 #include <kth/node/define.hpp>
 #include <kth/node/configuration.hpp>
-
-#include <kth/domain/config/parser.hpp>
 
 namespace kth::node { 
 
 /// Parse configurable values from environment variables, settings file, and
 /// command line positional and non-positional options.
-class BCN_API parser : public config::parser<parser> {
+class BCN_API parser : public domain::config::parser<parser> {
 public:
-    parser(config::settings context);
+    parser(infrastructure::config::settings context);
     parser(configuration const& defaults);
 
     /// Parse all configuration into member settings.
