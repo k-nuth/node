@@ -2,16 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/test/unit_test.hpp>
+#include <test_helpers.hpp>
 #include <kth/node.hpp>
 
 using namespace kth;
 
-BOOST_AUTO_TEST_SUITE(check_list_tests)
+// Start Boost Suite: check list tests
 
-BOOST_AUTO_TEST_CASE(todo)
-{
-    BOOST_REQUIRE(true);
+TEST_CASE("check_list TODO", "[check list tests]") {
+    REQUIRE(true);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+// End Boost Suite
