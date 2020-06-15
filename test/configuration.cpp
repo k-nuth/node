@@ -2,51 +2,47 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/test/unit_test.hpp>
+#include <test_helpers.hpp>
 #include <kth/node.hpp>
 
 using namespace kth;
 
-BOOST_AUTO_TEST_SUITE(configuration_tests)
+// Start Boost Suite: configuration tests
 
 // constructors
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(configuration__construct1__none_context__expected)
-{
+TEST_CASE("configuration  construct1  none context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::none);
-    BOOST_REQUIRE(!instance.help);
-    BOOST_REQUIRE(!instance.initchain);
-    BOOST_REQUIRE(!instance.settings);
-    BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
+    REQUIRE(!instance.help);
+    REQUIRE(!instance.initchain);
+    REQUIRE(!instance.settings);
+    REQUIRE(!instance.version);
+    REQUIRE(instance.node.sync_peers == 0u);
+    REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
-BOOST_AUTO_TEST_CASE(configuration__construct1__mainnet_context__expected)
-{
+TEST_CASE("configuration  construct1  mainnet context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::mainnet);
-    BOOST_REQUIRE(!instance.help);
-    BOOST_REQUIRE(!instance.initchain);
-    BOOST_REQUIRE(!instance.settings);
-    BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
+    REQUIRE(!instance.help);
+    REQUIRE(!instance.initchain);
+    REQUIRE(!instance.settings);
+    REQUIRE(!instance.version);
+    REQUIRE(instance.node.sync_peers == 0u);
+    REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
-BOOST_AUTO_TEST_CASE(configuration__construct1__testnet_context__expected)
-{
+TEST_CASE("configuration  construct1  testnet context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::testnet);
-    BOOST_REQUIRE(!instance.help);
-    BOOST_REQUIRE(!instance.initchain);
-    BOOST_REQUIRE(!instance.settings);
-    BOOST_REQUIRE(!instance.version);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_peers, 0u);
-    BOOST_REQUIRE_EQUAL(instance.node.sync_timeout_seconds, 5u);
+    REQUIRE(!instance.help);
+    REQUIRE(!instance.initchain);
+    REQUIRE(!instance.settings);
+    REQUIRE(!instance.version);
+    REQUIRE(instance.node.sync_peers == 0u);
+    REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
-BOOST_AUTO_TEST_CASE(configuration__construct2__none_context__expected)
-{
+TEST_CASE("configuration  construct2  none context  expected", "[configuration tests]") {
     node::configuration instance1(infrastructure::config::settings::none);
     instance1.help = true;
     instance1.initchain = true;
