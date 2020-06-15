@@ -109,7 +109,7 @@ public:
     using transaction_handler = blockchain::block_chain::transaction_handler;
 
     /// Construct the full node.
-    full_node(const configuration& configuration);
+    full_node(configuration const& configuration);
 
     /// Ensure all threads are coalesced.
     virtual ~full_node();
