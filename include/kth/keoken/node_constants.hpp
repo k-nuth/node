@@ -5,12 +5,10 @@
 #ifndef KTH_NODE_KEOKEN_CONSTANTS_HPP_
 #define KTH_NODE_KEOKEN_CONSTANTS_HPP_
 
-namespace kth {
-namespace keoken {
+namespace kth::keoken {
 
 size_t constexpr asset_id_initial = 1;
 
-} // namespace keoken
-} // namespace kth
+} // namespace kth::keoken
 
 #endif //KTH_NODE_KEOKEN_CONSTANTS_HPP_
