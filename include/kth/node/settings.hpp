@@ -15,7 +15,7 @@ namespace kth::node {
 class BCN_API settings {
 public:
     settings();
-    settings(config::settings context);
+    settings(infrastructure::config::settings context);
 
     /// Properties.
     uint32_t sync_peers;
