@@ -16,8 +16,8 @@
 namespace kth::node {
 
 struct temp_compact_block {
-     chain::header header;
-     std::vector<chain::transaction> transactions;
+     domain::chain::header header;
+     std::vector<domain::chain::transaction> transactions;
 };
 
 class full_node;
