@@ -53,12 +53,12 @@ TEST_CASE("configuration  construct2  none context  expected", "[configuration t
 
     node::configuration instance2(instance1);
 
-    BOOST_REQUIRE(instance2.help);
-    BOOST_REQUIRE(instance2.initchain);
-    BOOST_REQUIRE(instance2.settings);
-    BOOST_REQUIRE(instance2.version);
-    BOOST_REQUIRE_EQUAL(instance2.node.sync_peers, 42u);
-    BOOST_REQUIRE_EQUAL(instance2.node.sync_timeout_seconds, 24u);
+    REQUIRE(instance2.help);
+    REQUIRE(instance2.initchain);
+    REQUIRE(instance2.settings);
+    REQUIRE(instance2.version);
+    REQUIRE(instance2.node.sync_peers == 42u);
+    REQUIRE(instance2.node.sync_timeout_seconds == 24u);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+// End Boost Suite
