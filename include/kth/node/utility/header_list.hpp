@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <memory>
+
 #include <kth/domain.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/utility/check_list.hpp>
