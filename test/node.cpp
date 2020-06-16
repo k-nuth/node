@@ -2,17 +2,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/test/unit_test.hpp>
+#include <test_helpers.hpp>
 #include <kth/node.hpp>
 
 using namespace kth;
 
-BOOST_AUTO_TEST_SUITE(node_tests)
+// Start Boost Suite: node tests
 
 // Just a basic test to get some coverage output.
-BOOST_AUTO_TEST_CASE(node_test)
-{
-    BOOST_REQUIRE(true);
+TEST_CASE("node test", "[node tests]") {
+    REQUIRE(true);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+// End Boost Suite
