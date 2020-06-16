@@ -87,8 +87,6 @@ private:
     size_t gap_height_;
 };
 
-} // namespace test
-} // namespace node
-} // namespace kth
+} // namespace kth::node::test
 
 #endif
