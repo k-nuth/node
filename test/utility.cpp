@@ -28,21 +28,18 @@ const infrastructure::config::checkpoint::list no_checks;
 const infrastructure::config::checkpoint::list one_check{ check42 };
 
 // Create a headers message of specified size, starting with a genesis header.
-domain::message::headers::ptr message_factory(size_t count)
-{
+domain::message::headers::ptr message_factory(size_t count) {
     return message_factory(count, null_hash);
 }
 
 // Create a headers message of specified size, using specified previous hash.
 domain::message::headers::ptr message_factory(size_t count,
-    hash_digest const& previous)
-{
+    hash_digest const& previous) {
     auto previous_hash = previous;
     auto const headers = std::make_shared<domain::message::headers>();
     auto& elements = headers->elements();
 
-    for (size_t height = 0; height < count; ++height)
-    {
+    for (size_t height = 0; height < count; ++height) {
         const header current_header{ 0, previous_hash, {}, 0, 0, 0 };
         elements.push_back(current_header);
         previous_hash = current_header.hash();
