@@ -49,58 +49,45 @@ domain::message::headers::ptr message_factory(size_t count,
 }
 
 reservation_fixture::reservation_fixture(reservations& reservations,
-    size_t slot, uint32_t sync_timeout_seconds,
-    clock::time_point now)
-  : reservation(reservations, slot, sync_timeout_seconds),
-    now_(now)
-{
-}
+    size_t slot, uint32_t sync_timeout_seconds, clock::time_point now)
+    : reservation(reservations, slot, sync_timeout_seconds)
+    , now_(now) 
+{}
 
 // Accessor
-std::chrono::microseconds reservation_fixture::rate_window() const
-{
+std::chrono::microseconds reservation_fixture::rate_window() const {
     return reservation::rate_window();
 }
 
 // Accessor
-bool reservation_fixture::pending() const
-{
+bool reservation_fixture::pending() const {
     return reservation::pending();
 }
 
 // Accessor
-void reservation_fixture::set_pending(bool value)
-{
+void reservation_fixture::set_pending(bool value) {
     reservation::set_pending(value);
 }
 
 // Stub
-std::chrono::high_resolution_clock::time_point reservation_fixture::now() const
-{
+std::chrono::high_resolution_clock::time_point reservation_fixture::now() const {
     return now_;
 }
 
 // ----------------------------------------------------------------------------
 
-blockchain_fixture::blockchain_fixture(bool import_result, size_t gap_trigger,
-    size_t gap_height)
-  : import_result_(import_result),
-    gap_trigger_(gap_trigger),
-    gap_height_(gap_height)
-{
-}
+blockchain_fixture::blockchain_fixture(bool import_result, size_t gap_trigger, size_t gap_height)
+    : import_result_(import_result)
+    , gap_trigger_(gap_trigger)
+    , gap_height_(gap_height) 
+{}
 
-bool blockchain_fixture::get_gap_range(size_t& out_first,
-    size_t& out_last) const
-{
+bool blockchain_fixture::get_gap_range(size_t& out_first, size_t& out_last) const {
     return false;
 }
 
-bool blockchain_fixture::get_next_gap(size_t& out_height,
-    size_t start_height) const
-{
-    if (start_height == gap_trigger_)
-    {
+bool blockchain_fixture::get_next_gap(size_t& out_height, size_t start_height) const {
+    if (start_height == gap_trigger_) {
         out_height = gap_height_;
         return true;
     }
