@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 
-// #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <kth/blockchain.hpp>
