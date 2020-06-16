@@ -28,9 +28,9 @@ namespace kth::node {
 #define NAME "block_in"
 #define CLASS protocol_block_in
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
