@@ -10,9 +10,7 @@
 #include <cstdint>
 #include <kth/node.hpp>
 
-namespace kth {
-namespace node {
-namespace test {
+namespace kth::node::test {
 
 #define DECLARE_RESERVATIONS(name, import) \
 infrastructure::config::checkpoint::list checkpoints; \
