@@ -36,13 +36,13 @@ tabulate::Row& last(tabulate::Table& table) {
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::chain;
-using namespace bc::config;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
+using namespace kth::domain::config;
+using namespace kth::network;
 using namespace std::placeholders;
 
-full_node::full_node(const configuration& configuration)
+full_node::full_node(configuration const& configuration)
     : multi_crypto_setter(configuration.network)
     , p2p(configuration.network)
     , chain_(thread_pool(), configuration.chain, configuration.database, configuration.network.relay_transactions)
