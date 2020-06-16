@@ -23,9 +23,9 @@ namespace kth::node {
 #define NAME "block_out"
 #define CLASS protocol_block_out
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace boost::adaptors;
 using namespace std::placeholders;
 
