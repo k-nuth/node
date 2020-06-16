@@ -53,7 +53,7 @@ private:
     // These are thread safe.
     full_node& node_;
     blockchain::safe_chain& chain_;
-    bc::atomic<hash_digest> last_locator_top_;
+    kth::atomic<hash_digest> last_locator_top_;
     std::atomic<bool> compact_to_peer_;
     std::atomic<bool> headers_to_peer_;
     const bool enable_witness_;
