@@ -10,21 +10,17 @@
 #include <thread>
 #include <kth/node.hpp>
 
-namespace kth {
-namespace node {
-namespace test {
+namespace kth::node::test {
 
 using namespace kth::blockchain;
 using namespace kth::domain::chain;
 using namespace kth::domain::config;
 
-infrastructure::config::checkpoint const check0
-{
+infrastructure::config::checkpoint const check0 {
     null_hash, 0
 };
 
-infrastructure::config::checkpoint const check42
-{
+infrastructure::config::checkpoint const check42 {
     "4242424242424242424242424242424242424242424242424242424242424242", 42
 };
 
