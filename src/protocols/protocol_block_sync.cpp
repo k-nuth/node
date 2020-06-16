@@ -19,8 +19,8 @@ namespace kth::node {
 #define NAME "block_sync"
 #define CLASS protocol_block_sync
 
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 // The interval in which block download rate is tested.
