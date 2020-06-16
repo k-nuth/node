@@ -62,7 +62,7 @@ public:
 
     /// The block data request message for the outstanding block hashes.
     /// Set new if the preceding request was unsuccessful or discarded.
-    message::get_data request(bool new_channel);
+    domain::message::get_data request(bool new_channel);
 
     /// Add the block hash to the reservation.
     void insert(hash_digest&& hash, size_t height);
