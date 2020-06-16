@@ -95,106 +95,78 @@ bool blockchain_fixture::get_next_gap(size_t& out_height, size_t start_height) c
     return false;
 }
 
-bool blockchain_fixture::get_block_exists(hash_digest const& block_hash) const
-{
+bool blockchain_fixture::get_block_exists(hash_digest const& block_hash) const {
     return false;
 }
 
-bool blockchain_fixture::get_fork_work(uint256_t& out_difficulty,
-    size_t height) const
-{
+bool blockchain_fixture::get_fork_work(uint256_t& out_difficulty, size_t height) const {
     return false;
 }
 
-bool blockchain_fixture::get_header(header& out_header, size_t height) const
-{
+bool blockchain_fixture::get_header(header& out_header, size_t height) const {
     return false;
 }
 
-bool blockchain_fixture::get_height(size_t& out_height,
-    hash_digest const& block_hash) const
-{
+bool blockchain_fixture::get_height(size_t& out_height, hash_digest const& block_hash) const {
     return false;
 }
 
-bool blockchain_fixture::get_bits(uint32_t& out_bits,
-    size_t const& height) const
-{
+bool blockchain_fixture::get_bits(uint32_t& out_bits, size_t const& height) const {
     return false;
 }
 
-bool blockchain_fixture::get_timestamp(uint32_t& out_timestamp,
-    size_t const& height) const
-{
+bool blockchain_fixture::get_timestamp(uint32_t& out_timestamp, size_t const& height) const {
     return false;
 }
 
-bool blockchain_fixture::get_version(uint32_t& out_version,
-    size_t const& height) const
-{
+bool blockchain_fixture::get_version(uint32_t& out_version, size_t const& height) const {
     return false;
 }
 
-bool blockchain_fixture::get_last_height(size_t& out_height) const
-{
+bool blockchain_fixture::get_last_height(size_t& out_height) const {
     return false;
 }
 
 bool blockchain_fixture::get_output(domain::chain::output& out_output,
     size_t& out_height, size_t& out_position,
-    const domain::chain::output_point& outpoint) const
-{
+    const domain::chain::output_point& outpoint) const {
     return false;
 }
 
-bool blockchain_fixture::get_spender_hash(hash_digest& out_hash,
-    const output_point& outpoint) const
-{
+bool blockchain_fixture::get_spender_hash(hash_digest& out_hash, const output_point& outpoint) const {
     return false;
 }
 
-bool blockchain_fixture::get_is_unspent_transaction(
-    hash_digest const& transaction_hash) const
-{
+bool blockchain_fixture::get_is_unspent_transaction(hash_digest const& transaction_hash) const {
     return false;
 }
 
-bool blockchain_fixture::get_transaction_height(size_t& out_block_height,
-    hash_digest const& transaction_hash) const
-{
+bool blockchain_fixture::get_transaction_height(size_t& out_block_height, hash_digest const& transaction_hash) const {
     return false;
 }
 
-transaction_ptr blockchain_fixture::get_transaction(size_t& out_block_height,
-    hash_digest const& transaction_hash) const
-{
+transaction_ptr blockchain_fixture::get_transaction(size_t& out_block_height, hash_digest const& transaction_hash) const {
     return nullptr;
 }
 
-bool blockchain_fixture::stub(header_const_ptr header, size_t height)
-{
+bool blockchain_fixture::stub(header_const_ptr header, size_t height) {
     return false;
 }
 
-bool blockchain_fixture::fill(block_const_ptr block, size_t height)
-{
+bool blockchain_fixture::fill(block_const_ptr block, size_t height) {
     // This prevents a zero import cost, which is useful in testing timeout.
     std::this_thread::sleep_for(std::chrono::microseconds(1));
     return import_result_;
 }
 
 bool blockchain_fixture::push(const block_const_ptr_list& blocks,
-    size_t height)
-{
+    size_t height) {
     return false;
 }
 
 bool blockchain_fixture::pop(block_const_ptr_list& blocks,
-    hash_digest const& fork_hash)
-{
+    hash_digest const& fork_hash) {
     return false;
 }
 
-} // namespace test
-} // namespace node
-} // namespace kth
+} // namespace kth::node::test
