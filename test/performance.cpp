@@ -2,210 +2,188 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/test/unit_test.hpp>
+#include <test_helpers.hpp>
 #include <kth/node.hpp>
 
 using namespace kth;
 using namespace kth::node;
 
-BOOST_AUTO_TEST_SUITE(performance_tests)
+// Start Boost Suite: performance tests
 
 // normal
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(performance__normal__21_over_42__0_point_5)
-{
+TEST_CASE("performance  normal  21 over 42  0 point 5", "[performance tests]") {
     performance instance;
     instance.idle = true;
     instance.events = 21;
     instance.window = 84;
     instance.database = 42;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 0.5);
+    REQUIRE(instance.normal() == 0.5);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__1_over_negative_1__negative_1_point_0)
-{
+TEST_CASE("performance  normal  1 over negative 1  negative 1 point 0", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 0;
     instance.database = 1;
-    BOOST_REQUIRE_EQUAL(instance.normal(), -1.0);
+    REQUIRE(instance.normal() == -1.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__0_over_0__0_point_0)
-{
+TEST_CASE("performance  normal  0 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 0;
     instance.window = 1;
     instance.database = 1;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 0.0);
+    REQUIRE(instance.normal() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__0_over_1__0_point_0)
-{
+TEST_CASE("performance  normal  0 over 1  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 0;
     instance.window = 1;
     instance.database = 0;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 0.0);
+    REQUIRE(instance.normal() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__1_over_0__0_point_0)
-{
+TEST_CASE("performance  normal  1 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 2;
     instance.database = 2;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 0.0);
+    REQUIRE(instance.normal() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__1_over_1__1_point_0)
-{
+TEST_CASE("performance  normal  1 over 1  1 point 0", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 2;
     instance.database = 1;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 1.0);
+    REQUIRE(instance.normal() == 1.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__2_over_1__2_point_0)
-{
+TEST_CASE("performance  normal  2 over 1  2 point 0", "[performance tests]") {
     performance instance;
     instance.events = 2;
     instance.window = 2;
     instance.database = 1;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 2.0);
+    REQUIRE(instance.normal() == 2.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__normal__1_over_2__0_point_5)
-{
+TEST_CASE("performance  normal  1 over 2  0 point 5", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 4;
     instance.database = 2;
-    BOOST_REQUIRE_EQUAL(instance.normal(), 0.5);
+    REQUIRE(instance.normal() == 0.5);
 }
 
 // ratio
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(performance__ratio__21_over_42__0_point_5)
-{
+TEST_CASE("performance  ratio  21 over 42  0 point 5", "[performance tests]") {
     performance instance;
     instance.idle = true;
     instance.events = 1;
     instance.database = 21;
     instance.window = 42;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 0.5);
+    REQUIRE(instance.ratio() == 0.5);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__0_over_0__0_point_0)
-{
+TEST_CASE("performance  ratio  0 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.database = 0;
     instance.window = 0;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 0.0);
+    REQUIRE(instance.ratio() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__0_over_1__0_point_0)
-{
+TEST_CASE("performance  ratio  0 over 1  0 point 0", "[performance tests]") {
     performance instance;
     instance.database = 0;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 0.0);
+    REQUIRE(instance.ratio() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__1_over_0__0_point_0)
-{
+TEST_CASE("performance  ratio  1 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.database = 1;
     instance.window = 0;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 0.0);
+    REQUIRE(instance.ratio() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__1_over_1__1_point_0)
-{
+TEST_CASE("performance  ratio  1 over 1  1 point 0", "[performance tests]") {
     performance instance;
     instance.database = 1;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 1.0);
+    REQUIRE(instance.ratio() == 1.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__2_over_1__2_point_0)
-{
+TEST_CASE("performance  ratio  2 over 1  2 point 0", "[performance tests]") {
     performance instance;
     instance.database = 2;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 2.0);
+    REQUIRE(instance.ratio() == 2.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__ratio__1_over_2__0_point_5)
-{
+TEST_CASE("performance  ratio  1 over 2  0 point 5", "[performance tests]") {
     performance instance;
     instance.database = 1;
     instance.window = 2;
-    BOOST_REQUIRE_EQUAL(instance.ratio(), 0.5);
+    REQUIRE(instance.ratio() == 0.5);
 }
 
 // total
 //-----------------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(performance__total__21_over_42__0_point_5)
-{
+TEST_CASE("performance  total  21 over 42  0 point 5", "[performance tests]") {
     performance instance;
     instance.idle = true;
     instance.database = 1;
     instance.events = 21;
     instance.window = 42;
-    BOOST_REQUIRE_EQUAL(instance.total(), 0.5);
+    REQUIRE(instance.total() == 0.5);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__0_over_0__0_point_0)
-{
+TEST_CASE("performance  total  0 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 0;
     instance.window = 0;
-    BOOST_REQUIRE_EQUAL(instance.total(), 0.0);
+    REQUIRE(instance.total() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__0_over_1__0_point_0)
-{
+TEST_CASE("performance  total  0 over 1  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 0;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.total(), 0.0);
+    REQUIRE(instance.total() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__1_over_0__0_point_0)
-{
+TEST_CASE("performance  total  1 over 0  0 point 0", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 0;
-    BOOST_REQUIRE_EQUAL(instance.total(), 0.0);
+    REQUIRE(instance.total() == 0.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__1_over_1__1_point_0)
-{
+TEST_CASE("performance  total  1 over 1  1 point 0", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.total(), 1.0);
+    REQUIRE(instance.total() == 1.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__2_over_1__2_point_0)
-{
+TEST_CASE("performance  total  2 over 1  2 point 0", "[performance tests]") {
     performance instance;
     instance.events = 2;
     instance.window = 1;
-    BOOST_REQUIRE_EQUAL(instance.total(), 2.0);
+    REQUIRE(instance.total() == 2.0);
 }
 
-BOOST_AUTO_TEST_CASE(performance__total__1_over_2__0_point_5)
-{
+TEST_CASE("performance  total  1 over 2  0 point 5", "[performance tests]") {
     performance instance;
     instance.events = 1;
     instance.window = 2;
-    BOOST_REQUIRE_EQUAL(instance.total(), 0.5);
+    REQUIRE(instance.total() == 0.5);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+// End Boost Suite
