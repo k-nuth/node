@@ -19,8 +19,8 @@
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::chain;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
 
 reservations::reservations(check_list& hashes, fast_chain& chain, const settings& settings)
     : hashes_(hashes)
