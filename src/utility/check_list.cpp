@@ -11,7 +11,7 @@
 
 namespace kth::node {
 
-using namespace bc::database;
+using namespace kth::database;
 
 bool check_list::empty() const {
     ///////////////////////////////////////////////////////////////////////////
