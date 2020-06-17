@@ -23,11 +23,11 @@ namespace kth::node {
 #define CLASS session_header_sync
 #define NAME "session_header_sync"
 
-using namespace bc::blockchain;
-using namespace bc::config;
-using namespace bc::database;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::config;
+using namespace kth::database;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 // The minimum rate back off factor, must be < 1.0.
