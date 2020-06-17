@@ -21,10 +21,10 @@ namespace kth::node {
 #define CLASS session_block_sync
 #define NAME "session_block_sync"
 
-using namespace bc::blockchain;
-using namespace bc::config;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::config;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 // The interval in which all-channel block download performance is tested.
