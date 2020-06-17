@@ -22,7 +22,7 @@
 namespace kth::node {
 
 using namespace std::chrono;
-using namespace bc::chain;
+using namespace kth::domain::chain;
 
 // The allowed number of standard deviations below the norm.
 // With 1 channel this multiple is irrelevant, no channels are dropped.
