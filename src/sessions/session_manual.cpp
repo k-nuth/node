@@ -14,9 +14,9 @@
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 session_manual::session_manual(full_node& network, safe_chain& chain)
