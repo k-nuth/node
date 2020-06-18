@@ -31,19 +31,19 @@ public:
     
     /// Load command line options (named).
     // virtual 
-    options_metadata load_options();
+    domain::options_metadata load_options();
 
     /// Load command line arguments (positional).
     // virtual 
-    arguments_metadata load_arguments();
+    domain::arguments_metadata load_arguments();
 
     /// Load configuration file settings.
     // virtual 
-    options_metadata load_settings();
+    domain::options_metadata load_settings();
 
     /// Load environment variable settings.
     // virtual 
-    options_metadata load_environment();
+    domain::options_metadata load_environment();
 
     /// The populated configuration settings values.
     configuration configured;
