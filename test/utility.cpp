@@ -14,35 +14,35 @@ namespace kth {
 namespace node {
 namespace test {
 
-using namespace bc::blockchain;
-using namespace bc::chain;
-using namespace bc::config;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
+using namespace kth::domain::config;
 
-const config::checkpoint check0
+infrastructure::config::checkpoint const check0
 {
     null_hash, 0
 };
 
-const config::checkpoint check42
+infrastructure::config::checkpoint const check42
 {
     "4242424242424242424242424242424242424242424242424242424242424242", 42
 };
 
-const config::checkpoint::list no_checks;
-const config::checkpoint::list one_check{ check42 };
+const infrastructure::config::checkpoint::list no_checks;
+const infrastructure::config::checkpoint::list one_check{ check42 };
 
 // Create a headers message of specified size, starting with a genesis header.
-message::headers::ptr message_factory(size_t count)
+domain::message::headers::ptr message_factory(size_t count)
 {
     return message_factory(count, null_hash);
 }
 
 // Create a headers message of specified size, using specified previous hash.
-message::headers::ptr message_factory(size_t count,
+domain::message::headers::ptr message_factory(size_t count,
     hash_digest const& previous)
 {
     auto previous_hash = previous;
-    auto const headers = std::make_shared<message::headers>();
+    auto const headers = std::make_shared<domain::message::headers>();
     auto& elements = headers->elements();
 
     for (size_t height = 0; height < count; ++height)
