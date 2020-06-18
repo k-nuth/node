@@ -39,10 +39,10 @@ private:
 
 #if defined(KTH_STATISTICS_ENABLED)
     static 
-    void report(chain::block const& block, full_node& node);
+    void report(domain::chain::block const& block, full_node& node);
 #else
     static 
-    void report(chain::block const& block);
+    void report(domain::chain::block const& block);
 #endif
 
     void send_get_blocks(hash_digest const& stop_hash);
