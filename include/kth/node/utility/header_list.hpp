@@ -21,7 +21,7 @@ public:
     using ptr = std::shared_ptr<header_list>;
 
     /// Construct a list to fill the specified range of headers.
-    header_list(size_t slot, const config::checkpoint& start, const config::checkpoint& stop);
+    header_list(size_t slot, infrastructure::config::checkpoint const& start, infrastructure::config::checkpoint const& stop);
 
     /// The list is fully populated.
     bool complete() const;
