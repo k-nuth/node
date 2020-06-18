@@ -28,7 +28,7 @@ public:
 
     //class invariant: keoken_genesis_height > 0 
 
-    base_manager(bc::blockchain::block_chain& chain, size_t keoken_genesis_height)
+    base_manager(kth::blockchain::block_chain& chain, size_t keoken_genesis_height)
     // precondition: keoken_genesis_height > 0
         : keoken_genesis_height_(keoken_genesis_height)
         , chain_(chain)
