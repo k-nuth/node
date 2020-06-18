@@ -5,8 +5,8 @@
 #include <boost/test/unit_test.hpp>
 #include <kth/node.hpp>
 
-using namespace bc;
-using namespace bc::node;
+using namespace kth;
+using namespace kth::node;
 
 BOOST_AUTO_TEST_SUITE(performance_tests)
 
