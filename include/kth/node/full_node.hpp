@@ -174,7 +174,7 @@ public:
     // Init node utils.
     // ------------------------------------------------------------------------
     static 
-    chain::block get_genesis_block(blockchain::settings const& settings);
+    domain::chain::block get_genesis_block(blockchain::settings const& settings);
 
 
 #if defined(KTH_STATISTICS_ENABLED)
