@@ -43,7 +43,7 @@ private:
     bool initialize();
     void handle_started(code const& ec, result_handler handler);
     void new_connection(header_list::ptr row, result_handler handler);
-    void start_syncing(code const& ec, const config::authority& host, result_handler handler);
+    void start_syncing(code const& ec, infrastructure::config::authority const& host, result_handler handler);
 
     void handle_connect(code const& ec, network::channel::ptr channel, header_list::ptr row, result_handler handler);
     void handle_complete(code const& ec, header_list::ptr row, result_handler handler);
