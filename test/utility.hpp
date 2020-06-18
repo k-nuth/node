@@ -15,20 +15,20 @@ namespace node {
 namespace test {
 
 #define DECLARE_RESERVATIONS(name, import) \
-config::checkpoint::list checkpoints; \
+infrastructure::config::checkpoint::list checkpoints; \
 header_queue hashes(checkpoints); \
 blockchain_fixture blockchain(import); \
 node::settings config; \
 reservations name(hashes, blockchain, config)
 
-extern const config::checkpoint check0;
-extern const config::checkpoint check42;
-extern const config::checkpoint::list no_checks;
-extern const config::checkpoint::list one_check;
+extern infrastructure::config::checkpoint const check0;
+extern infrastructure::config::checkpoint const check42;
+extern const infrastructure::config::checkpoint::list no_checks;
+extern const infrastructure::config::checkpoint::list one_check;
 
 // Create a headers message of specified size, using specified previous hash.
-extern message::headers::ptr message_factory(size_t count);
-extern message::headers::ptr message_factory(size_t count,
+extern domain::message::headers::ptr message_factory(size_t count);
+extern domain::message::headers::ptr message_factory(size_t count,
     hash_digest const& previous);
 
 class reservation_fixture
