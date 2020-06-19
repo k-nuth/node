@@ -136,7 +136,7 @@ private:
 
     // Thread safe.
     reservations& reservations_;
-    const size_t slot_;
+    size_t const slot_;
     const std::chrono::microseconds rate_window_;
 };
 
