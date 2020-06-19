@@ -214,7 +214,7 @@ void session_block_sync::handle_timer(code const& ec) {
     ////// TODO: If (total database time as a fn of total time) add a channel.
     ////// TODO: push into reservations_ implementation.
     ////// TODO: add a boolean increment method to the synchronizer and pass here.
-    ////const size_t id = reservations_.table().size();
+    ////size_t const id = reservations_.table().size();
     ////auto const row = std::make_shared<reservation>(reservations_, id);
     ////const synchronizer<result_handler> handler({}, 0, "name", true);
     ////if (add) new_connection(row, handler);
