@@ -26,15 +26,16 @@ namespace kth::node {
 
 using namespace std::filesystem;
 using namespace boost::program_options;
-using namespace bc::config;
+using namespace kth::domain;
+using namespace kth::domain::config;
 
 // Initialize configuration by copying the given instance.
-parser::parser(const configuration& defaults)
+parser::parser(configuration const& defaults)
     : configured(defaults)
 {}
 
 // Initialize configuration using defaults of the given context.
-parser::parser(config::settings context)
+parser::parser(infrastructure::config::settings context)
     : configured(context)
 {
     // kth_node use history
