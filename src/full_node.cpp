@@ -307,7 +307,7 @@ void full_node::subscribe_transaction(transaction_handler&& handler) {
 
 // Init node utils.
 // ------------------------------------------------------------------------
-chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
+domain::chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
 //    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
 
     bool const testnet_blocks = settings.easy_blocks;
