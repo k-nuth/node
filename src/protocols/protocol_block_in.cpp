@@ -71,9 +71,12 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
         negotiated_version() > version::level::no_blocks_end ||
         negotiated_version() < version::level::no_blocks_start),
 
+#if ! defined(KTH_CURRENCY_BCH)
     // Witness must be requested if possibly enforced.
     require_witness_(is_witness(node.network_settings().services)),
     peer_witness_(is_witness(channel->peer_version()->services())),
+#endif
+
     CONSTRUCT_TRACK(protocol_block_in)
 {}
 
