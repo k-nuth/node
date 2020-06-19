@@ -20,9 +20,9 @@ namespace kth::node {
 #define NAME "transaction_in"
 #define CLASS protocol_transaction_in
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 inline 
