@@ -34,7 +34,7 @@ void session_outbound::attach_protocols(channel::ptr channel) {
         attach<protocol_ping_31402>(channel)->start();
     }
 
-    if (version >= message::version::level::bip61) {
+    if (version >= domain::message::version::level::bip61) {
         attach<protocol_reject_70002>(channel)->start();
     }
 
