@@ -226,7 +226,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
                 offset = indexes[j] + 1;
             }
             
-            chain::transaction::list txs_list(indexes.size());
+            domain::chain::transaction::list txs_list(indexes.size());
 
             for (size_t i = 0; i < indexes.size(); i++) {
                 if (indexes[i] >= block->transactions().size()) {
