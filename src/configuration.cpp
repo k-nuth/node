@@ -26,7 +26,7 @@ configuration::configuration(infrastructure::config::settings context)
 {}
 
 // Copy constructor.
-configuration::configuration(const configuration& other)
+configuration::configuration(configuration const& other)
     : help(other.help)
 #if ! defined(KTH_DB_READONLY)  
     , initchain(other.initchain)
