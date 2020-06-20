@@ -64,7 +64,7 @@ public:
         return initialized_;
     }
 
-    get_assets_by_address_list get_assets_by_address(bc::wallet::payment_address const& addr) const {
+    get_assets_by_address_list get_assets_by_address(kth::wallet::payment_address const& addr) const {
         return state_.get_assets_by_address(addr);
     }
 
