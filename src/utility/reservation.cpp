@@ -224,8 +224,8 @@ bool reservation::stopped() const {
 }
 
 // Obtain and clear the outstanding blocks request.
-message::get_data reservation::request(bool new_channel) {
-    message::get_data packet;
+domain::message::get_data reservation::request(bool new_channel) {
+    domain::message::get_data packet;
 
     // We are a new channel, clear history and rate data, next block starts.
     if (new_channel) {
