@@ -395,7 +395,7 @@ protected:
     blockchain::block_chain chain_;
 
 private:
-    using block_ptr_list = message::block::ptr_list;
+    using block_ptr_list = domain::message::block::ptr_list;
 
 #if defined(KTH_STATISTICS_ENABLED)
     static constexpr size_t screen_refresh = 100;
