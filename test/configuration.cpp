@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_SUITE(configuration_tests)
 
 BOOST_AUTO_TEST_CASE(configuration__construct1__none_context__expected)
 {
-    node::configuration instance(config::settings::none);
+    node::configuration instance(infrastructure::config::settings::none);
     BOOST_REQUIRE(!instance.help);
     BOOST_REQUIRE(!instance.initchain);
     BOOST_REQUIRE(!instance.settings);
