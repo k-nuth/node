@@ -23,7 +23,7 @@
 ////BOOST_AUTO_TEST_CASE(reservation__slot__construct_42__42)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const size_t expected = 42;
+////    size_t const expected = 42;
 ////    reservation reserve(reserves, expected, 0);
 ////    BOOST_REQUIRE(reserve.empty());
 ////}
