@@ -138,19 +138,19 @@ bool blockchain_fixture::get_height(size_t& out_height,
 }
 
 bool blockchain_fixture::get_bits(uint32_t& out_bits,
-    const size_t& height) const
+    size_t const& height) const
 {
     return false;
 }
 
 bool blockchain_fixture::get_timestamp(uint32_t& out_timestamp,
-    const size_t& height) const
+    size_t const& height) const
 {
     return false;
 }
 
 bool blockchain_fixture::get_version(uint32_t& out_version,
-    const size_t& height) const
+    size_t const& height) const
 {
     return false;
 }
