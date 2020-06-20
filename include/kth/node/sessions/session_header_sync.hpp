@@ -57,7 +57,7 @@ private:
     headers_table headers_;
     uint32_t minimum_rate_;
     blockchain::fast_chain& chain_;
-    const config::checkpoint::list checkpoints_;
+    infrastructure::config::checkpoint::list const checkpoints_;
 };
 
 } // namespace kth::node
