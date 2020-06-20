@@ -43,4 +43,4 @@ public:
 
 } // namespace kth::node
 
-#endif
+#endif //KTH_NODE_SETTINGS_HPP
