@@ -66,7 +66,7 @@ hash_digest const& header_list::stop_hash() const {
 }
 
 // This is not thread safe, call only after complete.
-const chain::header::list& header_list::headers() const {
+const domain::chain::header::list& header_list::headers() const {
     return list_;
 }
 
