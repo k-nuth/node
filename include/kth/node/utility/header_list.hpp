@@ -43,10 +43,10 @@ public:
 
     /// The ordered list of headers.
     /// This is not thread safe, call only after complete.
-    const chain::header::list& headers() const;
+    domain::chain::header::list const& headers() const;
 
     /////// Generate a check list from a complete list of headers.
-    ////config::checkpoint::list to_checkpoints() const;
+    ////infrastructure::config::checkpoint::list to_checkpoints() const;
 
     /// Merge the hashes in the message with those in the queue.
     /// Return true if linked all headers or complete.
