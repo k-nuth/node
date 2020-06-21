@@ -316,10 +316,10 @@ domain::chain::block full_node::get_genesis_block(blockchain::settings const& se
 
     if ( ! mainnet && ! testnet_blocks) {
         ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
-        return chain::block::genesis_regtest();
+        return domain::chain::block::genesis_regtest();
     }
 
-    return testnet_blocks ? chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+    return testnet_blocks ? domain::chain::block::genesis_testnet() : domain::chain::block::genesis_mainnet();
 }
 
 
