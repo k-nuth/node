@@ -43,7 +43,7 @@ parser::parser(infrastructure::config::settings context)
     // node doesn't use history, and history is expensive.
     // configured.database.index_start_height = kth::max_uint32;
 
-    using serve = message::version::service;
+    using serve = domain::message::version::service;
 
     // A node allows 8 inbound connections by default.
     configured.network.inbound_connections = 8;
