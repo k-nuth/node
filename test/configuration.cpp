@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(configuration__construct1__none_context__expected)
 
 BOOST_AUTO_TEST_CASE(configuration__construct1__mainnet_context__expected)
 {
-    node::configuration instance(config::settings::mainnet);
+    node::configuration instance(infrastructure::config::settings::mainnet);
     BOOST_REQUIRE(!instance.help);
     BOOST_REQUIRE(!instance.initchain);
     BOOST_REQUIRE(!instance.settings);
