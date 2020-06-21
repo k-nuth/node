@@ -124,7 +124,7 @@ size_t header_list::remaining() const {
     return list_.capacity() - list_.size();
 }
 
-bool header_list::link(const chain::header& header) const {
+bool header_list::link(const domain::chain::header& header) const {
     if (list_.empty()) {
         return header.previous_block_hash() == start_.hash();
     }
