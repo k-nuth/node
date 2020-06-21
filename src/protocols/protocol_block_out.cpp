@@ -610,7 +610,7 @@ void protocol_block_out::handle_stop(const code&) {
 // generating fork-relative locators.
 size_t protocol_block_out::locator_limit() {
     auto const height = node_.top_block().height();
-    return safe_add(chain::block::locator_size(height), size_t(1));
+    return safe_add(domain::chain::block::locator_size(height), size_t(1));
 }
 
 // Threshold:
