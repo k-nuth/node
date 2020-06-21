@@ -87,11 +87,14 @@ void protocol_block_in::start() {
     // Use timer to drop slow peers.
     protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
 
+
+#if ! defined(KTH_CURRENCY_BCH)
     // Do not process incoming blocks if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
     if (require_witness_ && !peer_witness_) {
         return;
     }
+#endif
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
