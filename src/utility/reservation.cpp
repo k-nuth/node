@@ -244,7 +244,7 @@ domain::message::get_data reservation::request(bool new_channel) {
 
     // Build get_blocks request message.
     for (auto height = heights_.right.begin(); height != heights_.right.end(); ++height) {
-        static auto const id = message::inventory::type_id::block;
+        static auto const id = domain::message::inventory::type_id::block;
         packet.inventories().emplace_back(id, height->second);
     }
 
