@@ -160,9 +160,9 @@ bool blockchain_fixture::get_last_height(size_t& out_height) const
     return false;
 }
 
-bool blockchain_fixture::get_output(chain::output& out_output,
+bool blockchain_fixture::get_output(domain::chain::output& out_output,
     size_t& out_height, size_t& out_position,
-    const chain::output_point& outpoint) const
+    const domain::chain::output_point& outpoint) const
 {
     return false;
 }
