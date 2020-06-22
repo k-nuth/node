@@ -60,9 +60,12 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
     , refresh_pool_(negotiated_version() >= version::level::bip35 &&
         node.node_settings().refresh_transactions)
 
+#if ! defined(KTH_CURRENCY_BCH)
     // Witness must be requested if possibly enforced.
     , require_witness_(is_witness(node.network_settings().services))
     , peer_witness_(is_witness(channel->peer_version()->services()))
+#endif
+
     , CONSTRUCT_TRACK(protocol_transaction_in)
 {}
 
