@@ -167,7 +167,7 @@
 ////BOOST_AUTO_TEST_CASE(reservation__rate_window__construct_10__30_seconds)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const size_t expected = 10;
+////    size_t const expected = 10;
 ////    reservation_fixture reserve(reserves, 0, expected);
 ////    auto const window = reserve.rate_window();
 ////    BOOST_REQUIRE_EQUAL(window.count(), expected * 1000 * 1000 * 3);
