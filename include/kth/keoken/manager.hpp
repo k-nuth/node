@@ -101,15 +101,15 @@ private:
     // void initialize_from_blockchain(size_t from_height);
 
     //TODO(fernando): move to other site
-    void for_each_transaction_non_coinbase(size_t height, bc::chain::block const& block) {
-        std::for_each(std::next(block.transactions().begin()), block.transactions().end(), [this, height](bc::chain::transaction const& tx) {
+    void for_each_transaction_non_coinbase(size_t height, kth::domain::chain::block const& block) {
+        std::for_each(std::next(block.transactions().begin()), block.transactions().end(), [this, height](kth::domain::chain::transaction const& tx) {
             interpreter_.process(height, tx);
         });
     }
     
     // A typical reorganization consists of one incoming and zero outgoing blocks.
-    bool handle_reorganized(bc::code ec, size_t fork_height, bc::block_const_ptr_list_const_ptr const& incoming, bc::block_const_ptr_list_const_ptr const& outgoing) {
-        if (ec == bc::error::service_stopped) {
+    bool handle_reorganized(kth::code ec, size_t fork_height, kth::block_const_ptr_list_const_ptr const& incoming, kth::block_const_ptr_list_const_ptr const& outgoing) {
+        if (ec == kth::error::service_stopped) {
             return false;
         }
 
