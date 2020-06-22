@@ -60,22 +60,22 @@ private:
     hash_digest const& last() const;
 
     // Determine if the hash is linked to the preceding header.
-    bool link(const chain::header& header) const;
+    bool link(const domain::chain::header& header) const;
 
     // Determine if the header is valid (context free).
-    bool check(const chain::header& header) const;
+    bool check(const domain::chain::header& header) const;
 
     // Determine if the header is acceptable for the current height.
-    bool accept(const chain::header& header) const;
+    bool accept(const domain::chain::header& header) const;
 
     // This is protected by mutex.
-    chain::header::list list_;
+    domain::chain::header::list list_;
     mutable upgrade_mutex mutex_;
 
-    const size_t height_;
-    const config::checkpoint start_;
-    const config::checkpoint stop_;
-    const size_t slot_;
+    size_t const height_;
+    infrastructure::config::checkpoint const start_;
+    infrastructure::config::checkpoint const stop_;
+    size_t const slot_;
 };
 
 } // namespace kth::node
