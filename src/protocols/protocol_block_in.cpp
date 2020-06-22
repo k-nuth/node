@@ -382,6 +382,7 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
         return false;
     }
 
+#if ! defined(KTH_CURRENCY_BCH)
     if ( ! require_witness_ && message->is_segregated()) {
         LOG_DEBUG(LOG_NODE
            , "Block [", encode_hash(message->hash())
