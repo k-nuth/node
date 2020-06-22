@@ -90,8 +90,8 @@ private:
         bool witness = false;   //TODO(fernando): what to do with this...
 
         chain_.for_each_transaction_non_coinbase(from_height, to_height, witness, 
-            [this](bc::code const& ec, size_t height, bc::chain::transaction const& tx) {
-                if (ec == bc::error::success) {
+            [this](kth::code const& ec, size_t height, kth::domain::chain::transaction const& tx) {
+                if (ec == kth::error::success) {
                     interpreter_.process(height, tx);
                 }
             }
