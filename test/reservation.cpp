@@ -484,7 +484,7 @@
 ////    node::settings settings;
 ////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
-////    config::checkpoint::list checkpoints;
+////    infrastructure::config::checkpoint::list checkpoints;
 ////    header_queue hashes(checkpoints);
 ////    auto const message = message_factory(4, check42.hash());
 ////    hashes.initialize(check42);
