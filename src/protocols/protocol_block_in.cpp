@@ -655,7 +655,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
+        auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
     } else {
