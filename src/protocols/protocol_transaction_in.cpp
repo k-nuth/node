@@ -148,7 +148,7 @@ void protocol_transaction_in::send_get_data(code const& ec, get_data_ptr message
         return;
     }
 
-#ifndef KTH_CURRENCY_BCH
+#if ! defined(KTH_CURRENCY_BCH)
     // Convert requested message types to corresponding witness types.
     if (require_witness_) {
         message->to_witness();
