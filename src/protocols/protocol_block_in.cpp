@@ -545,7 +545,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
         
-    std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
+    std::vector<domain::chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
     int32_t lastprefilledindex = -1;
     
     for (size_t i = 0; i < prefiled_txs.size(); ++i) {
