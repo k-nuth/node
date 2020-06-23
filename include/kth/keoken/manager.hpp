@@ -153,7 +153,7 @@ private:
     size_t processed_height_;
     bool initialized_;
     State state_;
-    bc::blockchain::block_chain& chain_;
+    kth::blockchain::block_chain& chain_;
     interpreter<State, kth::blockchain::block_chain> interpreter_;
 };
 
