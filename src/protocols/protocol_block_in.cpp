@@ -459,7 +459,7 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
         return false;
     }
 
-    auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
+    auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txn_available));
     organize_block(tempblock);
     //TODO(Mario) verify if necesary mutual exclusion
     compact_blocks_map_.erase(it);
