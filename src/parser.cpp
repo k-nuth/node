@@ -243,19 +243,19 @@ options_metadata parser::load_settings() {
         "The peer hosts cache file path, defaults to 'hosts.cache'."
     )(
         "network.self",
-        value<config::authority>(&configured.network.self),
+        value<infrastructure::config::authority>(&configured.network.self),
         "The advertised public address of this node, defaults to none."
     )(
         "network.blacklist",
-        value<config::authority::list>(&configured.network.blacklists),
+        value<infrastructure::config::authority::list>(&configured.network.blacklists),
         "IP address to disallow as a peer, multiple entries allowed."
     )(
         "network.peer",
-        value<config::endpoint::list>(&configured.network.peers),
+        value<infrastructure::config::endpoint::list>(&configured.network.peers),
         "A persistent peer node, multiple entries allowed."
     )(
         "network.seed",
-        value<config::endpoint::list>(&configured.network.seeds),
+        value<infrastructure::config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )(
         "network.use_ipv6",
