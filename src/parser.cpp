@@ -342,7 +342,7 @@ options_metadata parser::load_settings() {
         "The maximum reorganization depth, defaults to 256 (0 for unlimited)."
     )(
         "blockchain.checkpoint",
-        value<config::checkpoint::list>(&configured.chain.checkpoints),
+        value<infrastructure::config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
 
