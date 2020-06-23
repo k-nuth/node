@@ -177,6 +177,7 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
         return false;
     }
 
+#if ! defined(KTH_CURRENCY_BCH)
     if ( ! require_witness_ && message->is_segregated()) {
         LOG_DEBUG(LOG_NODE
            , "Transaction [", encode_hash(message->hash())
