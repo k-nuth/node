@@ -185,6 +185,7 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
         stop(error::channel_stopped);
         return false;
     }
+#endif
 
     // TODO: manage channel relay at the service layer.
     // Do not process transactions while chain is stale.
