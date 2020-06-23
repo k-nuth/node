@@ -390,6 +390,7 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
         stop(error::channel_stopped);
         return false;
     }
+#endif
 
     // message->validation.originator = nonce();
     // chain_.organize(message, BIND2(handle_store_block, _1, message));
