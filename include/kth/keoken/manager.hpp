@@ -202,7 +202,6 @@ public:
     }
 };
 
-} // namespace keoken
-} // namespace kth
+} // namespace kth::keoken
 
 #endif //KTH_NODE_KEOKEN_MANAGER_HPP_
