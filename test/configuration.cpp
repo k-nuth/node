@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(configuration__construct1__testnet_context__expected)
 
 BOOST_AUTO_TEST_CASE(configuration__construct2__none_context__expected)
 {
-    node::configuration instance1(config::settings::none);
+    node::configuration instance1(infrastructure::config::settings::none);
     instance1.help = true;
     instance1.initchain = true;
     instance1.settings = true;
