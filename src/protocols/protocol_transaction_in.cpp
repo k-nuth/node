@@ -73,11 +73,14 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
 //-----------------------------------------------------------------------------
 
 void protocol_transaction_in::start() {
+
+#if ! defined(KTH_CURRENCY_BCH)
     // Do not process incoming transactions if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
     if (require_witness_ && ! peer_witness_) {
         return;
     }
+#endif
 
     protocol_events::start(BIND1(handle_stop, _1));
 
