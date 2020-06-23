@@ -153,7 +153,7 @@ options_metadata parser::load_settings() {
         "The maximum number of logs to archive, defaults to 0 (maximum)."
     )(
         "log.statistics_server",
-        value<config::authority>(&configured.network.statistics_server),
+        value<infrastructure::config::authority>(&configured.network.statistics_server),
         "The address of the statistics collection server, defaults to none."
     )(
         "log.verbose",
