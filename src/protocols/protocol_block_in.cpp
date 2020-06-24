@@ -843,7 +843,7 @@ void protocol_block_in::report(domain::chain::block const& block) {
 
         // // auto const outputs = std::max(block.total_outputs(), size_t(1));
         // // auto [inputs, outputs] = block.total_inputs_outputs();
-        // auto [inputs, outputs] = chain::total_inputs_outputs(block);
+        // auto [inputs, outputs] = domain::chain::total_inputs_outputs(block);
 
         // inputs = std::max(inputs, size_t(1));
         // outputs = std::max(outputs, size_t(1));
