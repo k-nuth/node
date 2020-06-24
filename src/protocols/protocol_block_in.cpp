@@ -823,9 +823,9 @@ size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end)
 //static
 
 #if defined(KTH_STATISTICS_ENABLED)
-void protocol_block_in::report(chain::block const& block, full_node& node) {
+void protocol_block_in::report(domain::chain::block const& block, full_node& node) {
 #else
-void protocol_block_in::report(chain::block const& block) {
+void protocol_block_in::report(domain::chain::block const& block) {
 #endif
     KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
