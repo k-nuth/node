@@ -22,7 +22,7 @@
 namespace kth::node {
 
 using namespace std::chrono;
-using namespace bc::chain;
+using namespace kth::domain::chain;
 
 // The allowed number of standard deviations below the norm.
 // With 1 channel this multiple is irrelevant, no channels are dropped.
@@ -224,8 +224,8 @@ bool reservation::stopped() const {
 }
 
 // Obtain and clear the outstanding blocks request.
-message::get_data reservation::request(bool new_channel) {
-    message::get_data packet;
+domain::message::get_data reservation::request(bool new_channel) {
+    domain::message::get_data packet;
 
     // We are a new channel, clear history and rate data, next block starts.
     if (new_channel) {
@@ -244,7 +244,7 @@ message::get_data reservation::request(bool new_channel) {
 
     // Build get_blocks request message.
     for (auto height = heights_.right.begin(); height != heights_.right.end(); ++height) {
-        static auto const id = message::inventory::type_id::block;
+        static auto const id = domain::message::inventory::type_id::block;
         packet.inventories().emplace_back(id, height->second);
     }
 

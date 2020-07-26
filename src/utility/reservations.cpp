@@ -19,8 +19,8 @@
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::chain;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
 
 reservations::reservations(check_list& hashes, fast_chain& chain, const settings& settings)
     : hashes_(hashes)
@@ -135,7 +135,7 @@ void reservations::remove(reservation::ptr row) {
 // No critical section because this is private to the constructor.
 void reservations::initialize(size_t connections) {
     // Guard against overflow by capping size.
-    const size_t max_rows = max_size_t / max_request();
+    size_t const max_rows = max_size_t / max_request();
     auto rows = std::min(max_rows, connections);
 
     // Ensure that there is at least one block per row.

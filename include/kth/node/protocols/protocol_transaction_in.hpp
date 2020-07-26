@@ -40,8 +40,11 @@ private:
     const uint64_t minimum_relay_fee_;
     const bool relay_from_peer_;
     const bool refresh_pool_;
+
+#if ! defined(KTH_CURRENCY_BCH)
     const bool require_witness_;
     const bool peer_witness_;
+#endif
 };
 
 } // namespace kth::node

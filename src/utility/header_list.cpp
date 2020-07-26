@@ -12,11 +12,11 @@
 
 namespace kth::node {
 
-using namespace bc::chain;
-using namespace bc::config;
+using namespace kth::domain::chain;
+using namespace kth::domain::config;
 
 // Locking is optimized for a single intended caller.
-header_list::header_list(size_t slot, const checkpoint& start, const checkpoint& stop)
+header_list::header_list(size_t slot, infrastructure::config::checkpoint const& start, infrastructure::config::checkpoint const& stop)
     : height_(safe_add(start.height(), size_t(1)))
     , start_(start)
     , stop_(stop)
@@ -66,7 +66,7 @@ hash_digest const& header_list::stop_hash() const {
 }
 
 // This is not thread safe, call only after complete.
-const chain::header::list& header_list::headers() const {
+const domain::chain::header::list& header_list::headers() const {
     return list_;
 }
 
@@ -124,7 +124,7 @@ size_t header_list::remaining() const {
     return list_.capacity() - list_.size();
 }
 
-bool header_list::link(const chain::header& header) const {
+bool header_list::link(const domain::chain::header& header) const {
     if (list_.empty()) {
         return header.previous_block_hash() == start_.hash();
     }

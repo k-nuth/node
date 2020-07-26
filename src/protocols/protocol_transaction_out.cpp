@@ -19,11 +19,11 @@ namespace kth::node {
 #define NAME "transaction_out"
 #define CLASS protocol_transaction_out
 
-using namespace bc::blockchain;
-using namespace bc::chain;
-using namespace bc::database;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
+using namespace kth::database;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace boost::adaptors;
 using namespace std::placeholders;
 

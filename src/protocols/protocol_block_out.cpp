@@ -23,9 +23,9 @@ namespace kth::node {
 #define NAME "block_out"
 #define CLASS protocol_block_out
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace boost::adaptors;
 using namespace std::placeholders;
 
@@ -226,7 +226,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
                 offset = indexes[j] + 1;
             }
             
-            chain::transaction::list txs_list(indexes.size());
+            domain::chain::transaction::list txs_list(indexes.size());
 
             for (size_t i = 0; i < indexes.size(); i++) {
                 if (indexes[i] >= block->transactions().size()) {
@@ -610,7 +610,7 @@ void protocol_block_out::handle_stop(const code&) {
 // generating fork-relative locators.
 size_t protocol_block_out::locator_limit() {
     auto const height = node_.top_block().height();
-    return safe_add(chain::block::locator_size(height), size_t(1));
+    return safe_add(domain::chain::block::locator_size(height), size_t(1));
 }
 
 // Threshold:

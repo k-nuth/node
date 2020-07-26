@@ -28,9 +28,9 @@ namespace kth::node {
 #define NAME "block_in"
 #define CLASS protocol_block_in
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
@@ -71,9 +71,12 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
         negotiated_version() > version::level::no_blocks_end ||
         negotiated_version() < version::level::no_blocks_start),
 
+#if ! defined(KTH_CURRENCY_BCH)
     // Witness must be requested if possibly enforced.
     require_witness_(is_witness(node.network_settings().services)),
     peer_witness_(is_witness(channel->peer_version()->services())),
+#endif
+
     CONSTRUCT_TRACK(protocol_block_in)
 {}
 
@@ -84,11 +87,14 @@ void protocol_block_in::start() {
     // Use timer to drop slow peers.
     protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
 
+
+#if ! defined(KTH_CURRENCY_BCH)
     // Do not process incoming blocks if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
     if (require_witness_ && !peer_witness_) {
         return;
     }
+#endif
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -376,6 +382,7 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
         return false;
     }
 
+#if ! defined(KTH_CURRENCY_BCH)
     if ( ! require_witness_ && message->is_segregated()) {
         LOG_DEBUG(LOG_NODE
            , "Block [", encode_hash(message->hash())
@@ -383,6 +390,7 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
         stop(error::channel_stopped);
         return false;
     }
+#endif
 
     // message->validation.originator = nonce();
     // chain_.organize(message, BIND2(handle_store_block, _1, message));
@@ -451,7 +459,7 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
         return false;
     }
 
-    auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txn_available));
+    auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txn_available));
     organize_block(tempblock);
     //TODO(Mario) verify if necesary mutual exclusion
     compact_blocks_map_.erase(it);
@@ -537,7 +545,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
         
-    std::vector<chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
+    std::vector<domain::chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
     int32_t lastprefilledindex = -1;
     
     for (size_t i = 0; i < prefiled_txs.size(); ++i) {
@@ -647,7 +655,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-        auto const tempblock = std::make_shared<message::block>(std::move(header_temp), std::move(txs_available)); 
+        auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txs_available)); 
         organize_block(tempblock);
         return true;
     } else {
@@ -815,9 +823,9 @@ size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end)
 //static
 
 #if defined(KTH_STATISTICS_ENABLED)
-void protocol_block_in::report(chain::block const& block, full_node& node) {
+void protocol_block_in::report(domain::chain::block const& block, full_node& node) {
 #else
-void protocol_block_in::report(chain::block const& block) {
+void protocol_block_in::report(domain::chain::block const& block) {
 #endif
     KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
@@ -835,7 +843,7 @@ void protocol_block_in::report(chain::block const& block) {
 
         // // auto const outputs = std::max(block.total_outputs(), size_t(1));
         // // auto [inputs, outputs] = block.total_inputs_outputs();
-        // auto [inputs, outputs] = chain::total_inputs_outputs(block);
+        // auto [inputs, outputs] = domain::chain::total_inputs_outputs(block);
 
         // inputs = std::max(inputs, size_t(1));
         // outputs = std::max(outputs, size_t(1));

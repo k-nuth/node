@@ -36,13 +36,13 @@ tabulate::Row& last(tabulate::Table& table) {
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::chain;
-using namespace bc::config;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::chain;
+using namespace kth::domain::config;
+using namespace kth::network;
 using namespace std::placeholders;
 
-full_node::full_node(const configuration& configuration)
+full_node::full_node(configuration const& configuration)
     : multi_crypto_setter(configuration.network)
     , p2p(configuration.network)
     , chain_(thread_pool(), configuration.chain, configuration.database, configuration.network.relay_transactions)
@@ -307,7 +307,7 @@ void full_node::subscribe_transaction(transaction_handler&& handler) {
 
 // Init node utils.
 // ------------------------------------------------------------------------
-chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
+domain::chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
 //    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
 
     bool const testnet_blocks = settings.easy_blocks;
@@ -316,10 +316,10 @@ chain::block full_node::get_genesis_block(blockchain::settings const& settings) 
 
     if ( ! mainnet && ! testnet_blocks) {
         ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
-        return chain::block::genesis_regtest();
+        return domain::chain::block::genesis_regtest();
     }
 
-    return testnet_blocks ? chain::block::genesis_testnet() : chain::block::genesis_mainnet();
+    return testnet_blocks ? domain::chain::block::genesis_testnet() : domain::chain::block::genesis_mainnet();
 }
 
 

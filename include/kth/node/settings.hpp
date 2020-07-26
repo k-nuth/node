@@ -15,7 +15,7 @@ namespace kth::node {
 class BCN_API settings {
 public:
     settings();
-    settings(config::settings context);
+    settings(infrastructure::config::settings context);
 
     /// Properties.
     uint32_t sync_peers;
@@ -30,7 +30,6 @@ public:
     std::vector<std::string> rpc_allow_ip;
     bool rpc_allow_all_ips;
 
-
     //Compact Blocks
     bool compact_blocks_high_bandwidth;
 
@@ -44,4 +43,4 @@ public:
 
 } // namespace kth::node
 
-#endif
+#endif //KTH_NODE_SETTINGS_HPP

@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 #include <kth/node.hpp>
 
-using namespace bc;
+using namespace kth;
 
 BOOST_AUTO_TEST_SUITE(settings_tests)
 
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(settings__construct__default_context__expected)
 
 BOOST_AUTO_TEST_CASE(settings__construct__none_context__expected)
 {
-    node::settings configuration(config::settings::none);
+    node::settings configuration(infrastructure::config::settings::none);
     BOOST_REQUIRE_EQUAL(configuration.sync_peers, 0u);
     BOOST_REQUIRE_EQUAL(configuration.sync_timeout_seconds, 5u);
     BOOST_REQUIRE_EQUAL(configuration.refresh_transactions, true);
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(settings__construct__none_context__expected)
 
 BOOST_AUTO_TEST_CASE(settings__construct__mainnet_context__expected)
 {
-    node::settings configuration(config::settings::mainnet);
+    node::settings configuration(infrastructure::config::settings::mainnet);
     BOOST_REQUIRE_EQUAL(configuration.sync_peers, 0u);
     BOOST_REQUIRE_EQUAL(configuration.sync_timeout_seconds, 5u);
     BOOST_REQUIRE_EQUAL(configuration.refresh_transactions, true);
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(settings__construct__mainnet_context__expected)
 
 BOOST_AUTO_TEST_CASE(settings__construct__testnet_context__expected)
 {
-    node::settings configuration(config::settings::testnet);
+    node::settings configuration(infrastructure::config::settings::testnet);
     BOOST_REQUIRE_EQUAL(configuration.sync_peers, 0u);
     BOOST_REQUIRE_EQUAL(configuration.sync_timeout_seconds, 5u);
     BOOST_REQUIRE_EQUAL(configuration.refresh_transactions, true);

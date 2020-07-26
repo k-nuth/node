@@ -8,7 +8,7 @@
 
 namespace kth::node {
 
-using namespace bc::asio;
+using namespace kth::asio;
 
 settings::settings()
     : sync_peers(0)
@@ -28,7 +28,7 @@ settings::settings()
 }
 
 // There are no current distinctions spanning chain contexts.
-settings::settings(config::settings context)
+settings::settings(infrastructure::config::settings context)
     : settings()
 {}
 

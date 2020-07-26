@@ -23,11 +23,11 @@ namespace kth::node {
 #define CLASS session_header_sync
 #define NAME "session_header_sync"
 
-using namespace bc::blockchain;
-using namespace bc::config;
-using namespace bc::database;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::config;
+using namespace kth::database;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 // The minimum rate back off factor, must be < 1.0.
@@ -37,12 +37,12 @@ static constexpr float back_off_factor = 0.75f;
 static constexpr uint32_t headers_per_second = 10000;
 
 // Sort is required here but not in configuration settings.
-session_header_sync::session_header_sync(full_node& network, check_list& hashes, fast_chain& blockchain, const checkpoint::list& checkpoints)
+session_header_sync::session_header_sync(full_node& network, check_list& hashes, fast_chain& blockchain, infrastructure::config::checkpoint::list const& checkpoints)
     : session<network::session_outbound>(network, false)
     , hashes_(hashes)
     , minimum_rate_(headers_per_second)
     , chain_(blockchain)
-    , checkpoints_(checkpoint::sort(checkpoints))
+    , checkpoints_(infrastructure::config::checkpoint::sort(checkpoints))
     , CONSTRUCT_TRACK(session_header_sync)
 {
     static_assert(back_off_factor < 1.0, "invalid back-off factor");

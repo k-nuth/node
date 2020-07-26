@@ -9,11 +9,11 @@
 ////#include <kth/node.hpp>
 ////#include "utility.hpp"
 ////
-////using namespace bc;
-////using namespace bc::config;
-////using namespace bc::message;
-////using namespace bc::node;
-////using namespace bc::node::test;
+////using namespace kth;
+////using namespace kth::domain::config;
+////using namespace kth::domain::message;
+////using namespace kth::node;
+////using namespace kth::node::test;
 ////
 ////BOOST_AUTO_TEST_SUITE(reservation_tests)
 ////
@@ -23,7 +23,7 @@
 ////BOOST_AUTO_TEST_CASE(reservation__slot__construct_42__42)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const size_t expected = 42;
+////    size_t const expected = 42;
 ////    reservation reserve(reserves, expected, 0);
 ////    BOOST_REQUIRE(reserve.empty());
 ////}
@@ -167,7 +167,7 @@
 ////BOOST_AUTO_TEST_CASE(reservation__rate_window__construct_10__30_seconds)
 ////{
 ////    DECLARE_RESERVATIONS(reserves, true);
-////    const size_t expected = 10;
+////    size_t const expected = 10;
 ////    reservation_fixture reserve(reserves, 0, expected);
 ////    auto const window = reserve.rate_window();
 ////    BOOST_REQUIRE_EQUAL(window.count(), expected * 1000 * 1000 * 3);
@@ -484,7 +484,7 @@
 ////    node::settings settings;
 ////    settings.sync_peers = 5;
 ////    blockchain_fixture blockchain;
-////    config::checkpoint::list checkpoints;
+////    infrastructure::config::checkpoint::list checkpoints;
 ////    header_queue hashes(checkpoints);
 ////    auto const message = message_factory(4, check42.hash());
 ////    hashes.initialize(check42);

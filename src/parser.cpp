@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 
-// #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include <kth/blockchain.hpp>
@@ -27,15 +26,16 @@ namespace kth::node {
 
 using namespace std::filesystem;
 using namespace boost::program_options;
-using namespace bc::config;
+using namespace kth::domain;
+using namespace kth::domain::config;
 
 // Initialize configuration by copying the given instance.
-parser::parser(const configuration& defaults)
+parser::parser(configuration const& defaults)
     : configured(defaults)
 {}
 
 // Initialize configuration using defaults of the given context.
-parser::parser(config::settings context)
+parser::parser(infrastructure::config::settings context)
     : configured(context)
 {
     // kth_node use history
@@ -43,7 +43,7 @@ parser::parser(config::settings context)
     // node doesn't use history, and history is expensive.
     // configured.database.index_start_height = kth::max_uint32;
 
-    using serve = message::version::service;
+    using serve = domain::message::version::service;
 
     // A node allows 8 inbound connections by default.
     configured.network.inbound_connections = 8;
@@ -112,7 +112,7 @@ options_metadata parser::load_environment() {
         // This composes with the cmdline options and inits to system path.
         BN_CONFIG_VARIABLE,
         value<path>(&configured.file)->composing()
-            ->default_value(config_default_path()),
+            ->default_value(infrastructure::config::config_default_path()),
         "The path to the configuration settings file."
     );
 
@@ -153,7 +153,7 @@ options_metadata parser::load_settings() {
         "The maximum number of logs to archive, defaults to 0 (maximum)."
     )(
         "log.statistics_server",
-        value<config::authority>(&configured.network.statistics_server),
+        value<infrastructure::config::authority>(&configured.network.statistics_server),
         "The address of the statistics collection server, defaults to none."
     )(
         "log.verbose",
@@ -243,19 +243,19 @@ options_metadata parser::load_settings() {
         "The peer hosts cache file path, defaults to 'hosts.cache'."
     )(
         "network.self",
-        value<config::authority>(&configured.network.self),
+        value<infrastructure::config::authority>(&configured.network.self),
         "The advertised public address of this node, defaults to none."
     )(
         "network.blacklist",
-        value<config::authority::list>(&configured.network.blacklists),
+        value<infrastructure::config::authority::list>(&configured.network.blacklists),
         "IP address to disallow as a peer, multiple entries allowed."
     )(
         "network.peer",
-        value<config::endpoint::list>(&configured.network.peers),
+        value<infrastructure::config::endpoint::list>(&configured.network.peers),
         "A persistent peer node, multiple entries allowed."
     )(
         "network.seed",
-        value<config::endpoint::list>(&configured.network.seeds),
+        value<infrastructure::config::endpoint::list>(&configured.network.seeds),
         "A seed node for initializing the host pool, multiple entries allowed."
     )(
         "network.use_ipv6",
@@ -342,7 +342,7 @@ options_metadata parser::load_settings() {
         "The maximum reorganization depth, defaults to 256 (0 for unlimited)."
     )(
         "blockchain.checkpoint",
-        value<config::checkpoint::list>(&configured.chain.checkpoints),
+        value<infrastructure::config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
 

@@ -26,7 +26,7 @@ class BCN_API session_header_sync : public session<network::session_outbound>, t
 public:
     using ptr = std::shared_ptr<session_header_sync>;
 
-    session_header_sync(full_node& network, check_list& hashes, blockchain::fast_chain& blockchain, const config::checkpoint::list& checkpoints);
+    session_header_sync(full_node& network, check_list& hashes, blockchain::fast_chain& blockchain, infrastructure::config::checkpoint::list const& checkpoints);
 
     virtual void start(result_handler handler) override;
 
@@ -43,7 +43,7 @@ private:
     bool initialize();
     void handle_started(code const& ec, result_handler handler);
     void new_connection(header_list::ptr row, result_handler handler);
-    void start_syncing(code const& ec, const config::authority& host, result_handler handler);
+    void start_syncing(code const& ec, infrastructure::config::authority const& host, result_handler handler);
 
     void handle_connect(code const& ec, network::channel::ptr channel, header_list::ptr row, result_handler handler);
     void handle_complete(code const& ec, header_list::ptr row, result_handler handler);
@@ -57,7 +57,7 @@ private:
     headers_table headers_;
     uint32_t minimum_rate_;
     blockchain::fast_chain& chain_;
-    const config::checkpoint::list checkpoints_;
+    infrastructure::config::checkpoint::list const checkpoints_;
 };
 
 } // namespace kth::node

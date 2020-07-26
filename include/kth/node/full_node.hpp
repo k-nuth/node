@@ -109,7 +109,7 @@ public:
     using transaction_handler = blockchain::block_chain::transaction_handler;
 
     /// Construct the full node.
-    full_node(const configuration& configuration);
+    full_node(configuration const& configuration);
 
     /// Ensure all threads are coalesced.
     virtual ~full_node();
@@ -174,7 +174,7 @@ public:
     // Init node utils.
     // ------------------------------------------------------------------------
     static 
-    chain::block get_genesis_block(blockchain::settings const& settings);
+    domain::chain::block get_genesis_block(blockchain::settings const& settings);
 
 
 #if defined(KTH_STATISTICS_ENABLED)
@@ -395,7 +395,7 @@ protected:
     blockchain::block_chain chain_;
 
 private:
-    using block_ptr_list = message::block::ptr_list;
+    using block_ptr_list = domain::message::block::ptr_list;
 
 #if defined(KTH_STATISTICS_ENABLED)
     static constexpr size_t screen_refresh = 100;

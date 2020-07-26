@@ -16,12 +16,11 @@
 #include <knuth/keoken/node_constants.hpp>
 #include <knuth/keoken/state_delegated.hpp>
 
-namespace kth {
-namespace keoken {
+namespace kth::keoken {
 
 template <typename State>
 class BCN_API base_manager {
-    using payment_address = bc::wallet::payment_address;
+    using payment_address = kth::wallet::payment_address;
 public:
     using get_assets_by_address_list = typename State::get_assets_by_address_list;
     using get_assets_list = typename State::get_assets_list;
@@ -29,7 +28,7 @@ public:
 
     //class invariant: keoken_genesis_height > 0 
 
-    base_manager(bc::blockchain::block_chain& chain, size_t keoken_genesis_height)
+    base_manager(kth::blockchain::block_chain& chain, size_t keoken_genesis_height)
     // precondition: keoken_genesis_height > 0
         : keoken_genesis_height_(keoken_genesis_height)
         , chain_(chain)
@@ -65,7 +64,7 @@ public:
         return initialized_;
     }
 
-    get_assets_by_address_list get_assets_by_address(bc::wallet::payment_address const& addr) const {
+    get_assets_by_address_list get_assets_by_address(kth::wallet::payment_address const& addr) const {
         return state_.get_assets_by_address(addr);
     }
 
@@ -91,8 +90,8 @@ private:
         bool witness = false;   //TODO(fernando): what to do with this...
 
         chain_.for_each_transaction_non_coinbase(from_height, to_height, witness, 
-            [this](bc::code const& ec, size_t height, bc::chain::transaction const& tx) {
-                if (ec == bc::error::success) {
+            [this](kth::code const& ec, size_t height, kth::domain::chain::transaction const& tx) {
+                if (ec == kth::error::success) {
                     interpreter_.process(height, tx);
                 }
             }
@@ -102,15 +101,15 @@ private:
     // void initialize_from_blockchain(size_t from_height);
 
     //TODO(fernando): move to other site
-    void for_each_transaction_non_coinbase(size_t height, bc::chain::block const& block) {
-        std::for_each(std::next(block.transactions().begin()), block.transactions().end(), [this, height](bc::chain::transaction const& tx) {
+    void for_each_transaction_non_coinbase(size_t height, kth::domain::chain::block const& block) {
+        std::for_each(std::next(block.transactions().begin()), block.transactions().end(), [this, height](kth::domain::chain::transaction const& tx) {
             interpreter_.process(height, tx);
         });
     }
     
     // A typical reorganization consists of one incoming and zero outgoing blocks.
-    bool handle_reorganized(bc::code ec, size_t fork_height, bc::block_const_ptr_list_const_ptr const& incoming, bc::block_const_ptr_list_const_ptr const& outgoing) {
-        if (ec == bc::error::service_stopped) {
+    bool handle_reorganized(kth::code ec, size_t fork_height, kth::block_const_ptr_list_const_ptr const& incoming, kth::block_const_ptr_list_const_ptr const& outgoing) {
+        if (ec == kth::error::service_stopped) {
             return false;
         }
 
@@ -154,7 +153,7 @@ private:
     size_t processed_height_;
     bool initialized_;
     State state_;
-    bc::blockchain::block_chain& chain_;
+    kth::blockchain::block_chain& chain_;
     interpreter<State, kth::blockchain::block_chain> interpreter_;
 };
 
@@ -203,7 +202,6 @@ public:
     }
 };
 
-} // namespace keoken
-} // namespace kth
+} // namespace kth::keoken
 
 #endif //KTH_NODE_KEOKEN_MANAGER_HPP_

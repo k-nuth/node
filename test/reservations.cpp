@@ -8,11 +8,11 @@
 ////#include <kth/node.hpp>
 ////#include "utility.hpp"
 ////
-////using namespace bc;
-////using namespace bc::config;
-////using namespace bc::message;
-////using namespace bc::node;
-////using namespace bc::node::test;
+////using namespace kth;
+////using namespace kth::domain::config;
+////using namespace kth::domain::message;
+////using namespace kth::node;
+////using namespace kth::node::test;
 ////
 ////BOOST_AUTO_TEST_SUITE(reservations_tests)
 ////

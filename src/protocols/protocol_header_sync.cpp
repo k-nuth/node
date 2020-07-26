@@ -17,9 +17,9 @@ namespace kth::node {
 #define NAME "header_sync"
 #define CLASS protocol_header_sync
 
-using namespace bc::config;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::domain::config;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 // The interval in which header download rate is measured and tested.

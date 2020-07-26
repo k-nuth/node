@@ -14,9 +14,9 @@
 
 namespace kth::node {
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 session_manual::session_manual(full_node& network, safe_chain& chain)
@@ -34,7 +34,7 @@ void session_manual::attach_protocols(channel::ptr channel) {
         attach<protocol_ping_31402>(channel)->start();
     }
 
-    if (version >= message::version::level::bip61) {
+    if (version >= domain::message::version::level::bip61) {
         attach<protocol_reject_70002>(channel)->start();
     }
 

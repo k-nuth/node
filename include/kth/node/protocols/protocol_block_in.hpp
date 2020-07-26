@@ -16,8 +16,8 @@
 namespace kth::node {
 
 struct temp_compact_block {
-     chain::header header;
-     std::vector<chain::transaction> transactions;
+     domain::chain::header header;
+     std::vector<domain::chain::transaction> transactions;
 };
 
 class full_node;
@@ -39,10 +39,10 @@ private:
 
 #if defined(KTH_STATISTICS_ENABLED)
     static 
-    void report(chain::block const& block, full_node& node);
+    void report(domain::chain::block const& block, full_node& node);
 #else
     static 
-    void report(chain::block const& block);
+    void report(domain::chain::block const& block);
 #endif
 
     void send_get_blocks(hash_digest const& stop_hash);
@@ -72,8 +72,11 @@ private:
     const bool headers_from_peer_;
     const bool compact_from_peer_;
     const bool blocks_from_peer_;
+
+#if ! defined(KTH_CURRENCY_BCH)
     const bool require_witness_;
     const bool peer_witness_;
+#endif
 
     // This is protected by mutex.
     hash_queue backlog_;

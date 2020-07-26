@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <utility>
+
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
@@ -19,9 +20,9 @@ namespace kth::node {
 #define NAME "transaction_in"
 #define CLASS protocol_transaction_in
 
-using namespace bc::blockchain;
-using namespace bc::message;
-using namespace bc::network;
+using namespace kth::blockchain;
+using namespace kth::domain::message;
+using namespace kth::network;
 using namespace std::placeholders;
 
 inline 
@@ -36,7 +37,7 @@ bool is_witness(uint64_t services) {
 inline 
 uint64_t to_relay_fee(float minimum_byte_fee) {
     // Spending one standard prevout with one output is nominally 189 bytes.
-    static const size_t small_transaction_size = 189;
+    static size_t const small_transaction_size = 189;
     return static_cast<uint64_t>(minimum_byte_fee * small_transaction_size);
 }
 
@@ -59,9 +60,12 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
     , refresh_pool_(negotiated_version() >= version::level::bip35 &&
         node.node_settings().refresh_transactions)
 
+#if ! defined(KTH_CURRENCY_BCH)
     // Witness must be requested if possibly enforced.
     , require_witness_(is_witness(node.network_settings().services))
     , peer_witness_(is_witness(channel->peer_version()->services()))
+#endif
+
     , CONSTRUCT_TRACK(protocol_transaction_in)
 {}
 
@@ -69,11 +73,14 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
 //-----------------------------------------------------------------------------
 
 void protocol_transaction_in::start() {
+
+#if ! defined(KTH_CURRENCY_BCH)
     // Do not process incoming transactions if required witness is unavailable.
     // The channel will remain active outbound unless node becomes stale.
     if (require_witness_ && ! peer_witness_) {
         return;
     }
+#endif
 
     protocol_events::start(BIND1(handle_stop, _1));
 
@@ -141,7 +148,7 @@ void protocol_transaction_in::send_get_data(code const& ec, get_data_ptr message
         return;
     }
 
-#ifndef KTH_CURRENCY_BCH
+#if ! defined(KTH_CURRENCY_BCH)
     // Convert requested message types to corresponding witness types.
     if (require_witness_) {
         message->to_witness();
@@ -170,6 +177,7 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
         return false;
     }
 
+#if ! defined(KTH_CURRENCY_BCH)
     if ( ! require_witness_ && message->is_segregated()) {
         LOG_DEBUG(LOG_NODE
            , "Transaction [", encode_hash(message->hash())
@@ -177,6 +185,7 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
         stop(error::channel_stopped);
         return false;
     }
+#endif
 
     // TODO: manage channel relay at the service layer.
     // Do not process transactions while chain is stale.

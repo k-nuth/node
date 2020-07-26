@@ -42,7 +42,7 @@ private:
     size_t current_second_;
 
     const uint32_t minimum_rate_;
-    const size_t start_size_;
+    size_t const start_size_;
 };
 
 } // namespace kth::node
