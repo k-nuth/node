@@ -27,7 +27,7 @@ using namespace std::placeholders;
 
 inline 
 bool is_witness(uint64_t services) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     return false;
 #else
     return (services & version::service::node_witness) != 0;

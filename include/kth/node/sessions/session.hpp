@@ -20,8 +20,7 @@ class BCN_API session : public Session {
 protected:
     /// Construct an instance.
     session(full_node& node, bool notify_on_connect)
-        : Session(node, notify_on_connect), node_(node)
-    {}
+        : Session(node, notify_on_connect), node_(node) {}
 
     /// Attach a protocol to a channel, caller must start the channel.
     template <class Protocol, typename... Args>

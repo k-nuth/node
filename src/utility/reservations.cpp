@@ -22,7 +22,7 @@ namespace kth::node {
 using namespace kth::blockchain;
 using namespace kth::domain::chain;
 
-reservations::reservations(check_list& hashes, fast_chain& chain, const settings& settings)
+reservations::reservations(check_list& hashes, fast_chain& chain, settings const& settings)
     : hashes_(hashes)
     , max_request_(max_get_data)
     , timeout_(settings.sync_timeout_seconds)
@@ -215,7 +215,7 @@ reservation::ptr reservations::find_maximal() {
 
 // Return false if minimal is empty.
 bool reservations::reserve(reservation::ptr minimal) {
-    if (!minimal->empty()) {
+    if ( ! minimal->empty()) {
         return true;
     }
 

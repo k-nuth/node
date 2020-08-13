@@ -31,7 +31,7 @@ public:
 
     /// Construct a reservation table of reservations, allocating hashes evenly
     /// among the rows up to the limit of a single get headers p2p request.
-    reservations(check_list& hashes, blockchain::fast_chain& chain, const settings& settings);
+    reservations(check_list& hashes, blockchain::fast_chain& chain, settings const& settings);
 
     /// Set the flush lock guard.
     bool start();

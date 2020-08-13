@@ -46,7 +46,7 @@
 // {
 //     auto const block_ptr = std::make_shared<const block>();
 //     DECLARE_RESERVATIONS(reserves, false);
-//     REQUIRE(!reserves.import(block_ptr, 42));
+//     REQUIRE( ! reserves.import(block_ptr, 42));
 // }
 
 // // table
@@ -423,9 +423,9 @@
 //     REQUIRE(table[2]->request(false).inventories().size() == 3u);
 
 //     // A row becomes stopped once empty.
-//     REQUIRE(!table[0]->stopped());
-//     REQUIRE(!table[1]->stopped());
-//     REQUIRE(!table[2]->stopped());
+//     REQUIRE( ! table[0]->stopped());
+//     REQUIRE( ! table[1]->stopped());
+//     REQUIRE( ! table[2]->stopped());
 
 //     // All rows have three hashes.
 //     REQUIRE(table[0]->size() == 3u);
@@ -452,7 +452,7 @@
 //     REQUIRE(table[1]->size() == 1u);
 //     REQUIRE(table[2]->size() == 3u);
 //     REQUIRE(table[1]->toggle_partitioned());
-//     REQUIRE(!table[1]->toggle_partitioned());
+//     REQUIRE( ! table[1]->toggle_partitioned());
 
 //     // The last row has not been modified.
 //     REQUIRE(table[0]->request(false).inventories().size() == 2u);
@@ -476,7 +476,7 @@
 //     REQUIRE(table[1]->size() == 1u);
 //     REQUIRE(table[2]->size() == 1u);
 //     REQUIRE(table[2]->toggle_partitioned());
-//     REQUIRE(!table[2]->toggle_partitioned());
+//     REQUIRE( ! table[2]->toggle_partitioned());
 
 //     // The second row has not been modified.
 //     REQUIRE(table[0]->request(false).inventories().size() == 2u);
@@ -500,7 +500,7 @@
 //     REQUIRE(table[1]->size() == 0u);
 //     REQUIRE(table[2]->size() == 1u);
 //     REQUIRE(table[1]->stopped());
-//     REQUIRE(!table[1]->toggle_partitioned());
+//     REQUIRE( ! table[1]->toggle_partitioned());
 
 //     // The third row has not been modified and the second row is empty.
 //     REQUIRE(table[0]->request(false).inventories().size() == 1u);
@@ -518,7 +518,7 @@
 //     REQUIRE(table[1]->size() == 0u);
 //     REQUIRE(table[2]->size() == 0u);
 //     REQUIRE(table[2]->stopped());
-//     REQUIRE(!table[2]->toggle_partitioned());
+//     REQUIRE( ! table[2]->toggle_partitioned());
 
 //     // The second row has not been modified and the third row is empty.
 //     REQUIRE(table[0]->request(false).inventories().size() == 1u);

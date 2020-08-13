@@ -31,7 +31,7 @@ using namespace std::placeholders;
 
 constexpr
 bool is_witness(uint64_t services) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -47,7 +47,7 @@ protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel, sa
     // TODO: move send_compact to a derived class protocol_block_out_70014.
     compact_to_peer_(false),
     compact_high_bandwidth_(true),
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     compact_version_(1),
 #else
     compact_version_(2),
@@ -182,7 +182,7 @@ void protocol_block_out::handle_fetch_locator_headers(code const& ec, headers_pt
 }
 
 bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, get_block_transactions_const_ptr message) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     bool witness = false;
 #else
     bool witness = true;
@@ -368,7 +368,7 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
 
     switch (entry.type()) {
         case inventory::type_id::witness_block: {
-            if (!enable_witness_) {
+            if ( ! enable_witness_) {
                 stop(error::channel_stopped);
                 return;
             }
@@ -414,7 +414,7 @@ void protocol_block_out::send_block(code const& ec, block_const_ptr message, siz
         LOG_DEBUG(LOG_NODE, "Block requested by [", authority(), "] not found.");
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        KTH_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT( ! inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -442,7 +442,7 @@ void protocol_block_out::send_merkle_block(code const& ec, merkle_block_const_pt
         LOG_DEBUG(LOG_NODE, "Merkle block requested by [", authority(), "] not found.");
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        KTH_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT( ! inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -470,7 +470,7 @@ void protocol_block_out::send_compact_block(code const& ec, compact_block_const_
         LOG_DEBUG(LOG_NODE, "Compact block requested by [", authority(), "] not found.");
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        KTH_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT( ! inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -493,7 +493,7 @@ void protocol_block_out::handle_send_next(code const& ec, inventory_ptr inventor
         return;
     }
 
-    KTH_ASSERT(!inventory->inventories().empty());
+    KTH_ASSERT( ! inventory->inventories().empty());
     inventory->inventories().pop_back();
 
     // Break off recursion.
@@ -561,7 +561,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height, block_c
 
         for (auto const block: *incoming) {
             if (block->validation.originator != nonce()) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
                 announce.inventories().push_back({ inventory::type_id::block, block->header().hash() });
 #else
         // TODO: the witness flag should only be set if the block is segregated?

@@ -26,7 +26,7 @@ class BCN_API session_block_sync : public session<network::session_outbound>, tr
 public:
     using ptr = std::shared_ptr<session_block_sync>;
 
-    session_block_sync(full_node& network, check_list& hashes, blockchain::fast_chain& chain, const settings& settings);
+    session_block_sync(full_node& network, check_list& hashes, blockchain::fast_chain& chain, settings const& settings);
 
     void start(result_handler handler) override;
 

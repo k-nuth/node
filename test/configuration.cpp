@@ -14,30 +14,30 @@ using namespace kth;
 
 TEST_CASE("configuration  construct1  none context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::none);
-    REQUIRE(!instance.help);
-    REQUIRE(!instance.initchain);
-    REQUIRE(!instance.settings);
-    REQUIRE(!instance.version);
+    REQUIRE( ! instance.help);
+    REQUIRE( ! instance.initchain);
+    REQUIRE( ! instance.settings);
+    REQUIRE( ! instance.version);
     REQUIRE(instance.node.sync_peers == 0u);
     REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
 TEST_CASE("configuration  construct1  mainnet context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::mainnet);
-    REQUIRE(!instance.help);
-    REQUIRE(!instance.initchain);
-    REQUIRE(!instance.settings);
-    REQUIRE(!instance.version);
+    REQUIRE( ! instance.help);
+    REQUIRE( ! instance.initchain);
+    REQUIRE( ! instance.settings);
+    REQUIRE( ! instance.version);
     REQUIRE(instance.node.sync_peers == 0u);
     REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
 TEST_CASE("configuration  construct1  testnet context  expected", "[configuration tests]") {
     node::configuration instance(infrastructure::config::settings::testnet);
-    REQUIRE(!instance.help);
-    REQUIRE(!instance.initchain);
-    REQUIRE(!instance.settings);
-    REQUIRE(!instance.version);
+    REQUIRE( ! instance.help);
+    REQUIRE( ! instance.initchain);
+    REQUIRE( ! instance.settings);
+    REQUIRE( ! instance.version);
     REQUIRE(instance.node.sync_peers == 0u);
     REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }

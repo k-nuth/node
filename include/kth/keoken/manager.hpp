@@ -34,8 +34,7 @@ public:
         , chain_(chain)
         , interpreter_(state_, chain_)
         , initialized_(false)
-        , processed_height_(keoken_genesis_height - 1)
-    {}
+        , processed_height_(keoken_genesis_height - 1) {}
 
     // non-copyable and non-movable class
     base_manager(base_manager const&) = delete;

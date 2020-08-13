@@ -101,7 +101,7 @@ bool header_list::merge(headers_const_ptr message) {
 ////    // Critical Section.
 ////    shared_lock lock(mutex_);
 ////
-////    if (!complete() || list_.empty())
+////    if ( ! complete() || list_.empty())
 ////        return{};
 ////
 ////    checkpoint::list out;

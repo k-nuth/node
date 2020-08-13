@@ -43,7 +43,7 @@
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation reserve(reserves, 0, 0);
 //     reserve.insert(check42);
-//     REQUIRE(!reserve.empty());
+//     REQUIRE( ! reserve.empty());
 // }
 
 // // size
@@ -80,7 +80,7 @@
 // {
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation reserve(reserves, 0, 0);
-//     REQUIRE(!reserve.stopped());
+//     REQUIRE( ! reserve.stopped());
 // }
 
 // TEST_CASE("reservation  stopped  one hash  false", "[reservation tests]")
@@ -88,7 +88,7 @@
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation reserve(reserves, 0, 0);
 //     reserve.insert(check42);
-//     REQUIRE(!reserve.stopped());
+//     REQUIRE( ! reserve.stopped());
 // }
 
 // TEST_CASE("reservation  stopped  import last block  true", "[reservation tests]")
@@ -132,7 +132,7 @@
 //     value.window = 3;
 //     reserve.set_rate(std::move(value));
 //     auto const rate = reserve.rate();
-//     REQUIRE(!rate.idle);
+//     REQUIRE( ! rate.idle);
 //     REQUIRE(rate.events == 1u);
 //     REQUIRE(rate.database == 2u);
 //     REQUIRE(rate.window == 3u);
@@ -156,7 +156,7 @@
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation_fixture reserve(reserves, 0, 0);
 //     reserve.set_pending(false);
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 //     reserve.set_pending(true);
 //     REQUIRE(reserve.pending());
 // }
@@ -230,7 +230,7 @@
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation reserve(reserves, 0, 0);
 //     reserve.set_rate({ false, 1, 2, 3 });
-//     REQUIRE(!reserve.idle());
+//     REQUIRE( ! reserve.idle());
 // }
 
 // // insert
@@ -338,7 +338,7 @@
 //     reserve->import(block1);
 //     REQUIRE(reserve->idle());
 //     reserve->import(block2);
-//     REQUIRE(!reserve->idle());
+//     REQUIRE( ! reserve->idle());
 // }
 
 // // toggle_partitioned
@@ -349,7 +349,7 @@
 // {
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation_fixture reserve(reserves, 0, 0);
-//     REQUIRE(!reserve.toggle_partitioned());
+//     REQUIRE( ! reserve.toggle_partitioned());
 //     REQUIRE(reserve.pending());
 // }
 
@@ -380,11 +380,11 @@
 //     // Creates a request with no hashes reserved.
 //     auto const result = reserve.request(false);
 //     REQUIRE(result.inventories().empty());
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 
 //     // The rate is not reset because the new channel parameter is false.
 //     auto const rate = reserve.rate();
-//     REQUIRE(!rate.idle);
+//     REQUIRE( ! rate.idle);
 //     REQUIRE(rate.events == 1u);
 //     REQUIRE(rate.database == 2u);
 //     REQUIRE(rate.window == 3u);
@@ -403,7 +403,7 @@
 //     auto const result = reserve.request(true);
 //     REQUIRE(result.inventories().size() == 1u);
 //     REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 
 //     // The rate is reset because the new channel parameter is true.
 //     auto const rate = reserve.rate();
@@ -426,7 +426,7 @@
 //     auto const result = reserve.request(true);
 //     REQUIRE(result.inventories().size() == 1u);
 //     REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 
 //     // The rate is reset because the new channel parameter is true.
 //     auto const rate = reserve.rate();
@@ -452,7 +452,7 @@
 //     REQUIRE(result.inventories()[0].hash() == message->elements()[0].hash());
 //     REQUIRE(result.inventories()[1].hash() == message->elements()[1].hash());
 //     REQUIRE(result.inventories()[2].hash() == message->elements()[2].hash());
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 // }
 
 // TEST_CASE("reservation  request  one hash  empty", "[reservation tests]")
@@ -466,7 +466,7 @@
 //     // Creates an empty request for not new and not pending scneario.
 //     auto const result = reserve.request(false);
 //     REQUIRE(result.inventories().empty());
-//     REQUIRE(!reserve.pending());
+//     REQUIRE( ! reserve.pending());
 // }
 
 // // expired
@@ -476,7 +476,7 @@
 // {
 //     DECLARE_RESERVATIONS(reserves, true);
 //     reservation reserve(reserves, 0, 0);
-//     REQUIRE(!reserve.expired());
+//     REQUIRE( ! reserve.expired());
 // }
 
 // TEST_CASE("reservation  expired  various  expected", "[reservation tests]")
@@ -519,19 +519,19 @@
 //     REQUIRE(rates2.standard_deviation == std::sqrt(2.5));
 
 //     // deviation: 5 - 3 = +2
-//     REQUIRE(!table[0]->expired());
+//     REQUIRE( ! table[0]->expired());
 
 //     // deviation: 0 - 3 = -3
 //     REQUIRE(table[1]->expired());
 
 //     // deviation: 2 - 3 = -1
-//     REQUIRE(!table[2]->expired());
+//     REQUIRE( ! table[2]->expired());
 
 //     // deviation: 1 - 3 = -2
 //     REQUIRE(table[3]->expired());
 
 //     // deviation: 4 - 3 = +1
-//     REQUIRE(!table[4]->expired());
+//     REQUIRE( ! table[4]->expired());
 // }
 
 // // End Boost Suite

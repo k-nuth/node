@@ -55,7 +55,7 @@ parser::parser(infrastructure::config::settings context)
 
     // A node allows 1000 host names by default.
     configured.network.host_pool_capacity = 1000;
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     // Expose full node (1) services by default.
     configured.network.services = serve::node_network;
 #else
@@ -441,21 +441,26 @@ options_metadata parser::load_settings() {
     //     value<uint64_t>(&configured.chain.graviton_activation_time),
     //     "Unix time used for MTP activation of 2019-Nov-15 hard fork, defaults to 1573819200."
     // )
-    (
-        "fork.phonon_activation_time",
-        value<uint64_t>(&configured.chain.phonon_activation_time),
-        "Unix time used for MTP activation of 2020-May-15 hard fork, defaults to 1589544000."
-    )
     // (
-    //     "fork.axion_activation_time",
-    //     value<uint64_t>(&configured.chain.axion_activation_time),
-    //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1589544000."
+    //     "fork.phonon_activation_time",
+    //     value<uint64_t>(&configured.chain.phonon_activation_time),
+    //     "Unix time used for MTP activation of 2020-May-15 hard fork, defaults to 1589544000."
     // )
+    (
+        "fork.axion_activation_time",
+        value<uint64_t>(&configured.chain.axion_activation_time),
+        "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
+    )
     // (
     //     "fork.unnamed_activation_time",
     //     value<uint64_t>(&configured.chain.unnamed_activation_time),
     //     "Unix time used for MTP activation of 2021-May-15 hard fork, defaults to 9999999999."
     // )
+    (
+        "fork.asert_half_life",
+        value<uint64_t>(&configured.chain.asert_half_life),
+        "The half life for the ASERTi3-2d DAA. For every (asert_half_life) seconds behind schedule the blockchain gets, difficulty is cut in half. Doubled if blocks are ahead of schedule. Defaults to: 2 * 24 * 60 * 60 = 172800 (two days)."
+    )
 
 #endif //KTH_CURRENCY_BCH
 

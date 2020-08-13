@@ -30,7 +30,7 @@ using namespace std::placeholders;
 //TODO(fernando): it is repeater everywhere
 inline 
 bool is_witness(uint64_t services) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -209,7 +209,7 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
         LOG_DEBUG(LOG_NODE, "Transaction requested by [", authority(), "] not found.");
 
         // TODO: move not_found to derived class protocol_block_out_70001.
-        KTH_ASSERT(!inventory->inventories().empty());
+        KTH_ASSERT( ! inventory->inventories().empty());
         const not_found reply{ inventory->inventories().back() };
         SEND2(reply, handle_send, _1, reply.command);
         handle_send_next(error::success, inventory);
@@ -232,7 +232,7 @@ void protocol_transaction_out::handle_send_next(code const& ec, inventory_ptr in
         return;
     }
 
-    KTH_ASSERT(!inventory->inventories().empty());
+    KTH_ASSERT( ! inventory->inventories().empty());
     inventory->inventories().pop_back();
 
     // Break off recursion.
@@ -275,7 +275,7 @@ bool protocol_transaction_out::handle_transaction_pool(code const& ec, transacti
     }
 
     inventory::type_id id;
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     id = inventory::type_id::transaction;
 #else
     if (message->is_segregated()) {

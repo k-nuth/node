@@ -36,7 +36,7 @@ using namespace std::placeholders;
 
 constexpr 
 bool is_witness(uint64_t services) {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
     return false;
 #else
     return (services & version::service::node_witness) != 0;
@@ -45,7 +45,7 @@ bool is_witness(uint64_t services) {
 
 constexpr
 uint64_t get_compact_blocks_version() {
-#ifdef KTH_CURRENCY_BCH
+#if defined(KTH_CURRENCY_BCH)
         return 1;
 #else
         return 2;
