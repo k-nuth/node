@@ -244,13 +244,20 @@ bool full_node::stop() {
 
 // This must be called from the thread that constructed this class (see join).
 bool full_node::close() {
+    // LOG_INFO(LOG_NODE, "full_node::close()");
+    
+    // LOG_INFO(LOG_NODE, "Before calling full_node::stop()");
     // Invoke own stop to signal work suspension.
     if ( ! full_node::stop()) {
+        // LOG_INFO(LOG_NODE, "full_node::stop() failed");
         return false;
     }
 
+    // LOG_INFO(LOG_NODE, "Before calling p2p::close()");
     auto const p2p_close = p2p::close();
+    // LOG_INFO(LOG_NODE, "Before calling chain_.close()");
     auto const chain_close = chain_.close();
+    // LOG_INFO(LOG_NODE, "After chain_.close()");
 
     if ( ! p2p_close) {
         LOG_ERROR(LOG_NODE, "Failed to close network.");
