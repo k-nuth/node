@@ -262,8 +262,8 @@ options_metadata parser::load_settings() {
         value<bool>(&configured.network.use_ipv6),
         "Node use ipv6."
     )(
-        "network.user_agent_backlist",
-        value<std::vector<std::string>>(&configured.network.user_agent_backlist),
+        "network.user_agent_blacklist",
+        value<std::vector<std::string>>(&configured.network.user_agent_blacklist),
         "Blacklist user-agent starting with..."
     )
 
