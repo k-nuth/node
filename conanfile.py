@@ -41,8 +41,6 @@ class KnuthNodeConan(KnuthConanFile):
         "use_libmdbx": [True, False],
         "statistics": [True, False],
     }
-    # "with_remote_blockchain": [True, False],
-    # "with_remote_database": [True, False],
     # "with_console": [True, False],
 
     default_options = {
@@ -68,14 +66,7 @@ class KnuthNodeConan(KnuthConanFile):
         "use_libmdbx": False,
         "statistics": False,
     }
-
-    # "with_remote_blockchain=False",
-    # "with_remote_database=False",
     # "with_console=True",
-
-    with_remote_blockchain = False
-    with_remote_database = False
-    # with_console = False
 
     generators = "cmake"
     exports = "conan_*", "ci_utils/*"
