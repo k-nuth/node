@@ -613,7 +613,8 @@ bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostr
         auto file = load_configuration_variables_path(variables, config_path);
 
         if (file == load_error::non_existing_file) {
-            LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
+            // LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
+            error << "Config file provided does not exists." << std::endl;
             return false;
         }
 
