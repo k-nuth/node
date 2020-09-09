@@ -203,15 +203,15 @@ bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_
 
 // Must not connect until running, otherwise imports may conflict with sync.
 // But we establish the session in network so caller doesn't need to run.
-network::session_manual::ptr full_node::attach_manual_session() {
+kth::network::session_manual::ptr full_node::attach_manual_session() {
     return attach<node::session_manual>(chain_);
 }
 
-network::session_inbound::ptr full_node::attach_inbound_session() {
+kth::network::session_inbound::ptr full_node::attach_inbound_session() {
     return attach<node::session_inbound>(chain_);
 }
 
-network::session_outbound::ptr full_node::attach_outbound_session() {
+kth::network::session_outbound::ptr full_node::attach_outbound_session() {
     return attach<node::session_outbound>(chain_);
 }
 
