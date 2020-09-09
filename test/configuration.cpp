@@ -12,8 +12,9 @@ using namespace kth;
 // constructors
 //-----------------------------------------------------------------------------
 
-TEST_CASE("configuration  construct1  none context  expected", "[configuration tests]") {
-    node::configuration instance(infrastructure::config::settings::none);
+#if defined(KTH_CURRENCY_BCH)
+TEST_CASE("configuration  construct1  testnet4 context  expected", "[configuration tests]") {
+    node::configuration instance(domain::config::network::testnet4);
     REQUIRE( ! instance.help);
     REQUIRE( ! instance.initchain);
     REQUIRE( ! instance.settings);
@@ -21,9 +22,10 @@ TEST_CASE("configuration  construct1  none context  expected", "[configuration t
     REQUIRE(instance.node.sync_peers == 0u);
     REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
+#endif
 
 TEST_CASE("configuration  construct1  mainnet context  expected", "[configuration tests]") {
-    node::configuration instance(infrastructure::config::settings::mainnet);
+    node::configuration instance(domain::config::network::mainnet);
     REQUIRE( ! instance.help);
     REQUIRE( ! instance.initchain);
     REQUIRE( ! instance.settings);
@@ -33,7 +35,7 @@ TEST_CASE("configuration  construct1  mainnet context  expected", "[configuratio
 }
 
 TEST_CASE("configuration  construct1  testnet context  expected", "[configuration tests]") {
-    node::configuration instance(infrastructure::config::settings::testnet);
+    node::configuration instance(domain::config::network::testnet);
     REQUIRE( ! instance.help);
     REQUIRE( ! instance.initchain);
     REQUIRE( ! instance.settings);
@@ -42,8 +44,9 @@ TEST_CASE("configuration  construct1  testnet context  expected", "[configuratio
     REQUIRE(instance.node.sync_timeout_seconds == 5u);
 }
 
-TEST_CASE("configuration  construct2  none context  expected", "[configuration tests]") {
-    node::configuration instance1(infrastructure::config::settings::none);
+#if defined(KTH_CURRENCY_BCH)
+TEST_CASE("configuration  construct2  testnet4 context  expected", "[configuration tests]") {
+    node::configuration instance1(domain::config::network::testnet4);
     instance1.help = true;
     instance1.initchain = true;
     instance1.settings = true;
@@ -60,5 +63,6 @@ TEST_CASE("configuration  construct2  none context  expected", "[configuration t
     REQUIRE(instance2.node.sync_peers == 42u);
     REQUIRE(instance2.node.sync_timeout_seconds == 24u);
 }
+#endif
 
 // End Boost Suite

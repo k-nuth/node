@@ -35,7 +35,7 @@ parser::parser(configuration const& defaults)
 {}
 
 // Initialize configuration using defaults of the given context.
-parser::parser(infrastructure::config::settings context)
+parser::parser(domain::config::network context)
     : configured(context)
 {
     // kth_node use history
@@ -422,39 +422,44 @@ options_metadata parser::load_settings() {
     //     "Height of the 2017-Nov-13 hard fork (DAA), defaults to 504031 (Mainnet)."
     // )
     // (
-    //     "fork.monolith_activation_time",
-    //     value<uint64_t>(&configured.chain.monolith_activation_time),
+    //     "fork.pythagoras_activation_time",
+    //     value<uint64_t>(&configured.chain.pythagoras_activation_time),
     //     "Unix time used for MTP activation of 2018-May-15 hard fork, defaults to 1526400000."
     // )
     // (
-    //     "fork.magnetic_anomaly_activation_time",
-    //     value<uint64_t>(&configured.chain.magnetic_anomaly_activation_time),
+    //     "fork.euclid_activation_time",
+    //     value<uint64_t>(&configured.chain.euclid_activation_time),
     //     "Unix time used for MTP activation of 2018-Nov-15 hard fork, defaults to 1542300000."
     // )
     // (
-    //     "fork.great_wall_activation_time",
-    //     value<uint64_t>(&configured.chain.great_wall_activation_time),
+    //     "fork.pisano_activation_time",
+    //     value<uint64_t>(&configured.chain.pisano_activation_time),
     //     "Unix time used for MTP activation of 2019-May-15 hard fork, defaults to 1557921600."
     // )
     // (
-    //     "fork.graviton_activation_time",
-    //     value<uint64_t>(&configured.chain.graviton_activation_time),
+    //     "fork.mersenne_activation_time",
+    //     value<uint64_t>(&configured.chain.mersenne_activation_time),
     //     "Unix time used for MTP activation of 2019-Nov-15 hard fork, defaults to 1573819200."
     // )
     // (
-    //     "fork.phonon_activation_time",
-    //     value<uint64_t>(&configured.chain.phonon_activation_time),
+    //     "fork.fermat_activation_time",
+    //     value<uint64_t>(&configured.chain.fermat_activation_time),
     //     "Unix time used for MTP activation of 2020-May-15 hard fork, defaults to 1589544000."
     // )
     (
-        "fork.axion_activation_time",
-        value<uint64_t>(&configured.chain.axion_activation_time),
+        "fork.euler_activation_time",
+        value<uint64_t>(&configured.chain.euler_activation_time),
         "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
+    )
+    (
+        "fork.gauss_activation_time",
+        value<uint64_t>(&configured.chain.gauss_activation_time),
+        "Unix time used for MTP activation of 2021-May-15 hard fork, defaults to 1621080000."
     )
     // (
     //     "fork.unnamed_activation_time",
     //     value<uint64_t>(&configured.chain.unnamed_activation_time),
-    //     "Unix time used for MTP activation of 2021-May-15 hard fork, defaults to 9999999999."
+    //     "Unix time used for MTP activation of 2021-Nov-15 hard fork, defaults to 9999999999."
     // )
     (
         "fork.asert_half_life",
@@ -589,7 +594,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         notify(variables);
         
         if ( ! version_sett_help) {
-            fix_checkpoints(configured.chain.easy_blocks, configured.chain.retarget, configured.chain.checkpoints);
+            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
         }
 
         // Clear the config file path if it wasn't used.
@@ -613,7 +618,6 @@ bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostr
         auto file = load_configuration_variables_path(variables, config_path);
 
         if (file == load_error::non_existing_file) {
-            // LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
             error << "Config file provided does not exists." << std::endl;
             return false;
         }
@@ -621,7 +625,7 @@ bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostr
         // Update bound variables in metadata.settings.
         notify(variables);
 
-        fix_checkpoints(configured.chain.easy_blocks, configured.chain.retarget, configured.chain.checkpoints);
+        fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {

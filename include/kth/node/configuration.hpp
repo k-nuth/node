@@ -30,7 +30,7 @@ namespace kth::node {
 /// Full node configuration, thread safe.
 class BCN_API configuration {
 public:
-    configuration(infrastructure::config::settings context);
+    configuration(domain::config::network context);
     configuration(configuration const& other);
 
     /// Options.

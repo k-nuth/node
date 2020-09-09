@@ -16,7 +16,6 @@ settings::settings()
     , block_latency_seconds(60)
     , refresh_transactions(true)
     , rpc_port(8332)
-    , testnet(false)
     , subscriber_port(5556)
     , compact_blocks_high_bandwidth(true)
     , rpc_allow_all_ips(false)
@@ -28,7 +27,7 @@ settings::settings()
 }
 
 // There are no current distinctions spanning chain contexts.
-settings::settings(infrastructure::config::settings context)
+settings::settings(domain::config::network context)
     : settings()
 {}
 

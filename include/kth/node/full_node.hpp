@@ -145,7 +145,7 @@ public:
 
     /// Node configuration settings.
     virtual 
-    const blockchain::settings& chain_settings() const;
+    blockchain::settings const& chain_settings() const;
 
     /// Blockchain query interface.
     virtual 
@@ -471,7 +471,7 @@ private:
     //blockchain::block_chain chain_;
     const uint32_t protocol_maximum_;
     const node::settings& node_settings_;
-    const blockchain::settings& chain_settings_;
+    blockchain::settings const& chain_settings_;
 };
 
 } // namespace kth::node

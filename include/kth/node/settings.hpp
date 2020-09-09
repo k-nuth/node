@@ -15,7 +15,7 @@ namespace kth::node {
 class BCN_API settings {
 public:
     settings();
-    settings(infrastructure::config::settings context);
+    settings(domain::config::network context);
 
     /// Properties.
     uint32_t sync_peers;
@@ -25,7 +25,7 @@ public:
 
     /// Mining
     uint32_t rpc_port;
-    bool testnet;
+    // bool testnet;
     uint32_t subscriber_port;
     std::vector<std::string> rpc_allow_ip;
     bool rpc_allow_all_ips;

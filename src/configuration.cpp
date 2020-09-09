@@ -12,7 +12,7 @@
 namespace kth::node {
 
 // Construct with defaults derived from given context.
-configuration::configuration(infrastructure::config::settings context)
+configuration::configuration(domain::config::network context)
     : help(false)
 #if ! defined(KTH_DB_READONLY)
     , initchain(false)

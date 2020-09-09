@@ -19,7 +19,7 @@ namespace kth::node {
 /// command line positional and non-positional options.
 class BCN_API parser : public domain::config::parser<parser> {
 public:
-    parser(infrastructure::config::settings context);
+    parser(domain::config::network context);
     parser(configuration const& defaults);
 
     /// Parse all configuration into member settings.
