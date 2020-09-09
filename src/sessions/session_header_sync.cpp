@@ -38,7 +38,7 @@ static constexpr uint32_t headers_per_second = 10000;
 
 // Sort is required here but not in configuration settings.
 session_header_sync::session_header_sync(full_node& network, check_list& hashes, fast_chain& blockchain, infrastructure::config::checkpoint::list const& checkpoints)
-    : session<network::session_outbound>(network, false)
+    : session<kth::network::session_outbound>(network, false)
     , hashes_(hashes)
     , minimum_rate_(headers_per_second)
     , chain_(blockchain)
