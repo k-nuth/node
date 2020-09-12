@@ -14,15 +14,16 @@
 #include <kth/node/settings.hpp>
 
 // Not localizable.
-#define BN_HELP_VARIABLE "help"
-#define BN_SETTINGS_VARIABLE "settings"
-#define BN_VERSION_VARIABLE "version"
+#define KTH_HELP_VARIABLE "help"
+#define KTH_SETTINGS_VARIABLE "settings"
+#define KTH_VERSION_VARIABLE "version"
 
 // This must be lower case but the env var part can be any case.
-#define BN_CONFIG_VARIABLE "config"
+#define KTH_CONFIG_VARIABLE "config"
+#define KTH_NETWORK_VARIABLE "network"
 
 // This must match the case of the env var.
-#define BN_ENVIRONMENT_VARIABLE_PREFIX "BN_"
+#define KTH_ENVIRONMENT_VARIABLE_PREFIX "KTH_"
 
 
 namespace kth::node {
@@ -30,7 +31,7 @@ namespace kth::node {
 /// Full node configuration, thread safe.
 class BCN_API configuration {
 public:
-    configuration(domain::config::network context);
+    configuration(domain::config::network net);
     configuration(configuration const& other);
 
     /// Options.
@@ -38,10 +39,12 @@ public:
 
 #if ! defined(KTH_DB_READONLY)
     bool initchain;
+    bool init_and_run;
 #endif
     
     bool settings;
     bool version;
+    domain::config::network net = domain::config::network::mainnet;
 
     /// Options and environment vars.
     std::filesystem::path file;

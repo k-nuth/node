@@ -17,11 +17,33 @@
 #include <kth/node/full_node.hpp>
 #include <kth/node/settings.hpp>
 
-//BC_DECLARE_CONFIG_DEFAULT_PATH("")
-//BC_DECLARE_CONFIG_DEFAULT_PATH("kth" / "kth.cfg")
+namespace kth::domain::config {
+
+void validate(boost::any& v, std::vector<std::string> const& values, network* target_type, int) {
+    using namespace boost::program_options;
+
+    validators::check_first_occurrence(v);
+    auto const& s = validators::get_single_string(values);
+
+    if (s == " mainnet") {
+        v = boost::any(network::mainnet);
+    } else if (s == " testnet") {
+        v = boost::any(network::testnet);
+    } else if (s == " regtest") {
+        v = boost::any(network::regtest);
+#if defined(KTH_CURRENCY_BCH)
+    } else if (s == " testnet4") {
+        v = boost::any(network::testnet4);
+#endif
+    } else {
+        throw validation_error(validation_error::invalid_option_value);
+    }
+}
+
+}
+
 
 // TODO: localize descriptions.
-
 namespace kth::node {
 
 using namespace std::filesystem;
@@ -34,10 +56,7 @@ parser::parser(configuration const& defaults)
     : configured(defaults)
 {}
 
-// Initialize configuration using defaults of the given context.
-parser::parser(domain::config::network context)
-    : configured(context)
-{
+void parser::set_default_configuration() {
     // kth_node use history
     configured.database.index_start_height = 0;
     // node doesn't use history, and history is expensive.
@@ -64,14 +83,25 @@ parser::parser(domain::config::network context)
 #endif
 }
 
+// Initialize configuration using defaults of the given context.
+parser::parser(domain::config::network context)
+    : configured(context)
+{
+    set_default_configuration();
+}
+
 options_metadata parser::load_options() {
     options_metadata description("options");
     description.add_options() (
-        BN_CONFIG_VARIABLE ",c",
+        KTH_NETWORK_VARIABLE ",n",
+        value<domain::config::network>(&configured.net),
+        "Specify the network (mainnet, testnet, regtest, etc.)."
+    )(
+        KTH_CONFIG_VARIABLE ",c",
         value<path>(&configured.file),
         "Specify path to a configuration settings file."
     )(
-        BN_HELP_VARIABLE ",h",
+        KTH_HELP_VARIABLE ",h",
         value<bool>(&configured.help)->
             default_value(false)->zero_tokens(),
         "Display command line options."
@@ -83,14 +113,20 @@ options_metadata parser::load_options() {
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
     ) 
+    (
+        "init_run,r",
+        value<bool>(&configured.init_and_run)->
+            default_value(false)->zero_tokens(),
+        "Initialize blockchain in the configured directory, then start the node."
+    ) 
 #endif // ! defined(KTH_DB_READONLY)    
     (
-        BN_SETTINGS_VARIABLE ",s",
+        KTH_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->
             default_value(false)->zero_tokens(),
         "Display all configuration settings."
     )(
-        BN_VERSION_VARIABLE ",v",
+        KTH_VERSION_VARIABLE ",v",
         value<bool>(&configured.version)->
             default_value(false)->zero_tokens(),
         "Display version information."
@@ -101,7 +137,7 @@ options_metadata parser::load_options() {
 
 arguments_metadata parser::load_arguments() {
     arguments_metadata description;
-    return description.add(BN_CONFIG_VARIABLE, 1);
+    return description.add(KTH_CONFIG_VARIABLE, 1);
 }
 
 options_metadata parser::load_environment() {
@@ -110,7 +146,7 @@ options_metadata parser::load_environment() {
         // For some reason po requires this to be a lower case name.
         // The case must match the other declarations for it to compose.
         // This composes with the cmdline options and inits to system path.
-        BN_CONFIG_VARIABLE,
+        KTH_CONFIG_VARIABLE,
         value<path>(&configured.file)->composing()
             ->default_value(infrastructure::config::config_default_path()),
         "The path to the configuration settings file."
@@ -345,6 +381,13 @@ options_metadata parser::load_settings() {
         value<infrastructure::config::checkpoint::list>(&configured.chain.checkpoints),
         "A hash:height checkpoint, multiple entries allowed."
     )
+    (
+        "blockchain.fix_checkpoints",
+        value<bool>(&configured.chain.fix_checkpoints),
+        "Uses the hardcoded checkpoints and the user defined ones, defaults to true."
+    )
+
+
 
     /* [fork] */
     (
@@ -568,21 +611,35 @@ options_metadata parser::load_settings() {
     return description;
 }
 
+domain::config::network get_configured_network(boost::program_options::variables_map& variables) {
+    auto const& temp_str = variables[KTH_NETWORK_VARIABLE];
+    if (temp_str.empty()) return domain::config::network::mainnet;
+
+    auto const net = temp_str.as<domain::config::network>();
+    return net;
+}
+
 bool parser::parse(int argc, const char* argv[], std::ostream& error) {
     try {
         load_error file = load_error::non_existing_file;
         variables_map variables;
         load_command_variables(variables, argc, argv);
-        load_environment_variables(variables, BN_ENVIRONMENT_VARIABLE_PREFIX);
+        load_environment_variables(variables, KTH_ENVIRONMENT_VARIABLE_PREFIX);
 
         bool version_sett_help = true;
         // Don't load the rest if any of these options are specified.
-        if ( ! get_option(variables, BN_VERSION_VARIABLE) &&
-             ! get_option(variables, BN_SETTINGS_VARIABLE) &&
-             ! get_option(variables, BN_HELP_VARIABLE)) {
+        if ( ! get_option(variables, KTH_VERSION_VARIABLE) &&
+             ! get_option(variables, KTH_SETTINGS_VARIABLE) &&
+             ! get_option(variables, KTH_HELP_VARIABLE)) {
+
+            auto const net = get_configured_network(variables);
+            // auto new_configured = configuration(net);
+            configured = configuration(net);
+            set_default_configuration();
+
             version_sett_help = false;
             // Returns true if the settings were loaded from a file.
-            file = load_configuration_variables(variables, BN_CONFIG_VARIABLE);
+            file = load_configuration_variables(variables, KTH_CONFIG_VARIABLE);
 
             if (file == load_error::non_existing_file) {
                 LOG_ERROR(LOG_NODE, "Config file provided does not exists.");
@@ -593,7 +650,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         // Update bound variables in metadata.settings.
         notify(variables);
         
-        if ( ! version_sett_help) {
+        if ( ! version_sett_help && configured.chain.fix_checkpoints) {
             fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
         }
 
@@ -601,7 +658,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         if (file == load_error::default_config) {
             configured.file.clear();
         }
-    } catch (const boost::program_options::error& e) {
+    } catch (boost::program_options::error const& e) {
         // This is obtained from boost, which circumvents our localization.
         error << format_invalid_parameter(e.what()) << std::endl;
         return false;
@@ -625,7 +682,9 @@ bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostr
         // Update bound variables in metadata.settings.
         notify(variables);
 
-        fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
+        if (configured.chain.fix_checkpoints) {
+            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
+        }
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {

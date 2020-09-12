@@ -309,24 +309,39 @@ void full_node::subscribe_transaction(transaction_handler&& handler) {
 
 // Init node utils.
 // ------------------------------------------------------------------------
-domain::chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
-//    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
+// domain::chain::block full_node::get_genesis_block(blockchain::settings const& settings) {
+// //    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::config::settings::testnet;
 
-    bool const testnet_blocks = settings.easy_blocks;
-    bool const retarget = settings.retarget;
-    auto const mainnet = retarget && !testnet_blocks;
+//     bool const testnet_blocks = settings.easy_blocks;
+//     bool const retarget = settings.retarget;
+//     auto const mainnet = retarget && !testnet_blocks;
 
-    if ( ! mainnet && ! testnet_blocks) {
-        ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
-        return domain::chain::block::genesis_regtest();
+//     if ( ! mainnet && ! testnet_blocks) {
+//         ////NOTE: To be on regtest, retarget and easy_blocks options must be set to false
+//         return domain::chain::block::genesis_regtest();
+//     }
+
+//     return testnet_blocks ? domain::chain::block::genesis_testnet() : domain::chain::block::genesis_mainnet();
+// }
+
+domain::chain::block full_node::get_genesis_block(domain::config::network network) {
+
+    switch (network) {
+        case domain::config::network::testnet:
+            return domain::chain::block::genesis_testnet();
+        case domain::config::network::regtest:
+            return domain::chain::block::genesis_regtest();
+#if defined(KTH_CURRENCY_BCH)
+        case domain::config::network::testnet4:
+            return domain::chain::block::genesis_testnet4();
+#endif
+        default:
+        case domain::config::network::mainnet:
+            return domain::chain::block::genesis_mainnet();
     }
-
-    return testnet_blocks ? domain::chain::block::genesis_testnet() : domain::chain::block::genesis_mainnet();
 }
 
-
 #if defined(KTH_STATISTICS_ENABLED)
-
 #if defined(_WIN32)
 
 void screen_clear() {

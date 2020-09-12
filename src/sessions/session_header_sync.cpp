@@ -110,8 +110,7 @@ void session_header_sync::handle_connect(code const& ec, channel::ptr channel, h
         BIND2(handle_channel_stop, _1, row));
 }
 
-void session_header_sync::attach_handshake_protocols(channel::ptr channel, result_handler handle_started)
-{
+void session_header_sync::attach_handshake_protocols(channel::ptr channel, result_handler handle_started) {
     // Don't use configured services, relay or min version for header sync.
     auto const relay = false;
     auto const own_version = settings_.protocol_maximum;
@@ -200,7 +199,7 @@ bool session_header_sync::initialize() {
     }
 
     //LOG_INFO(LOG_NODE, "asm int $3 - 14");
-    //asm("int $3");  //TODO(fernando): remover
+    //asm("int $3");  //TODO(fernando): remove
 #ifdef KTH_DB_LEGACY     
     block_database::heights gaps;
     // Populate hash buckets from full database empty height scan.

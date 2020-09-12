@@ -29,6 +29,8 @@ public:
     // virtual 
     bool parse_from_file(std::filesystem::path const& config_path, std::ostream& error);
     
+    void set_default_configuration();
+
     /// Load command line options (named).
     // virtual 
     domain::options_metadata load_options();
