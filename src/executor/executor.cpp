@@ -386,6 +386,10 @@ void executor::handle_running(kth::code const& ec) {
     }
 }
 
+bool executor::stopped() const {
+    return node_->stopped();
+}
+
 // This is the end of the stop sequence.
 void executor::handle_stopped(kth::code const&  /*ec*/) {
     //stop(ec);

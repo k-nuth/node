@@ -37,7 +37,7 @@ public:
 
     //static void stop(kth::code const& ec);
     //static void stop();
-    bool stop();
+    // bool stop();
     void signal_stop();
 
     kth::node::full_node& node();
