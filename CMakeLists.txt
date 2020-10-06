@@ -49,7 +49,10 @@ message( STATUS "Knuth: Compiling version ${KTH_PROJECT_VERSION}")
 set(MICROARCHITECTURE "x86_64" CACHE STRING "Specify the Microarchitecture (x86_64|...).")
 message( STATUS "Knuth: Compiling for ${MICROARCHITECTURE}")
 # add_definitions(-DKTH_MICROARCHITECTURE=${MICROARCHITECTURE})
+
+#TODO(fernando): replace with march id
 # add_definitions(-DKTH_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
+add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
 
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
 message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
@@ -203,10 +206,16 @@ set(CURRENCY "BCH" CACHE STRING "Specify the Cryptocurrency (BCH|BTC|LTC).")
 
 if (${CURRENCY} STREQUAL "BCH")
   add_definitions(-DKTH_CURRENCY_BCH)
+  add_definitions(-DKTH_CURRENCY_SYMBOL_STR="BCH")
+  add_definitions(-DKTH_CURRENCY_STR="Bitcoin Cash")
 elseif (${CURRENCY} STREQUAL "BTC")
   add_definitions(-DKTH_CURRENCY_BTC)
+  add_definitions(-DKTH_CURRENCY_SYMBOL_STR="BTC")
+  add_definitions(-DKTH_CURRENCY_STR="Bitcoin Legacy")
 elseif (${CURRENCY} STREQUAL "LTC")
   add_definitions(-DKTH_CURRENCY_LTC)
+  add_definitions(-DKTH_CURRENCY_SYMBOL_STR="LTC")
+  add_definitions(-DKTH_CURRENCY_STR="Litecoin")
 else()
   message(FATAL_ERROR "Invalid Cryptocurrency: ${CURRENCY}")
 endif()
@@ -346,6 +355,9 @@ set(kth_node_sources_just_legacy
   src/parser.cpp
   src/settings.cpp
   src/version.cpp
+  src/user_agent.cpp
+
+  src/executor/executor.cpp
 
   src/protocols/protocol_block_in.cpp
   src/protocols/protocol_block_out.cpp

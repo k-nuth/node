@@ -786,7 +786,7 @@ void protocol_block_in::handle_timeout(code const& ec) {
     // depends on requiring witness peers for explicitly outbound connections.
 }
 
-void protocol_block_in::handle_stop(const code&) {
+void protocol_block_in::handle_stop(code const&) {
     LOG_DEBUG(LOG_NETWORK, "Stopped block_in protocol for [", authority(), "].");
 }
 

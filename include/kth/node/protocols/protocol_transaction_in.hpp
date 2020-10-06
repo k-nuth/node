@@ -33,7 +33,7 @@ private:
     bool handle_receive_transaction(code const& ec, transaction_const_ptr message);
     void handle_store_transaction(code const& ec, transaction_const_ptr message);
 
-    void handle_stop(const code&);
+    void handle_stop(code const&);
 
     // These are thread safe.
     blockchain::safe_chain& chain_;

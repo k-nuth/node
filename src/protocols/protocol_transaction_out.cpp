@@ -293,7 +293,7 @@ bool protocol_transaction_out::handle_transaction_pool(code const& ec, transacti
     return true;
 }
 
-void protocol_transaction_out::handle_stop(const code&) {
+void protocol_transaction_out::handle_stop(code const&) {
     chain_.unsubscribe();
 
     LOG_DEBUG(LOG_NETWORK, "Stopped transaction_out protocol for [", authority(), "].");
