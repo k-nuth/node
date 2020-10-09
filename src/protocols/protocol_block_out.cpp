@@ -143,9 +143,6 @@ bool protocol_block_out::handle_receive_get_headers(code const& ec, get_headers_
     }
 
     auto const threshold = last_locator_top_.load();
-
-    // LOG_INFO(LOG_NODE, "asm int $3 - 2");
-    // asm("int $3");  //TODO(fernando): remover
     chain_.fetch_locator_block_headers(message, threshold, max_get_headers, BIND2(handle_fetch_locator_headers, _1, _2));
     return true;
 }
@@ -192,8 +189,6 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
 
     auto block_hash = message->block_hash();
 
-    //LOG_INFO(LOG_NODE, "asm int $3 - 3");
-    //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_block(block_hash, witness, [this, message](code const& ec, block_const_ptr block, uint64_t) {
             
@@ -280,8 +275,6 @@ bool protocol_block_out::handle_receive_get_blocks(code const& ec, get_blocks_co
 
     auto const threshold = last_locator_top_.load();
 
-    //LOG_INFO(LOG_NODE, "asm int $3 - 4");
-    //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_locator_block_hashes(message, threshold, max_get_blocks, BIND2(handle_fetch_locator_hashes, _1, _2));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
@@ -372,29 +365,21 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
                 stop(error::channel_stopped);
                 return;
             }
-            //LOG_INFO(LOG_NODE, "asm int $3 - 5");
-            //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL) 
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::block: {
-            //LOG_INFO(LOG_NODE, "asm int $3 - 6");
-            //asm("int $3");  //TODO(fernando): remover
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::filtered_block: {
-            //LOG_INFO(LOG_NODE, "asm int $3 - 7");
-            //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
 #endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::compact_block: {
-            //LOG_INFO(LOG_NODE, "asm int $3 - 8");
-            //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_compact_block(entry.hash(), BIND4(send_compact_block, _1, _2, _3, inventory));
 #endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
