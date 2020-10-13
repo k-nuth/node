@@ -17,7 +17,7 @@ namespace kth::node {
 
 class executor {
 public:
-    executor(kth::node::configuration const& config, std::ostream& output, std::ostream& error);
+    executor(kth::node::configuration const& config, bool stdout_enabled = true);
 
     executor(executor const&) = delete;
     void operator=(executor const&) = delete;
@@ -73,8 +73,8 @@ private:
     static std::promise<kth::code> stopping_;
 
     kth::node::configuration config_;
-    std::ostream& output_;
-    std::ostream& error_;
+    // std::ostream& output_;
+    // std::ostream& error_;
     kth::node::full_node::ptr node_;
     kth::handle0 run_handler_;
 };
@@ -107,33 +107,33 @@ private:
 #define KTH_USING_CONFIG_FILE "Using config file: {}"
 #define KTH_USING_DEFAULT_CONFIG "Using default configuration settings."
 
-#define KTH_VERSION_MESSAGE_INIT "Node version: {}"
 #ifdef NDEBUG
 #define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}"
 #else
 #define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}\n  (Debug Build)"
 #endif
 
-#define KTH_VERSION_MESSAGE_INIT "Node version: {}"
-#define KTH_CRYPTOCURRENCY_INIT "Currency: {} - {}"
-#define KTH_MICROARCHITECTURE_INIT "Compiled for microarchitecture: {}"
-#define KTH_DB_TYPE_INIT "Database type: {}"
+#define KTH_VERSION_MESSAGE_INIT "Node C++ lib v{}."
+#define KTH_CRYPTOCURRENCY_INIT "Currency: {} - {}."
+#define KTH_MICROARCHITECTURE_INIT "Optimized for microarchitecture: {}."
+#define KTH_DB_TYPE_INIT "Database type: {}."
 #define KTH_DEBUG_BUILD_INIT "(Debug Build)"
-#define KTH_NETWORK_INIT "Network: {0} ({1} - {1:#x})"
-#define KTH_CORES_INIT "Configured to use {} cores"
+#define KTH_NETWORK_INIT "Network: {0} ({1} - {1:#x})."
+#define KTH_BLOCKCHAIN_CORES_INIT "Blockchain configured to use {} threads."
+#define KTH_NETWORK_CORES_INIT "Networking configured to use {} threads."
 
 // #define KTH_LOG_HEADER "================= startup {} =================="
 
 #if defined(KTH_DB_NEW_FULL)
-#define KTH_DB_TYPE "full, new version"
+#define KTH_DB_TYPE "full-indexed"
 #elif defined(KTH_DB_NEW_BLOCKS)
-#define KTH_DB_TYPE "UTXO and Blocks, new version"
+#define KTH_DB_TYPE "normal"
 #elif defined(KTH_DB_NEW)
-#define KTH_DB_TYPE "just UTXO, new version"
+#define KTH_DB_TYPE "pruned"
 #elif defined(KTH_DB_HISTORY)
-#define KTH_DB_TYPE "full, legacy version"
+#define KTH_DB_TYPE "full-indexed, legacy"
 #else
-#define KTH_DB_TYPE "TXs and Blocks, legacy version"
+#define KTH_DB_TYPE "TXs and Blocks, legacy"
 #endif
 
 } // namespace kth::node
