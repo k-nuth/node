@@ -118,10 +118,10 @@ void protocol_block_in::start() {
     if (compact_from_peer_) {
         if (chain_.is_stale()) {
             //force low bandwidth
-            LOG_INFO(LOG_NODE, "The chain is stale, send sendcmcpt low bandwidth [", authority(), "]");
+            LOG_DEBUG(LOG_NODE, "The chain is stale, send sendcmcpt low bandwidth [", authority(), "]");
             SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
         } else {
-            LOG_INFO(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
+            LOG_DEBUG(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
             SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
         } 
