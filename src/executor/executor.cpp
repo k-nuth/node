@@ -19,6 +19,15 @@
 #include <kth/node/user_agent.hpp>
 #include <kth/node/version.hpp>
 
+
+#if defined(KTH_LOG_LIBRARY_SPDLOG)
+#include <spdlog/spdlog.h>
+// #include "spdlog/spdlog.h"
+#include <spdlog/sinks/stdout_color_sinks.h> // or "../stdout_sinks.h" if no colors needed
+// #include <spdlog/sinks/stderr_color_sinks.h> // or "../stdout_sinks.h" if no colors needed
+#include <spdlog/sinks/basic_file_sink.h>
+#endif
+
 #ifdef KTH_WITH_RPC
 #include <kth/rpc/manager.hpp>
 #include <unordered_set>
@@ -46,8 +55,12 @@ static auto const mode = std::ofstream::out | std::ofstream::app;
 
 std::promise<kth::code> executor::stopping_; //NOLINT
 
-executor::executor(kth::node::configuration const& config, std::ostream& output, std::ostream& error)
-    : config_(config), output_(output), error_(error)
+// executor::executor(kth::node::configuration const& config, std::ostream& output, std::ostream& error)
+//     : config_(config), output_(output), error_(error)
+// {
+
+executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
+    : config_(config)
 {
     auto& network = config_.network;
     auto const verbose = network.verbose;
@@ -73,27 +86,41 @@ executor::executor(kth::node::configuration const& config, std::ostream& output,
         network.minimum_free_space,
         network.maximum_archive_files
     };
-#elif defined(DKTH_LOG_LIBRARY_SPDLOG)
-#else
 #endif
+
+// , 
 
 #if defined(KTH_STATISTICS_ENABLED)
     kth::log::initialize(debug_file, error_file, verbose);
 #else
 #if defined(KTH_LOG_LIBRARY_BOOST)
-    kth::log::stream console_out(&output_, null_deleter());
-    kth::log::stream console_err(&error_, null_deleter());
-    kth::log::initialize(debug_file, error_file, console_out, console_err, verbose);
+    if (stdout_enabled) {
+        kth::log::stream console_out(&cout, null_deleter());
+        kth::log::stream console_err(&cerr, null_deleter());
+        // kth::log::stream console_out(&output_, null_deleter());
+        // kth::log::stream console_err(&error_, null_deleter());
+        kth::log::initialize(debug_file, error_file, console_out, console_err, verbose);
+    } else {
+        kth::log::initialize(debug_file, error_file, verbose);
+    }
+#elif defined(KTH_LOG_LIBRARY_SPDLOG)
+    kth::log::initialize(network.debug_file.string(), network.error_file.string(), stdout_enabled, verbose);
 #else
 #endif
 #endif
+
+
+
+#if defined(KTH_LOG_LIBRARY_SPDLOG)
+
+#endif // defined(KTH_LOG_LIBRARY_SPDLOG)
 
     //OJO: esto estaba sólo en node-exe
     //handle_stop(initialize_stop);
 }
 
 void executor::print_version(std::string const& extra) {
-    output_ << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_DB_TYPE) << std::endl;
+    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_DB_TYPE) << std::endl;
 }
 
 #if ! defined(KTH_DB_READONLY)
@@ -335,8 +362,8 @@ void executor::initialize_output(std::string const& extra) {
 #endif
 
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier)), config_.network.identifier));
-    LOG_INFO(LOG_NODE, fmt::format(KTH_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
-    //TODO(fernando): Network threads
+    LOG_INFO(LOG_NODE, fmt::format(KTH_BLOCKCHAIN_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_CORES_INIT, kth::thread_ceiling(config_.network.threads)));
     //TODO(fernando): Runing from exe of C-API
     //TODO(fernando): Node version and (Exe or C-API version)
 }

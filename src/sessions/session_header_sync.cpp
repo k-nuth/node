@@ -197,9 +197,6 @@ bool session_header_sync::initialize() {
         LOG_ERROR(LOG_NODE, "Block hash list must not be initialized.");
         return false;
     }
-
-    //LOG_INFO(LOG_NODE, "asm int $3 - 14");
-    //asm("int $3");  //TODO(fernando): remove
 #ifdef KTH_DB_LEGACY     
     block_database::heights gaps;
     // Populate hash buckets from full database empty height scan.

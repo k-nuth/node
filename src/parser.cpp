@@ -25,14 +25,14 @@ void validate(boost::any& v, std::vector<std::string> const& values, network* ta
     validators::check_first_occurrence(v);
     auto const& s = validators::get_single_string(values);
 
-    if (s == " mainnet") {
+    if (s == "mainnet") {
         v = boost::any(network::mainnet);
-    } else if (s == " testnet") {
+    } else if (s == "testnet") {
         v = boost::any(network::testnet);
-    } else if (s == " regtest") {
+    } else if (s == "regtest") {
         v = boost::any(network::regtest);
 #if defined(KTH_CURRENCY_BCH)
-    } else if (s == " testnet4") {
+    } else if (s == "testnet4") {
         v = boost::any(network::testnet4);
 #endif
     } else {

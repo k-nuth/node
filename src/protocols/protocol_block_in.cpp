@@ -13,7 +13,8 @@
 #include <memory>
 #include <string>
 
-// #include <boost/format.hpp>
+//Note(fernando): to force a debugger breakpoint we can use 
+//      asm("int $3");
 
 #define FMT_HEADER_ONLY 1
 #include <fmt/core.h>
@@ -203,14 +204,11 @@ bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr
     auto const response = std::make_shared<get_data>();
 
     if (compact_from_peer_) {
-        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_headers (compactblock) [", authority(), "] ");
         message->to_inventory(response->inventories(), inventory::type_id::compact_block);
     } else {
-        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_headers (block) [", authority(), "] ");
         message->to_inventory(response->inventories(), inventory::type_id::block);
     }
    
-    // asm("int $3");  //TODO(fernando): remover
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -226,14 +224,11 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     auto const response = std::make_shared<get_data>();
     
     if (compact_from_peer_) {
-        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_inventory (compactblock) [", authority(), "] ");
         message->reduce(response->inventories(), inventory::type_id::compact_block);
     } else {
-        // LOG_INFO(LOG_NODE, " protocol_block_in::handle_receive_inventory (block) [", authority(), "] ");
         message->reduce(response->inventories(), inventory::type_id::block);
     }
     
-    // asm("int $3");  //TODO(fernando): remover
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -515,12 +510,8 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     if (compact_blocks_map_.count(header_temp.hash()) > 0) {
         return true;
     }
-
-    //LOG_INFO(LOG_NODE, "asm int $3 - 0");
-    //asm("int $3");  //TODO(fernando): remover
             
-    //if we haven't the parent block already, send a get_header message
-    // and return
+    //if we haven't the parent block already, send a get_header message and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
         LOG_DEBUG(LOG_NODE
            , "Compact Block parent block not exists [ ", encode_hash(header_temp.previous_block_hash())
@@ -635,8 +626,6 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         return true;
     }
 
-    //LOG_INFO(LOG_NODE, "asm int $3 - 1");
-    //asm("int $3");  //TODO(fernando): remover        
     size_t mempool_count = 0;
 #if defined(KTH_DB_TRANSACTION_UNCONFIRMED) || defined(KTH_DB_NEW_FULL)
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);

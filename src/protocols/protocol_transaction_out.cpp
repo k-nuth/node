@@ -167,16 +167,11 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
                 stop(error::channel_stopped);
                 return;
             }
-
-            //LOG_INFO(LOG_NODE, "asm int $3 - 11");
-            //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::transaction: {
-            //LOG_INFO(LOG_NODE, "asm int $3 - 12");
-            //asm("int $3");  //TODO(fernando): remover
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
@@ -193,9 +188,6 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
         return;
     }
 
-    //LOG_INFO(LOG_NODE, "asm int $3 - 13");
-    //asm("int $3");  //TODO(fernando): remover
-    
     // Treat already confirmed transactions as not found.
     auto confirmed = ! ec 
 #if defined(KTH_DB_LEGACY) 
