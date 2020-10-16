@@ -667,7 +667,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
     return true;
 }
 
-bool parser::parse_from_file(std::filesystem::path const& config_path, std::ostream& error) {
+bool parser::parse_from_file(kth::path const& config_path, std::ostream& error) {
     try {
         variables_map variables;
 
