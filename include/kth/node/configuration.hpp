@@ -47,7 +47,7 @@ public:
     domain::config::network net = domain::config::network::mainnet;
 
     /// Options and environment vars.
-    std::filesystem::path file;
+    kth::path file;
 
     /// Settings.
     node::settings node;

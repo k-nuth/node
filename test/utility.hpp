@@ -29,13 +29,10 @@ extern domain::message::headers::ptr message_factory(size_t count);
 extern domain::message::headers::ptr message_factory(size_t count,
     hash_digest const& previous);
 
-class reservation_fixture
-  : public reservation
-{
+class reservation_fixture : public reservation {
 public:
-    typedef std::chrono::high_resolution_clock clock;
-    reservation_fixture(reservations& reservations, size_t slot,
-        uint32_t sync_timeout_seconds, clock::time_point now = clock::now());
+    using clock = std::chrono::high_resolution_clock;
+    reservation_fixture(reservations& reservations, size_t slot, uint32_t sync_timeout_seconds, clock::time_point now = clock::now());
     std::chrono::microseconds rate_window() const;
     clock::time_point now() const override;
     bool pending() const;
@@ -45,9 +42,7 @@ private:
     clock::time_point now_;
 };
 
-class blockchain_fixture
-  : public blockchain::fast_chain
-{
+class blockchain_fixture : public blockchain::fast_chain {
 public:
     blockchain_fixture(bool import_result=true, size_t gap_trigger=max_size_t,
         size_t gap_height=max_size_t);
