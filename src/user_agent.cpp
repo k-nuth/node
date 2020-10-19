@@ -8,7 +8,13 @@
 namespace kth::node {
 
 std::string get_user_agent() {
-    return "/kth:" KTH_NODE_VERSION "/";
+#if defined(KTH_CURRENCY_BCH)
+    return "/kth-bch:" KTH_NODE_VERSION "/";
+#elif defined(KTH_CURRENCY_BTC)
+    return "/kth-btc:" KTH_NODE_VERSION "/";
+#elif defined(KTH_CURRENCY_LTC)
+    return "/kth-ltc:" KTH_NODE_VERSION "/";
+#endif
 }
 
 } // namespace kth::node
