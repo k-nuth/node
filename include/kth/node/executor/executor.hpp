@@ -9,9 +9,7 @@
 #include <iostream>
 
 #include <kth/infrastructure/handlers.hpp>
-
 #include <kth/node.hpp>
-
 
 namespace kth::node { 
 
@@ -68,13 +66,11 @@ private:
     void handle_running(kth::code const& ec);
     void handle_stopped(kth::code const& ec);
 
-
     // Termination state.
-    static std::promise<kth::code> stopping_;
+    static 
+    std::promise<kth::code> stopping_;
 
     kth::node::configuration config_;
-    // std::ostream& output_;
-    // std::ostream& error_;
     kth::node::full_node::ptr node_;
     kth::handle0 run_handler_;
 };
