@@ -26,6 +26,13 @@ TEST_CASE("settings construct testnet4 context expected", "[settings tests]") {
     REQUIRE(configuration.sync_timeout_seconds == 5u);
     REQUIRE(configuration.refresh_transactions == true);
 }
+
+TEST_CASE("settings construct scalenet context expected", "[settings tests]") {
+    node::settings configuration(domain::config::network::scalenet);
+    REQUIRE(configuration.sync_peers == 0u);
+    REQUIRE(configuration.sync_timeout_seconds == 5u);
+    REQUIRE(configuration.refresh_transactions == true);
+}
 #endif
 
 TEST_CASE("settings construct mainnet context expected", "[settings tests]") {

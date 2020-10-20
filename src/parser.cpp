@@ -34,6 +34,8 @@ void validate(boost::any& v, std::vector<std::string> const& values, network* ta
 #if defined(KTH_CURRENCY_BCH)
     } else if (s == "testnet4") {
         v = boost::any(network::testnet4);
+    } else if (s == "scalenet") {
+        v = boost::any(network::scalenet);
 #endif
     } else {
         throw validation_error(validation_error::invalid_option_value);
