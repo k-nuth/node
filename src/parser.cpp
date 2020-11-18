@@ -491,11 +491,11 @@ options_metadata parser::load_settings() {
     //     value<uint64_t>(&configured.chain.fermat_activation_time),
     //     "Unix time used for MTP activation of 2020-May-15 hard fork, defaults to 1589544000."
     // )
-    (
-        "fork.euler_activation_time",
-        value<uint64_t>(&configured.chain.euler_activation_time),
-        "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
-    )
+    // (
+    //     "fork.euler_activation_time",
+    //     value<uint64_t>(&configured.chain.euler_activation_time),
+    //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
+    // )
     (
         "fork.gauss_activation_time",
         value<uint64_t>(&configured.chain.gauss_activation_time),
