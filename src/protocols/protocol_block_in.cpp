@@ -116,15 +116,21 @@ void protocol_block_in::start() {
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     if (compact_from_peer_) {
-        if (chain_.is_stale()) {
-            //force low bandwidth
-            LOG_DEBUG(LOG_NODE, "The chain is stale, send sendcmcpt low bandwidth [", authority(), "]");
-            SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
-        } else {
-            LOG_DEBUG(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
+        if ( ! chain_.is_stale_for(3600u)) {
+            LOG_DEBUG(LOG_NODE, "The chain is not stale (is synchronized), send sendcmcpt with configured setting [", authority(), "]");
             SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
-        } 
+        }
+
+        // if (chain_.is_stale()) {
+        //     //force low bandwidth
+        //     LOG_DEBUG(LOG_NODE, "The chain is stale, send sendcmcpt low bandwidth [", authority(), "]");
+        //     SEND2((send_compact{false, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
+        // } else {
+        //     LOG_DEBUG(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
+        //     SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
+        //     compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
+        // } 
     }
 
     send_get_blocks(null_hash);
@@ -144,9 +150,7 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_p
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure generating block locator for ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure generating block locator for [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -677,6 +681,8 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
 
     // Ask the peer for blocks from the chain top up to this orphan.
     if (ec == error::orphan_block) {
+        auto const state = message->validation.state;
+        auto xxx = state->height();
         send_get_blocks(hash);
     }
 
