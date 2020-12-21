@@ -711,12 +711,7 @@ void protocol_block_in::handle_store_block(code const& ec, block_const_ptr messa
        , "] from [", authority(), "] (", state->enabled_forks()
        , checked, ", ", state->minimum_version(), ").");
 
-
-#if defined(KTH_STATISTICS_ENABLED)
     report(*message, node_);
-#else
-    report(*message);
-#endif
 }
 
 // Subscription.
@@ -782,47 +777,64 @@ void protocol_block_in::handle_stop(code const&) {
 // Block reporting.
 //-----------------------------------------------------------------------------
 
-inline 
-bool enabled(size_t height) {
+#if defined(KTH_CURRENCY_BCH)
+inline
+size_t get_modulus_bch(size_t height, domain::config::network network) {
+    if (network == domain::config::network::scalenet) {
+        return 1;
+    }
+
+    return (height < 100000 ? 100 :
+           (height < 200000 ? 10 : 1));
+}
+#endif
+
+inline
+bool enabled(size_t height, domain::config::network network) {
     // Vary the reporting performance reporting interval by height.
+#if defined(KTH_CURRENCY_BCH)
+    auto const modulus = get_modulus_bch(height, network);
+#else
     auto const modulus =
         (height < 100000 ? 100 :
         (height < 200000 ? 10 : 1));
+#endif
 
     return height % modulus == 0;
 }
 
+inline
+bool enabled(size_t height, uint32_t identifier) {
+    return enabled(height, get_network(identifier));
+}
+
 inline 
-float difference(const asio::time_point& start, const asio::time_point& end) {
+float difference(asio::time_point const& start, asio::time_point const& end) {
     auto const elapsed = duration_cast<asio::microseconds>(end - start);
     return static_cast<float>(elapsed.count());
 }
 
 inline 
-size_t unit_cost(const asio::time_point& start, const asio::time_point& end, size_t value) {
+size_t unit_cost(asio::time_point const& start, asio::time_point const& end, size_t value) {
     return static_cast<size_t>(std::round(difference(start, end) / value));
 }
 
 inline 
-size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end) {
+size_t total_cost_ms(asio::time_point const& start, asio::time_point const& end) {
     static constexpr size_t microseconds_per_millisecond = 1000;
     return unit_cost(start, end, microseconds_per_millisecond);
 }
 
 //static
 
-#if defined(KTH_STATISTICS_ENABLED)
 void protocol_block_in::report(domain::chain::block const& block, full_node& node) {
-#else
-void protocol_block_in::report(domain::chain::block const& block) {
-#endif
     KTH_ASSERT(block.validation.state);
     auto const height = block.validation.state->height();
 
 #if defined(KTH_STATISTICS_ENABLED)
     if (true) {
 #else
-    if (enabled(height)) {
+    if (enabled(height, node.network_settings().identifier)) {
 #endif
         auto const& times = block.validation;
         auto const now = asio::steady_clock::now();
@@ -856,9 +868,56 @@ void protocol_block_in::report(domain::chain::block const& block) {
             block.validation.cache_efficiency);
 #endif
 
-        auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
-            "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
-            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs, 
+        // auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
+        //     "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
+        //     "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs, 
+
+        //     // wait total (ms)
+        //     total_cost_ms(times.end_deserialize, times.start_check),
+
+        //     // validation total (ms)
+        //     total_cost_ms(start_validate, times.start_notify),
+
+        //     // validation per input (µs)
+        //     unit_cost(start_validate, times.start_notify, inputs),
+
+        //     // deserialization (read) per input (µs)
+        //     unit_cost(times.start_deserialize, times.end_deserialize, inputs),
+
+        //     // check per input (µs)
+        //     unit_cost(times.start_check, times.start_populate, inputs),
+
+        //     // population per input (µs)
+        //     unit_cost(times.start_populate, times.start_accept, inputs),
+
+        //     // accept per input (µs)
+        //     unit_cost(times.start_accept, times.start_connect, inputs),
+
+        //     // connect (script) per input (µs)
+        //     unit_cost(times.start_connect, times.start_notify, inputs),
+
+        //     // deposit per input (µs)
+        //     unit_cost(times.start_push, times.end_push, inputs),
+
+        //     // this block transaction cache efficiency (hits/queries)
+        //     block.validation.cache_efficiency);
+
+        auto formatted = fmt::format(
+            "Block [{}]\n"
+            "    transactions:              {:>6}\n"
+            "    inputs:                    {:>6} ins\n"
+            "    wait total:                {:>6} ms\n"
+            "    validation total:          {:>6} ms\n"
+            "    validation per input:      {:>6} us\n"
+            "    deserialization per input: {:>6} us\n"
+            "    check per input:           {:>6} us\n"
+            "    population per input:      {:>6} us\n"
+            "    accept per input:          {:>6} us\n"
+            "    connect per input:         {:>6} us\n"
+            "    deposit per input:         {:>6} us\n"
+            "    deposit total:             {:>6} ms\n"
+            "    cache efficiency:          {:f}"
+            , height, transactions, inputs, 
 
             // wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check),
@@ -886,6 +945,8 @@ void protocol_block_in::report(domain::chain::block const& block) {
 
             // deposit per input (µs)
             unit_cost(times.start_push, times.end_push, inputs),
+            // deposit total (ms)
+            total_cost_ms(times.start_push, times.end_push),
 
             // this block transaction cache efficiency (hits/queries)
             block.validation.cache_efficiency);
@@ -895,7 +956,9 @@ void protocol_block_in::report(domain::chain::block const& block) {
             LOG_DEBUG(LOG_BLOCKCHAIN, formatted);
         }
 #else
-        LOG_INFO(LOG_BLOCKCHAIN, formatted);
+        if (inputs > 10000) {
+            LOG_INFO(LOG_BLOCKCHAIN, formatted);
+        }
 #endif
     }
 }

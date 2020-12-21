@@ -36,14 +36,8 @@ public:
 private:
     using hash_queue = std::queue<hash_digest>;
 
-
-#if defined(KTH_STATISTICS_ENABLED)
     static 
     void report(domain::chain::block const& block, full_node& node);
-#else
-    static 
-    void report(domain::chain::block const& block);
-#endif
 
     void send_get_blocks(hash_digest const& stop_hash);
     void send_get_data(code const& ec, get_data_ptr message);
