@@ -43,7 +43,9 @@ private:
     std::atomic<uint64_t> minimum_peer_fee_;
     ////std::atomic<bool> compact_to_peer_;
     const bool relay_to_peer_;
+#if defined(KTH_SEGWIT_ENABLED)
     const bool enable_witness_;
+#endif
 };
 
 } // namespace kth::node
