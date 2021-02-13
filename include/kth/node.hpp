@@ -22,13 +22,10 @@
 #include <kth/node/version.hpp>
 #include <kth/node/protocols/protocol_block_in.hpp>
 #include <kth/node/protocols/protocol_block_out.hpp>
-#include <kth/node/protocols/protocol_block_sync.hpp>
-#include <kth/node/protocols/protocol_header_sync.hpp>
+#include <kth/node/protocols/protocol_header_in.hpp>
 #include <kth/node/protocols/protocol_transaction_in.hpp>
 #include <kth/node/protocols/protocol_transaction_out.hpp>
 #include <kth/node/sessions/session.hpp>
-#include <kth/node/sessions/session_block_sync.hpp>
-#include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/sessions/session_inbound.hpp>
 #include <kth/node/sessions/session_manual.hpp>
 #include <kth/node/sessions/session_outbound.hpp>
