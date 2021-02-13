@@ -159,7 +159,7 @@ bool blockchain_fixture::fill(block_const_ptr block, size_t height) {
     return import_result_;
 }
 
-bool blockchain_fixture::push(const block_const_ptr_list& blocks,
+bool blockchain_fixture::push(block_const_ptr_list const& blocks,
     size_t height) {
     return false;
 }
