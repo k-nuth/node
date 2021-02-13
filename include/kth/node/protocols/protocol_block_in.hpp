@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef KTH_NODE_PROTOCOL_BLOCK_IN_HPP
-#define KTH_NODE_PROTOCOL_BLOCK_IN_HPP
+#ifndef KTH_NODE_PROTOCOL_BLOCK_IN_HPP_
+#define KTH_NODE_PROTOCOL_BLOCK_IN_HPP_
 
 #include <cstddef>
 #include <cstdint>
@@ -68,19 +68,19 @@ private:
     // These are thread safe.
     full_node& node_;
     blockchain::safe_chain& chain_;
-    const asio::duration block_latency_;
-    const bool headers_from_peer_;
-    const bool compact_from_peer_;
-    const bool blocks_from_peer_;
+    asio::duration const block_latency_;
+    bool const headers_from_peer_;
+    bool const compact_from_peer_;
+    bool const blocks_from_peer_;
 
 #if ! defined(KTH_CURRENCY_BCH)
-    const bool require_witness_;
-    const bool peer_witness_;
+    bool const require_witness_;
+    bool const peer_witness_;
 #endif
 
     // This is protected by mutex.
     hash_queue backlog_;
-    mutable upgrade_mutex mutex;
+    upgrade_mutex mutable mutex;
 
     compact_block_map compact_blocks_map_;
 
@@ -91,4 +91,4 @@ private:
 
 } // namespace kth::node
 
-#endif
+#endif // KTH_NODE_PROTOCOL_BLOCK_IN_HPP_
