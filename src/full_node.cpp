@@ -78,6 +78,21 @@ void full_node::start(result_handler handler) {
     p2p::start(handler);
 }
 
+void full_node::start_chain(result_handler handler) {
+    if ( ! stopped()) {
+        handler(error::operation_failed);
+        return;
+    }
+
+    if ( ! chain_.start()) {
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
+        handler(error::operation_failed);
+        return;
+    }
+
+    handler(error::success);
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 
@@ -151,7 +166,7 @@ void full_node::handle_running(code const& ec, result_handler handler) {
 
     if ( ! chain_.get_last_height(top_height) ||
          ! chain_.get_block_hash(top_hash, top_height)) {
-        LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
+             LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
         handler(error::operation_failed);
         return;
     }

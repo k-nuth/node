@@ -42,6 +42,12 @@ class Table;
 
 namespace kth::node {
 
+enum class start_modules {
+    all,
+    just_chain,
+    just_p2p
+};
+
 #if defined(KTH_STATISTICS_ENABLED)
 
 //TODO(fernando): move to another place
@@ -119,6 +125,9 @@ public:
 
     /// Invoke startup and seeding sequence, call from constructing thread.
     void start(result_handler handler) override;
+
+    /// Invoke just chain startup, call from constructing thread.
+    void start_chain(result_handler handler);
 
     /// Synchronize the blockchain and then begin long running sessions,
     /// call from start result handler. Call base method to skip sync.

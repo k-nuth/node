@@ -360,6 +360,7 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
     auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
+#if defined(KTH_SEGWIT_ENABLED)
         case inventory::type_id::witness_block: {
             if ( ! enable_witness_) {
                 stop(error::channel_stopped);
@@ -369,7 +370,10 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        } case inventory::type_id::block: {
+        }
+#endif // #if defined(KTH_SEGWIT_ENABLED)
+
+        case inventory::type_id::block: {
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
