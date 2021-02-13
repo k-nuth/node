@@ -9,6 +9,7 @@
 #include <kth/node/full_node.hpp>
 #include <kth/node/protocols/protocol_block_in.hpp>
 #include <kth/node/protocols/protocol_block_out.hpp>
+#include <kth/node/protocols/protocol_header_in.hpp>
 #include <kth/node/protocols/protocol_transaction_in.hpp>
 #include <kth/node/protocols/protocol_transaction_out.hpp>
 
@@ -36,6 +37,10 @@ void session_manual::attach_protocols(channel::ptr channel) {
 
     if (version >= domain::message::version::level::bip61) {
         attach<protocol_reject_70002>(channel)->start();
+    }
+
+    if (version >= version::level::headers) {
+        attach<protocol_header_in>(channel, chain_)->start();
     }
 
     attach<protocol_address_31402>(channel)->start();
