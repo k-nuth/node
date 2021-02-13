@@ -360,13 +360,10 @@ set(kth_node_sources_just_legacy
 
   src/protocols/protocol_block_in.cpp
   src/protocols/protocol_block_out.cpp
-  src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_header_sync.cpp
+  src/protocols/protocol_header_in.cpp
   src/protocols/protocol_transaction_in.cpp
   src/protocols/protocol_transaction_out.cpp
 
-  src/sessions/session_block_sync.cpp
-  src/sessions/session_header_sync.cpp
   src/sessions/session_inbound.cpp
   src/sessions/session_manual.cpp
   src/sessions/session_outbound.cpp
@@ -502,14 +499,11 @@ set(_kth_headers
         # include_kth_node_protocols_HEADERS =
         kth/node/protocols/protocol_block_in.hpp
         kth/node/protocols/protocol_block_out.hpp
-        kth/node/protocols/protocol_block_sync.hpp
-        kth/node/protocols/protocol_header_sync.hpp
+        kth/node/protocols/protocol_header_in.hpp
         kth/node/protocols/protocol_transaction_in.hpp
         kth/node/protocols/protocol_transaction_out.hpp
         # include_kth_node_sessions_HEADERS =
         kth/node/sessions/session.hpp
-        kth/node/sessions/session_block_sync.hpp
-        kth/node/sessions/session_header_sync.hpp
         kth/node/sessions/session_inbound.hpp
         kth/node/sessions/session_manual.hpp
         kth/node/sessions/session_outbound.hpp
