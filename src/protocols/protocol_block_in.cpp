@@ -54,31 +54,31 @@ uint64_t get_compact_blocks_version() {
 }
 
 protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe_chain& chain)
-  : protocol_timer(node, channel, false, NAME),
-    node_(node),
-    chain_(chain),
-    block_latency_(node.node_settings().block_latency()),
+    : protocol_timer(node, channel, false, NAME)
+    , node_(node)
+    , chain_(chain)
+    , block_latency_(node.node_settings().block_latency())
 
     // TODO: move send_headers to a derived class protocol_block_in_70012.
-    headers_from_peer_(negotiated_version() >= version::level::bip130),
+    , headers_from_peer_(negotiated_version() >= version::level::bip130)
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
-    compact_from_peer_(negotiated_version() >= version::level::bip152),
-    
-    compact_blocks_high_bandwidth_set_(false),
+    , compact_from_peer_(negotiated_version() >= version::level::bip152)
+
+    , compact_blocks_high_bandwidth_set_(false)
 
     // This patch is treated as integral to basic block handling.
-    blocks_from_peer_(
+    , blocks_from_peer_(
         negotiated_version() > version::level::no_blocks_end ||
-        negotiated_version() < version::level::no_blocks_start),
+        negotiated_version() < version::level::no_blocks_start)
 
 #if ! defined(KTH_CURRENCY_BCH)
     // Witness must be requested if possibly enforced.
-    require_witness_(is_witness(node.network_settings().services)),
-    peer_witness_(is_witness(channel->peer_version()->services())),
+    , require_witness_(is_witness(node.network_settings().services))
+    , peer_witness_(is_witness(channel->peer_version()->services()))
 #endif
 
-    CONSTRUCT_TRACK(protocol_block_in)
+    , CONSTRUCT_TRACK(protocol_block_in)
 {}
 
 // Start.
@@ -86,8 +86,9 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
 
 void protocol_block_in::start() {
     // Use timer to drop slow peers.
-    protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
-
+    protocol_timer::start(block_latency_, [this](code const& ec){
+        handle_timeout(ec);
+    });
 
 #if ! defined(KTH_CURRENCY_BCH)
     // Do not process incoming blocks if required witness is unavailable.
@@ -135,7 +136,10 @@ void protocol_block_in::start() {
 
 void protocol_block_in::send_get_blocks(hash_digest const& stop_hash) {
     auto const heights = block::locator_heights(node_.top_block().height());
-    chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+    // chain_.fetch_block_locator(heights, BIND3(handle_fetch_block_locator, _1, _2, stop_hash));
+    chain_.fetch_block_locator(heights, [this, &stop_hash](code const& ec, get_headers_ptr message){
+        handle_fetch_block_locator(ec, message, stop_hash);
+    });
 }
 
 void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_ptr message, hash_digest const& stop_hash) {
@@ -144,9 +148,7 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_p
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure generating block locator for ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure generating block locator for [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -162,14 +164,9 @@ void protocol_block_in::handle_fetch_block_locator(code const& ec, get_headers_p
     auto const request_type = (use_headers ? "headers" : "inventory");
 
     if (stop_hash == null_hash) {
-        LOG_DEBUG(LOG_NODE
-           , "Ask [", authority(), "] for ", request_type, " after ["
-           , encode_hash(last_hash), "]");
+        LOG_DEBUG(LOG_NODE, "Ask [", authority(), "] for ", request_type, " after [", encode_hash(last_hash), "]");
     } else {
-        LOG_DEBUG(LOG_NODE
-           , "Ask [", authority(), "] for ", request_type, " from ["
-           , encode_hash(last_hash), "] through ["
-           , encode_hash(stop_hash), "]");
+        LOG_DEBUG(LOG_NODE, "Ask [", authority(), "] for ", request_type, " from [", encode_hash(last_hash), "] through [", encode_hash(stop_hash), "]");
     }
 
     message->set_stop_hash(stop_hash);
@@ -210,7 +207,10 @@ bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr
     }
    
     // Remove hashes of blocks that we already have.
-    chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+    // chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+    chain_.filter_blocks(response, [this, response](code const& ec){
+        send_get_data(ec, response);
+    });
     return true;
 }
 
@@ -230,7 +230,11 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     }
     
     // Remove hashes of blocks that we already have.
-    chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+    // chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
+
+    chain_.filter_blocks(response, [this, response](code const& ec){
+        send_get_data(ec, response);
+    });
     return true;
 }
 
@@ -662,7 +666,7 @@ void protocol_block_in::send_get_data_compact_block(code const& ec, hash_digest 
     get_data_ptr request;
     request = std::make_shared<get_data>(hashes, inventory::type_id::block);
 
-    send_get_data(ec,request);
+    send_get_data(ec, request);
 }
 
 // The block has been saved to the block chain (or not).
