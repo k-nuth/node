@@ -39,25 +39,27 @@ bool is_witness(uint64_t services) {
 }
 
 protocol_block_out::protocol_block_out(full_node& node, channel::ptr channel, safe_chain& chain)
-  : protocol_events(node, channel, NAME),
-    node_(node),
-    last_locator_top_(null_hash),
-    chain_(chain),
+    : protocol_events(node, channel, NAME)
+    , node_(node)
+    , last_locator_top_(null_hash)
+    , chain_(chain)
 
     // TODO: move send_compact to a derived class protocol_block_out_70014.
-    compact_to_peer_(false),
-    compact_high_bandwidth_(true),
+    , compact_to_peer_(false)
+    , compact_high_bandwidth_(true)
 #if defined(KTH_CURRENCY_BCH)
-    compact_version_(1),
+    , compact_version_(1)
 #else
-    compact_version_(2),
+    , compact_version_(2)
 #endif
     // TODO: move send_headers to a derived class protocol_block_out_70012.
-    headers_to_peer_(false),
+    , headers_to_peer_(false)
 
+#if defined(KTH_SEGWIT_ENABLED)
     // Witness requests must be allowed if advertising the service.
-    enable_witness_(is_witness(node.network_settings().services)),
-    CONSTRUCT_TRACK(protocol_block_out)
+    , enable_witness_(is_witness(node.network_settings().services))
+#endif
+    , CONSTRUCT_TRACK(protocol_block_out)
 {}
 
 // Start.
@@ -128,17 +130,13 @@ bool protocol_block_out::handle_receive_get_headers(code const& ec, get_headers_
     auto const size = message->start_hashes().size();
 
     if (size > max_locator) {
-        LOG_WARNING(LOG_NODE
-           , "Excessive get_headers locator size ("
-           , size, ") from [", authority(), "]");
+        LOG_WARNING(LOG_NODE, "Excessive get_headers locator size (", size, ") from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
 
     if (size > locator_limit()) {
-        LOG_DEBUG(LOG_NODE
-           , "Disallowed get_headers locator size ("
-           , size, ") from [", authority(), "]");
+        LOG_DEBUG(LOG_NODE, "Disallowed get_headers locator size (", size, ") from [", authority(), "]");
         return true;
     }
 
@@ -154,9 +152,7 @@ void protocol_block_out::handle_fetch_locator_headers(code const& ec, headers_pt
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure locating locator block headers for ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure locating locator block headers for [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -179,17 +175,18 @@ void protocol_block_out::handle_fetch_locator_headers(code const& ec, headers_pt
 }
 
 bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, get_block_transactions_const_ptr message) {
-#if defined(KTH_CURRENCY_BCH)
-    bool witness = false;
-#else
-    bool witness = true;
-#endif
-    if (stopped(ec))
+    if (stopped(ec)) {
         return false;
+    }
+
+#if defined(KTH_CURRENCY_BCH)
+    bool const witness = false;
+#else
+    bool const witness = true;
+#endif
 
     auto block_hash = message->block_hash();
 
-//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_block(block_hash, witness, [this, message](code const& ec, block_const_ptr block, uint64_t) {
             
         if (ec == error::success) {
@@ -210,9 +207,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
             uint16_t offset = 0;
             for (size_t j = 0; j < indexes.size(); j++) {
                 if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
-                    LOG_WARNING(LOG_NODE
-                       , "Compact Blocks index offset is invalid"
-                       , " from [", authority(), "]");
+                    LOG_WARNING(LOG_NODE, "Compact Blocks index offset is invalid", " from [", authority(), "]");
                     stop(error::channel_stopped);
                     return;
                 }
@@ -225,9 +220,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
 
             for (size_t i = 0; i < indexes.size(); i++) {
                 if (indexes[i] >= block->transactions().size()) {
-                   LOG_WARNING(LOG_NODE
-                       , "Compact Blocks index is greater than transactions size"
-                       , " from [", authority(), "]");
+                    LOG_WARNING(LOG_NODE, "Compact Blocks index is greater than transactions size", " from [", authority(), "]");
                     stop(error::channel_stopped);
                     return;
                 }
@@ -238,7 +231,6 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
             SEND2(response, handle_send, _1, block_transactions::command);
         } 
     });
-//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
 
     return true;
 }
@@ -255,17 +247,13 @@ bool protocol_block_out::handle_receive_get_blocks(code const& ec, get_blocks_co
     auto const size = message->start_hashes().size();
 
     if (size > max_locator) {
-        LOG_WARNING(LOG_NODE
-           , "Excessive get_blocks locator size ("
-           , size, ") from [", authority(), "]");
+        LOG_WARNING(LOG_NODE, "Excessive get_blocks locator size (", size, ") from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
 
     if (size > locator_limit()) {
-        LOG_DEBUG(LOG_NODE
-           , "Disallowed get_blocks locator size ("
-           , size, ") from [", authority(), "]");
+        LOG_DEBUG(LOG_NODE, "Disallowed get_blocks locator size (", size, ") from [", authority(), "]");
         return true;
     }
 
@@ -287,9 +275,7 @@ void protocol_block_out::handle_fetch_locator_hashes(code const& ec, inventory_p
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure locating locator block hashes for ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure locating locator block hashes for [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -321,9 +307,7 @@ bool protocol_block_out::handle_receive_get_data(code const& ec, get_data_const_
 
     // TODO: consider rejecting the message for duplicated entries.
     if (message->inventories().size() > max_get_data) {
-        LOG_WARNING(LOG_NODE
-           , "Invalid get_data size (", message->inventories().size()
-           , ") from [", authority(), "]");
+        LOG_WARNING(LOG_NODE, "Invalid get_data size (", message->inventories().size(), ") from [", authority(), "]");
         stop(error::channel_stopped);
         return false;
     }
@@ -360,24 +344,23 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
     auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
+#if defined(KTH_SEGWIT_ENABLED)        
         case inventory::type_id::witness_block: {
             if ( ! enable_witness_) {
                 stop(error::channel_stopped);
                 return;
             }
-//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL) 
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
-//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
-        } case inventory::type_id::block: {
-//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
+        }
+#endif // defined(KTH_SEGWIT_ENABLED)
+        case inventory::type_id::block: {
             chain_.fetch_block(entry.hash(), false, BIND4(send_block, _1, _2, _3, inventory));
-//#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
         } case inventory::type_id::filtered_block: {
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_merkle_block(entry.hash(), BIND4(send_merkle_block, _1, _2, _3, inventory));
-#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
+#endif
             break;
         } case inventory::type_id::compact_block: {
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
@@ -407,9 +390,7 @@ void protocol_block_out::send_block(code const& ec, block_const_ptr message, siz
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure locating block requested by ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure locating block requested by [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -435,9 +416,7 @@ void protocol_block_out::send_merkle_block(code const& ec, merkle_block_const_pt
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure locating merkle block requested by ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure locating merkle block requested by [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
@@ -445,7 +424,7 @@ void protocol_block_out::send_merkle_block(code const& ec, merkle_block_const_pt
     SEND2(*message, handle_send_next, _1, inventory);
 }
 
-// TODO: move compact_block to derived class protocol_block_out_70014.
+// TODO(fernando): move compact_block to derived class protocol_block_out_70014.
 void protocol_block_out::send_compact_block(code const& ec, compact_block_const_ptr message, size_t, inventory_ptr inventory) {
     if (stopped(ec)) {
         return;
@@ -463,9 +442,7 @@ void protocol_block_out::send_compact_block(code const& ec, compact_block_const_
     }
 
     if (ec) {
-        LOG_ERROR(LOG_NODE
-           , "Internal failure locating compact block requested by ["
-           , authority(), "] ", ec.message());
+        LOG_ERROR(LOG_NODE, "Internal failure locating compact block requested by [", authority(), "] ", ec.message());
         stop(ec);
         return;
     }
