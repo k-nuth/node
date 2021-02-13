@@ -11,8 +11,6 @@
 #include <kth/blockchain.hpp>
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
-#include <kth/node/sessions/session_block_sync.hpp>
-#include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/sessions/session_inbound.hpp>
 #include <kth/node/sessions/session_manual.hpp>
 #include <kth/node/sessions/session_outbound.hpp>
@@ -78,6 +76,21 @@ void full_node::start(result_handler handler) {
     p2p::start(handler);
 }
 
+void full_node::start_chain(result_handler handler) {
+    if ( ! stopped()) {
+        handler(error::operation_failed);
+        return;
+    }
+
+    if ( ! chain_.start()) {
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
+        handler(error::operation_failed);
+        return;
+    }
+
+    handler(error::success);
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 
@@ -87,51 +100,7 @@ void full_node::run(result_handler handler) {
         return;
     }
 
-    // Skip sync sessions.
     handle_running(error::success, handler);
-    return;
-
-    // TODO: make this safe by requiring sync if gaps found.
-    ////// By setting no download connections checkpoints can be used without sync.
-    ////// This also allows the maximum protocol version to be set below headers.
-    ////if (settings_.sync_peers == 0)
-    ////{
-    ////    // This will spawn a new thread before returning.
-    ////    handle_running(error::success, handler);
-    ////    return;
-    ////}
-
-    ////// The instance is retained by the stop handler (i.e. until shutdown).
-    ////auto const header_sync = attach_header_sync_session();
-
-    ////// This is invoked on a new thread.
-    ////header_sync->start(
-    ////    std::bind(&full_node::handle_headers_synchronized,
-    ////        this, _1, handler));
-}
-
-void full_node::handle_headers_synchronized(code const& ec, result_handler handler) {
-    ////if (stopped())
-    ////{
-    ////    handler(error::service_stopped);
-    ////    return;
-    ////}
-
-    ////if (ec)
-    ////{
-    ////    LOG_ERROR(LOG_NODE
-    ////       , "Failure synchronizing headers: ", ec.message());
-    ////    handler(ec);
-    ////    return;
-    ////}
-
-    ////// The instance is retained by the stop handler (i.e. until shutdown).
-    ////auto const block_sync = attach_block_sync_session();
-
-    ////// This is invoked on a new thread.
-    ////block_sync->start(
-    ////    std::bind(&full_node::handle_running,
-    ////        this, _1, handler));
 }
 
 void full_node::handle_running(code const& ec, result_handler handler) {
@@ -149,8 +118,7 @@ void full_node::handle_running(code const& ec, result_handler handler) {
     size_t top_height;
     hash_digest top_hash;
 
-    if ( ! chain_.get_last_height(top_height) ||
-         ! chain_.get_block_hash(top_hash, top_height)) {
+    if ( ! chain_.get_last_height(top_height) || ! chain_.get_block_hash(top_hash, top_height)) {
         LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
         handler(error::operation_failed);
         return;
@@ -213,14 +181,6 @@ kth::network::session_inbound::ptr full_node::attach_inbound_session() {
 
 kth::network::session_outbound::ptr full_node::attach_outbound_session() {
     return attach<node::session_outbound>(chain_);
-}
-
-session_header_sync::ptr full_node::attach_header_sync_session() {
-    return attach<session_header_sync>(hashes_, chain_, chain_.chain_settings().checkpoints);
-}
-
-session_block_sync::ptr full_node::attach_block_sync_session() {
-    return attach<session_block_sync>(hashes_, chain_, node_settings_);
 }
 
 // Shutdown

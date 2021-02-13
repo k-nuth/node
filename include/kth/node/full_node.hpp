@@ -32,8 +32,6 @@ class Table;
 #include <kth/domain/multi_crypto_support.hpp>
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
-#include <kth/node/sessions/session_block_sync.hpp>
-#include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/utility/check_list.hpp>
 
 // #ifdef WITH_KEOKEN
@@ -41,6 +39,12 @@ class Table;
 // #endif
 
 namespace kth::node {
+
+enum class start_modules {
+    all,
+    just_chain,
+    just_p2p
+};
 
 #if defined(KTH_STATISTICS_ENABLED)
 
@@ -119,6 +123,9 @@ public:
 
     /// Invoke startup and seeding sequence, call from constructing thread.
     void start(result_handler handler) override;
+
+    /// Invoke just chain startup, call from constructing thread.
+    void start_chain(result_handler handler);
 
     /// Synchronize the blockchain and then begin long running sessions,
     /// call from start result handler. Call base method to skip sync.
@@ -378,7 +385,7 @@ public:
 protected:
     /// Attach a node::session to the network, caller must start the session.
     template <typename Session, typename... Args>
-    typename Session::ptr attach(Args&&... args) {
+    auto attach(Args&&... args) {
         return std::make_shared<Session>(*this, std::forward<Args>(args)...);
     }
 
@@ -387,13 +394,6 @@ protected:
     network::session_manual::ptr attach_manual_session() override;
     network::session_inbound::ptr attach_inbound_session() override;
     network::session_outbound::ptr attach_outbound_session() override;
-
-    /// Override to attach specialized node sessions.
-    virtual 
-    session_header_sync::ptr attach_header_sync_session();
-    
-    virtual 
-    session_block_sync::ptr attach_block_sync_session();
 
     ///For mining
     blockchain::block_chain chain_;
@@ -412,7 +412,6 @@ private:
 
 
     bool handle_reorganized(code ec, size_t fork_height, block_const_ptr_list_const_ptr incoming, block_const_ptr_list_const_ptr outgoing);
-    void handle_headers_synchronized(code const& ec, result_handler handler);
     void handle_network_stopped(code const& ec, result_handler handler);
 
     void handle_started(code const& ec, result_handler handler);
