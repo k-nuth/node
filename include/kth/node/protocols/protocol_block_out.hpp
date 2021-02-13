@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+
 #include <kth/blockchain.hpp>
 #include <kth/network.hpp>
 #include <kth/node/define.hpp>
@@ -56,7 +57,9 @@ private:
     kth::atomic<hash_digest> last_locator_top_;
     std::atomic<bool> compact_to_peer_;
     std::atomic<bool> headers_to_peer_;
+#if defined(KTH_SEGWIT_ENABLED)    
     const bool enable_witness_;
+#endif
     std::atomic<bool> compact_high_bandwidth_;
     std::atomic<uint64_t> compact_version_;
 };
