@@ -39,3 +39,4 @@ CMakeSettings.json
 .vscode/
 
 test_package/
+.DS_Store
