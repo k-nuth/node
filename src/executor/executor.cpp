@@ -177,7 +177,7 @@ kth::node::full_node const& executor::node() const {
 }
 
 #if ! defined(KTH_DB_READONLY)
-bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handle0 handler) {
+bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -209,7 +209,11 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handl
 #endif
 
     // The callback may be returned on the same thread.
-    node_->start(std::bind(&executor::handle_started, this, _1));
+    if (mod == start_modules::just_chain) {
+        node_->start_chain(std::bind(&executor::handle_started, this, _1));
+    } else {
+        node_->start(std::bind(&executor::handle_started, this, _1));
+    }
 
 #ifdef KTH_WITH_RPC
     bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::domain::config::network::testnet;

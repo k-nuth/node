@@ -30,7 +30,7 @@ public:
 
 #if ! defined(KTH_DB_READONLY)
     // bool init_and_run(kth::handle0 handler);
-    bool init_run_and_wait_for_signal(std::string const& extra, kth::handle0 handler);
+    bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
 #endif
 
     //static void stop(kth::code const& ec);
