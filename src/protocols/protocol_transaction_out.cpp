@@ -47,8 +47,10 @@ protocol_transaction_out::protocol_transaction_out(full_node& network, channel::
     // TODO: move relay to a derived class protocol_transaction_out_70001.
     , relay_to_peer_(peer_version()->relay())
 
+#if defined(KTH_SEGWIT_ENABLED)
     // Witness requests must be allowed if advertising the service.
     , enable_witness_(is_witness(network.network_settings().services))
+#endif
     , CONSTRUCT_TRACK(protocol_transaction_out)
 {}
 
@@ -162,6 +164,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
     auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
+#if defined(KTH_SEGWIT_ENABLED)
         case inventory::type_id::witness_transaction: {
             if ( ! enable_witness_) {
                 stop(error::channel_stopped);
@@ -171,7 +174,9 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
-        } case inventory::type_id::transaction: {
+        } 
+#endif // defined(KTH_SEGWIT_ENABLED)     
+        case inventory::type_id::transaction: {
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
