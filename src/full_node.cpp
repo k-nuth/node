@@ -90,7 +90,7 @@ void full_node::start_chain(result_handler handler) {
         return;
     }
 
-    handler(error::success);
+    p2p::start_fake(handler);
 }
 
 // Run sequence.
