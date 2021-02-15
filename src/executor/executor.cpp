@@ -177,7 +177,7 @@ kth::node::full_node const& executor::node() const {
 }
 
 #if ! defined(KTH_DB_READONLY)
-bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler) {
+bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -209,10 +209,10 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
 #endif
 
     // The callback may be returned on the same thread.
-    if (mod == start_modules::just_chain) {
-        node_->start_chain(std::bind(&executor::handle_started, this, _1));
+    if (mods == start_modules::just_chain) {
+        node_->start_chain(std::bind(&executor::handle_started, this, _1, mods));
     } else {
-        node_->start(std::bind(&executor::handle_started, this, _1));
+        node_->start(std::bind(&executor::handle_started, this, _1, mods));
     }
 
 #ifdef KTH_WITH_RPC
@@ -262,7 +262,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
 #endif // ! defined(KTH_DB_READONLY)
 
 // Handle the completion of the start sequence and begin the run sequence.
-void executor::handle_started(kth::code const& ec) {
+void executor::handle_started(kth::code const& ec, start_modules mods) {
     if (ec) {
         LOG_ERROR(LOG_NODE, fmt::format(KTH_NODE_START_FAIL, ec.message()));
 //        stop(ec);
@@ -278,8 +278,15 @@ void executor::handle_started(kth::code const& ec) {
     // This is the beginning of the stop sequence.
     node_->subscribe_stop(std::bind(&executor::handle_stopped, this, _1));
 
-    // This is the beginning of the run sequence.
-    node_->run(std::bind(&executor::handle_running, this, _1));
+    if (mods != start_modules::just_chain) {
+        // This is the beginning of the run sequence.
+        node_->run(std::bind(&executor::handle_running, this, _1));
+    } else {
+        LOG_INFO(LOG_NODE, KTH_NODE_STARTED);
+        if (run_handler_) {
+            run_handler_(ec);
+        }
+    }
 }
 
 // This is the end of the run sequence.

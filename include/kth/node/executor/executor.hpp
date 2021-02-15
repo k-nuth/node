@@ -62,7 +62,7 @@ private:
     static 
     void handle_stop(int code);
 
-    void handle_started(kth::code const& ec);
+    void handle_started(kth::code const& ec, start_modules mod);
     void handle_running(kth::code const& ec);
     void handle_stopped(kth::code const& ec);
 
