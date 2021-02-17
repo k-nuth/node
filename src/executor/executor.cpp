@@ -273,19 +273,14 @@ void executor::handle_started(kth::code const& ec, start_modules mods) {
         return;
     }
 
-    LOG_INFO(LOG_NODE, KTH_NODE_SEEDED);
-
-    // This is the beginning of the stop sequence.
-    node_->subscribe_stop(std::bind(&executor::handle_stopped, this, _1));
-
-    if (mods != start_modules::just_chain) {
+    if (mods == start_modules::just_chain) {
+        node_->run_chain(std::bind(&executor::handle_running, this, _1));
+    } else {
+        LOG_INFO(LOG_NODE, KTH_NODE_SEEDED);
+        // This is the beginning of the stop sequence.
+        node_->subscribe_stop(std::bind(&executor::handle_stopped, this, _1));
         // This is the beginning of the run sequence.
         node_->run(std::bind(&executor::handle_running, this, _1));
-    } else {
-        LOG_INFO(LOG_NODE, KTH_NODE_STARTED);
-        if (run_handler_) {
-            run_handler_(ec);
-        }
     }
 }
 

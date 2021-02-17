@@ -90,7 +90,10 @@ void full_node::start_chain(result_handler handler) {
         return;
     }
 
-    p2p::start_fake(handler);
+    std::thread t1([this, handler] {
+        p2p::start_fake(handler);
+    });
+    t1.detach();
 }
 
 // Run sequence.
@@ -123,6 +126,17 @@ void full_node::run(result_handler handler) {
     ////header_sync->start(
     ////    std::bind(&full_node::handle_headers_synchronized,
     ////        this, _1, handler));
+}
+
+void full_node::run_chain(result_handler handler) {
+    if (stopped()) {
+        handler(error::service_stopped);
+        return;
+    }
+
+    // Skip sync sessions.
+    handle_running_chain(error::success, handler);
+    return;
 }
 
 void full_node::handle_headers_synchronized(code const& ec, result_handler handler) {
@@ -181,6 +195,40 @@ void full_node::handle_running(code const& ec, result_handler handler) {
     // This is invoked on a new thread.
     // This is the end of the derived run startup sequence.
     p2p::run(handler);
+}
+
+void full_node::handle_running_chain(code const& ec, result_handler handler) {
+    if (stopped()) {
+        handler(error::service_stopped);
+        return;
+    }
+
+    if (ec) {
+        LOG_ERROR(LOG_NODE, "Failure synchronizing blocks: ", ec.message());
+        handler(ec);
+        return;
+    }
+
+    size_t top_height;
+    hash_digest top_hash;
+
+    if ( ! chain_.get_last_height(top_height) ||
+         ! chain_.get_block_hash(top_hash, top_height)) {
+             LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
+        handler(error::operation_failed);
+        return;
+    }
+
+    set_top_block({ std::move(top_hash), top_height });
+
+    LOG_INFO(LOG_NODE, "Node start height is (", top_height, ").");
+
+    subscribe_blockchain(
+        std::bind(&full_node::handle_reorganized, this, _1, _2, _3, _4));
+
+    // This is invoked on a new thread.
+    // This is the end of the derived run startup sequence.
+    handler(error::success);
 }
 
 // A typical reorganization consists of one incoming and zero outgoing blocks.

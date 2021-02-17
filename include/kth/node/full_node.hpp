@@ -132,6 +132,7 @@ public:
     /// Synchronize the blockchain and then begin long running sessions,
     /// call from start result handler. Call base method to skip sync.
     void run(result_handler handler) override;
+    void run_chain(result_handler handler) override;
 
     // Shutdown.
     // ------------------------------------------------------------------------
@@ -426,6 +427,7 @@ private:
 
     void handle_started(code const& ec, result_handler handler);
     void handle_running(code const& ec, result_handler handler);
+    void handle_running_chain(code const& ec, result_handler handler);
 
 
 #if defined(KTH_STATISTICS_ENABLED)
