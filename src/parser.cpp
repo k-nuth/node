@@ -285,7 +285,7 @@ options_metadata parser::load_settings() {
         "The advertised public address of this node, defaults to none."
     )(
         "network.blacklist",
-        value<infrastructure::config::authority::list>(&configured.network.blacklists),
+        value<infrastructure::config::authority::list>(&configured.network.blacklist),
         "IP address to disallow as a peer, multiple entries allowed."
     )(
         "network.peer",
