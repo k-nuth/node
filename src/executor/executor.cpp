@@ -88,7 +88,7 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     };
 #endif
 
-// , 
+// ,
 
 #if defined(KTH_STATISTICS_ENABLED)
     kth::log::initialize(debug_file, error_file, verbose);
@@ -126,7 +126,7 @@ void executor::print_version(std::string const& extra) {
 #if ! defined(KTH_DB_READONLY)
 bool executor::init_directory(error_code& ec) {
     auto const& directory = config_.database.directory;
-  
+
     if (create_directories(directory, ec)) {
         LOG_INFO(LOG_NODE, fmt::format(KTH_INITIALIZING_CHAIN, directory.string()));
         auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier));
@@ -150,11 +150,11 @@ bool executor::do_initchain(std::string const& extra) {
     initialize_output(extra);
 
     error_code ec;
-    
+
     if (init_directory(ec)) {
         return true;
     }
-    
+
     auto const& directory = config_.database.directory;
 
     if (ec.value() == directory_exists) {
@@ -189,7 +189,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
 
     if ( ! verify_directory() ) {
         error_code ec;
-        
+
         if ( ! init_directory(ec) ) {
             auto const& directory = config_.database.directory;
             LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
@@ -334,8 +334,6 @@ void executor::handle_stop(int code) {
 
 void executor::signal_stop() {
     stop(kth::code());
-    // static std::once_flag stop_mutex;
-    // std::call_once(stop_mutex, [&](){ stopping_.set_value(kth::code()); });
 }
 
 // Manage the race between console stop and server stop.
