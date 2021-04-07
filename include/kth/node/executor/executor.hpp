@@ -11,7 +11,7 @@
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
 
-namespace kth::node { 
+namespace kth::node {
 
 class executor {
 public:
@@ -19,8 +19,6 @@ public:
 
     executor(executor const&) = delete;
     void operator=(executor const&) = delete;
-
-    // bool menu();
 
 #if ! defined(KTH_DB_READONLY)
     bool do_initchain(std::string const& extra);
@@ -56,10 +54,10 @@ public:
     bool run();
 
 private:
-    static 
+    static
     void stop(kth::code const& ec);
-    
-    static 
+
+    static
     void handle_stop(int code);
 
     void handle_started(kth::code const& ec, start_modules mod);
@@ -67,7 +65,7 @@ private:
     void handle_stopped(kth::code const& ec);
 
     // Termination state.
-    static 
+    static
     std::promise<kth::code> stopping_;
 
     kth::node::configuration config_;
