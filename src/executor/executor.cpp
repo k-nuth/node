@@ -203,6 +203,16 @@ bool executor::wait_for_signal_and_close() {
 }
 
 #if ! defined(KTH_DB_READONLY)
+
+error_code executor::init_directory_if_necessary() {
+    if (verify_directory()) return error::success;
+
+    error_code ec;
+    if (init_directory(ec)) return error::success;
+
+    return ec;
+}
+
 bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
