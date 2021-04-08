@@ -55,10 +55,6 @@ static auto const mode = std::ofstream::out | std::ofstream::app;
 
 std::promise<kth::code> executor::stopping_; //NOLINT
 
-// executor::executor(kth::node::configuration const& config, std::ostream& output, std::ostream& error)
-//     : config_(config), output_(output), error_(error)
-// {
-
 executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
     : config_(config)
 {
