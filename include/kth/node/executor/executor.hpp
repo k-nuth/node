@@ -27,13 +27,10 @@ public:
     // bool run(kth::handle0 handler);
 
 #if ! defined(KTH_DB_READONLY)
-    // bool init_and_run(kth::handle0 handler);
+    bool init_run(std::string const& extra, start_modules mod, kth::handle0 handler);
     bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
 #endif
 
-    //static void stop(kth::code const& ec);
-    //static void stop();
-    // bool stop();
     void signal_stop();
 
     kth::node::full_node& node();
