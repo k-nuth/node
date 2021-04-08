@@ -172,6 +172,29 @@ kth::node::full_node const& executor::node() const {
     return *node_;
 }
 
+// Close must be called from main thread.
+bool executor::close() {
+    LOG_INFO(LOG_NODE, KTH_NODE_STOPPING);
+
+#ifdef KTH_WITH_RPC
+    if ( ! message_manager.is_stopped()) {
+        LOG_INFO(LOG_NODE, KTH_RPC_STOPPING);
+        message_manager.stop();
+        rpc_thread.join();
+        LOG_INFO(LOG_NODE, KTH_RPC_STOPPED);
+    }
+#endif
+
+    // Close must be called from main thread.
+    if (node_->close()) {
+        LOG_INFO(LOG_NODE, KTH_NODE_STOPPED);
+    } else {
+        LOG_INFO(LOG_NODE, KTH_NODE_STOP_FAIL);
+    }
+
+    return true;
+}
+
 #if ! defined(KTH_DB_READONLY)
 bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
