@@ -33,6 +33,9 @@ public:
 
     void signal_stop();
 
+    // Close must be called from main thread.
+    bool close();
+
     kth::node::full_node& node();
     kth::node::full_node const& node() const;
 
