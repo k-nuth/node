@@ -45,6 +45,7 @@ public:
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);
+    std::error_code init_directory_if_necessary();
 #endif
 
     bool verify_directory();
