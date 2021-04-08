@@ -52,6 +52,8 @@ public:
     bool run();
 
 private:
+    bool stopping();
+
     static
     void stop(kth::code const& ec);
 
