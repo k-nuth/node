@@ -195,6 +195,13 @@ bool executor::close() {
     return true;
 }
 
+// private
+bool executor::wait_for_signal_and_close() {
+    // Wait for stop. Ensure calling close from the main thread.
+    stopping_.get_future().wait();
+    return close();
+}
+
 #if ! defined(KTH_DB_READONLY)
 bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
