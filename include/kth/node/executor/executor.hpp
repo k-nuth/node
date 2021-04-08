@@ -52,7 +52,7 @@ public:
     bool run();
 
 private:
-    bool stopping();
+    bool wait_for_signal_and_close();
 
     static
     void stop(kth::code const& ec);
