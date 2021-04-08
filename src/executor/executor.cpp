@@ -223,14 +223,16 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
     //TODO(fernando): Log Cryptocurrency
     //TODO(fernando): Log Microarchitecture
 
-    if ( ! verify_directory() ) {
-        error_code ec;
+    auto ec = init_directory_if_necessary();
+    if (ec != error::success) {
+        auto const& directory = config_.database.directory;
+        LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
 
-        if ( ! init_directory(ec) ) {
-            auto const& directory = config_.database.directory;
-            LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
-            return false;
+        if (run_handler_) {
+            run_handler_(ec);
         }
+        auto res = wait_for_signal_and_close();
+        return false;
     }
 
     // Now that the directory is verified we can create the node for it.
@@ -271,8 +273,9 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
     });
 #endif
 
-    // Wait for stop.
-    stopping_.get_future().wait();
+    auto res = wait_for_signal_and_close();
+    return res;
+}
 
     LOG_INFO(LOG_NODE, KTH_NODE_STOPPING);
 
