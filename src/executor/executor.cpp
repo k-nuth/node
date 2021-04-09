@@ -188,6 +188,7 @@ bool executor::close() {
     // Close must be called from main thread.
     if (node_->close()) {
         LOG_INFO(LOG_NODE, KTH_NODE_STOPPED);
+        LOG_INFO(LOG_NODE, KTH_GOOD_BYE);
     } else {
         LOG_INFO(LOG_NODE, KTH_NODE_STOP_FAIL);
     }

@@ -97,6 +97,7 @@ private:
 #define KTH_NODE_STOPPING "Please wait while the node is stopping..."
 #define KTH_NODE_STOP_FAIL "Node failed to stop properly, see log."
 #define KTH_NODE_STOPPED "Node stopped successfully."
+#define KTH_GOOD_BYE "Good bye!"
 
 #define KTH_RPC_STOPPING "RPC-ZMQ service is stopping..."
 #define KTH_RPC_STOPPED "RPC-ZMQ service stopped successfully"
