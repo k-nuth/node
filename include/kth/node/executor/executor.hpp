@@ -27,14 +27,14 @@ public:
     // bool run(kth::handle0 handler);
 
 #if ! defined(KTH_DB_READONLY)
-    // bool init_and_run(kth::handle0 handler);
+    bool init_run(std::string const& extra, start_modules mod, kth::handle0 handler);
     bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
 #endif
 
-    //static void stop(kth::code const& ec);
-    //static void stop();
-    // bool stop();
     void signal_stop();
+
+    // Close must be called from main thread.
+    bool close();
 
     kth::node::full_node& node();
     kth::node::full_node const& node() const;
@@ -48,12 +48,15 @@ public:
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);
+    std::error_code init_directory_if_necessary();
 #endif
 
     bool verify_directory();
     bool run();
 
 private:
+    bool wait_for_signal_and_close();
+
     static
     void stop(kth::code const& ec);
 
@@ -94,6 +97,7 @@ private:
 #define KTH_NODE_STOPPING "Please wait while the node is stopping..."
 #define KTH_NODE_STOP_FAIL "Node failed to stop properly, see log."
 #define KTH_NODE_STOPPED "Node stopped successfully."
+#define KTH_GOOD_BYE "Good bye!"
 
 #define KTH_RPC_STOPPING "RPC-ZMQ service is stopping..."
 #define KTH_RPC_STOPPED "RPC-ZMQ service stopped successfully"
