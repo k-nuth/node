@@ -66,7 +66,7 @@ test_script:
         conan user
 
         $ErrorActionPreference = 'SilentlyContinue'
-        conan remote add kth_temp https://api.bintray.com/conan/k-nuth/kth
+        conan remote add kth_temp https://knuth.jfrog.io/artifactory/api/conan/knuth
         $ErrorActionPreference = 'Continue'
 
         # python ci_utils/wait_for_deps.py domain
@@ -79,7 +79,7 @@ test_script:
       Invoke-Expression $a
 
       $ErrorActionPreference = 'SilentlyContinue'
-      conan remote add kth https://api.bintray.com/conan/k-nuth/kth
+      conan remote add kth https://knuth.jfrog.io/artifactory/api/conan/knuth
       $ErrorActionPreference = 'Continue'
 
       # conan info . --only None
