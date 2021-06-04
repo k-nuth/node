@@ -78,7 +78,7 @@ private:
 
 // Localizable messages.
 #define KTH_SETTINGS_MESSAGE "These are the configuration settings that can be set."
-#define KTH_INFORMATION_MESSAGE "Runs a full bitcoin node with additional client-server query protocol."
+#define KTH_INFORMATION_MESSAGE "Runs a Bitcoin Cash full-node."
 #define KTH_UNINITIALIZED_CHAIN "The {} directory is not initialized, run: kth --initchain"
 #define KTH_INITIALIZING_CHAIN "Please wait while initializing {} directory..."
 #define KTH_INITCHAIN_NEW "Failed to create directory {} with error, '{}'."
