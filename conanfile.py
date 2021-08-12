@@ -86,7 +86,7 @@ class KnuthNodeConan(KnuthConanFile):
             self.requires("tabulate/1.0@")
 
         if self.options.tests:
-            self.requires("catch2/2.13.6")
+            self.requires("catch2/2.13.7")
 
     def config_options(self):
         KnuthConanFile.config_options(self)
