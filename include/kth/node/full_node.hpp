@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Knuth Project developers.
+// Copyright (c) 2016-2021 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -41,6 +41,12 @@ class Table;
 // #endif
 
 namespace kth::node {
+
+enum class start_modules {
+    all,
+    just_chain,
+    just_p2p
+};
 
 #if defined(KTH_STATISTICS_ENABLED)
 
@@ -120,9 +126,13 @@ public:
     /// Invoke startup and seeding sequence, call from constructing thread.
     void start(result_handler handler) override;
 
+    /// Invoke just chain startup, call from constructing thread.
+    void start_chain(result_handler handler);
+
     /// Synchronize the blockchain and then begin long running sessions,
     /// call from start result handler. Call base method to skip sync.
     void run(result_handler handler) override;
+    void run_chain(result_handler handler) override;
 
     // Shutdown.
     // ------------------------------------------------------------------------
@@ -417,6 +427,7 @@ private:
 
     void handle_started(code const& ec, result_handler handler);
     void handle_running(code const& ec, result_handler handler);
+    void handle_running_chain(code const& ec, result_handler handler);
 
 
 #if defined(KTH_STATISTICS_ENABLED)

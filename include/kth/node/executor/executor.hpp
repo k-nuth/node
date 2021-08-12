@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Knuth Project developers.
+// Copyright (c) 2016-2021 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,7 +11,7 @@
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
 
-namespace kth::node { 
+namespace kth::node {
 
 class executor {
 public:
@@ -20,8 +20,6 @@ public:
     executor(executor const&) = delete;
     void operator=(executor const&) = delete;
 
-    // bool menu();
-
 #if ! defined(KTH_DB_READONLY)
     bool do_initchain(std::string const& extra);
 #endif
@@ -29,14 +27,14 @@ public:
     // bool run(kth::handle0 handler);
 
 #if ! defined(KTH_DB_READONLY)
-    // bool init_and_run(kth::handle0 handler);
-    bool init_run_and_wait_for_signal(std::string const& extra, kth::handle0 handler);
+    bool init_run(std::string const& extra, start_modules mod, kth::handle0 handler);
+    bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
 #endif
 
-    //static void stop(kth::code const& ec);
-    //static void stop();
-    // bool stop();
     void signal_stop();
+
+    // Close must be called from main thread.
+    bool close();
 
     kth::node::full_node& node();
     kth::node::full_node const& node() const;
@@ -50,24 +48,27 @@ public:
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);
+    std::error_code init_directory_if_necessary();
 #endif
 
     bool verify_directory();
     bool run();
 
 private:
-    static 
+    bool wait_for_signal_and_close();
+
+    static
     void stop(kth::code const& ec);
-    
-    static 
+
+    static
     void handle_stop(int code);
 
-    void handle_started(kth::code const& ec);
+    void handle_started(kth::code const& ec, start_modules mod);
     void handle_running(kth::code const& ec);
     void handle_stopped(kth::code const& ec);
 
     // Termination state.
-    static 
+    static
     std::promise<kth::code> stopping_;
 
     kth::node::configuration config_;
@@ -77,7 +78,7 @@ private:
 
 // Localizable messages.
 #define KTH_SETTINGS_MESSAGE "These are the configuration settings that can be set."
-#define KTH_INFORMATION_MESSAGE "Runs a full bitcoin node with additional client-server query protocol."
+#define KTH_INFORMATION_MESSAGE "Runs a Bitcoin Cash full-node."
 #define KTH_UNINITIALIZED_CHAIN "The {} directory is not initialized, run: kth --initchain"
 #define KTH_INITIALIZING_CHAIN "Please wait while initializing {} directory..."
 #define KTH_INITCHAIN_NEW "Failed to create directory {} with error, '{}'."
@@ -96,6 +97,7 @@ private:
 #define KTH_NODE_STOPPING "Please wait while the node is stopping..."
 #define KTH_NODE_STOP_FAIL "Node failed to stop properly, see log."
 #define KTH_NODE_STOPPED "Node stopped successfully."
+#define KTH_GOOD_BYE "Good bye!"
 
 #define KTH_RPC_STOPPING "RPC-ZMQ service is stopping..."
 #define KTH_RPC_STOPPED "RPC-ZMQ service stopped successfully"

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Knuth Project developers.
+// Copyright (c) 2016-2021 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -55,10 +55,6 @@ static auto const mode = std::ofstream::out | std::ofstream::app;
 
 std::promise<kth::code> executor::stopping_; //NOLINT
 
-// executor::executor(kth::node::configuration const& config, std::ostream& output, std::ostream& error)
-//     : config_(config), output_(output), error_(error)
-// {
-
 executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
     : config_(config)
 {
@@ -88,7 +84,7 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     };
 #endif
 
-// , 
+// ,
 
 #if defined(KTH_STATISTICS_ENABLED)
     kth::log::initialize(debug_file, error_file, verbose);
@@ -126,7 +122,7 @@ void executor::print_version(std::string const& extra) {
 #if ! defined(KTH_DB_READONLY)
 bool executor::init_directory(error_code& ec) {
     auto const& directory = config_.database.directory;
-  
+
     if (create_directories(directory, ec)) {
         LOG_INFO(LOG_NODE, fmt::format(KTH_INITIALIZING_CHAIN, directory.string()));
         auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier));
@@ -150,11 +146,11 @@ bool executor::do_initchain(std::string const& extra) {
     initialize_output(extra);
 
     error_code ec;
-    
+
     if (init_directory(ec)) {
         return true;
     }
-    
+
     auto const& directory = config_.database.directory;
 
     if (ec.value() == directory_exists) {
@@ -176,8 +172,49 @@ kth::node::full_node const& executor::node() const {
     return *node_;
 }
 
+// Close must be called from main thread.
+bool executor::close() {
+    LOG_INFO(LOG_NODE, KTH_NODE_STOPPING);
+
+#ifdef KTH_WITH_RPC
+    if ( ! message_manager.is_stopped()) {
+        LOG_INFO(LOG_NODE, KTH_RPC_STOPPING);
+        message_manager.stop();
+        rpc_thread.join();
+        LOG_INFO(LOG_NODE, KTH_RPC_STOPPED);
+    }
+#endif
+
+    // Close must be called from main thread.
+    if (node_->close()) {
+        LOG_INFO(LOG_NODE, KTH_NODE_STOPPED);
+        LOG_INFO(LOG_NODE, KTH_GOOD_BYE);
+    } else {
+        LOG_INFO(LOG_NODE, KTH_NODE_STOP_FAIL);
+    }
+
+    return true;
+}
+
+// private
+bool executor::wait_for_signal_and_close() {
+    // Wait for stop. Ensure calling close from the main thread.
+    stopping_.get_future().wait();
+    return close();
+}
+
 #if ! defined(KTH_DB_READONLY)
-bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handle0 handler) {
+
+error_code executor::init_directory_if_necessary() {
+    if (verify_directory()) return error::success;
+
+    error_code ec;
+    if (init_directory(ec)) return error::success;
+
+    return ec;
+}
+
+bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -187,14 +224,16 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handl
     //TODO(fernando): Log Cryptocurrency
     //TODO(fernando): Log Microarchitecture
 
-    if ( ! verify_directory() ) {
-        error_code ec;
-        
-        if ( ! init_directory(ec) ) {
-            auto const& directory = config_.database.directory;
-            LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
-            return false;
+    auto ec = init_directory_if_necessary();
+    if (ec != error::success) {
+        auto const& directory = config_.database.directory;
+        LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
+
+        if (run_handler_) {
+            run_handler_(ec);
         }
+        auto res = wait_for_signal_and_close();
+        return false;
     }
 
     // Now that the directory is verified we can create the node for it.
@@ -209,7 +248,11 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handl
 #endif
 
     // The callback may be returned on the same thread.
-    node_->start(std::bind(&executor::handle_started, this, _1));
+    if (mods == start_modules::just_chain) {
+        node_->start_chain(std::bind(&executor::handle_started, this, _1, mods));
+    } else {
+        node_->start(std::bind(&executor::handle_started, this, _1, mods));
+    }
 
 #ifdef KTH_WITH_RPC
     bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::domain::config::network::testnet;
@@ -231,25 +274,47 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handl
     });
 #endif
 
-    // Wait for stop.
-    stopping_.get_future().wait();
+    auto res = wait_for_signal_and_close();
+    return res;
+}
 
-    LOG_INFO(LOG_NODE, KTH_NODE_STOPPING);
+bool executor::init_run(std::string const& extra, start_modules mods, kth::handle0 handler) {
+    run_handler_ = std::move(handler);
 
-#ifdef KTH_WITH_RPC
-    if ( ! message_manager.is_stopped()) {
-        LOG_INFO(LOG_NODE, KTH_RPC_STOPPING);
-        message_manager.stop();
-        rpc_thread.join();
-        LOG_INFO(LOG_NODE, KTH_RPC_STOPPED);
+    initialize_output(extra);
+
+    LOG_INFO(LOG_NODE, KTH_NODE_INTERRUPT);
+    LOG_INFO(LOG_NODE, KTH_NODE_STARTING);
+    //TODO(fernando): Log Cryptocurrency
+    //TODO(fernando): Log Microarchitecture
+
+    auto ec = init_directory_if_necessary();
+    if (ec != error::success) {
+        auto const& directory = config_.database.directory;
+        LOG_ERROR(LOG_NODE, fmt::format(KTH_INITCHAIN_NEW, directory.string(), ec.message()));
+
+        if (run_handler_) {
+            run_handler_(ec);
+        }
+        return false;
     }
+
+    // Now that the directory is verified we can create the node for it.
+    node_ = std::make_shared<kth::node::full_node>(config_);
+
+//TODO(fernando): implement this for spdlog and binlog
+#if defined(KTH_LOG_LIBRARY_BOOST)
+    // Initialize broadcast to statistics server if configured.
+    kth::log::initialize_statsd(node_->thread_pool(), config_.network.statistics_server);
+#else
+    //TODO(fernando): implement this for spdlog and binlog
 #endif
 
-    // Close must be called from main thread.
-    if (node_->close()) {
-        LOG_INFO(LOG_NODE, KTH_NODE_STOPPED);
+    // The callback may be returned on the same thread.
+    if (mods == start_modules::just_chain) {
+        node_->start_chain(std::bind(&executor::handle_started, this, _1, mods));
     } else {
-        LOG_INFO(LOG_NODE, KTH_NODE_STOP_FAIL);
+        node_->start(std::bind(&executor::handle_started, this, _1, mods));
     }
 
     return true;
@@ -258,7 +323,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, kth::handl
 #endif // ! defined(KTH_DB_READONLY)
 
 // Handle the completion of the start sequence and begin the run sequence.
-void executor::handle_started(kth::code const& ec) {
+void executor::handle_started(kth::code const& ec, start_modules mods) {
     if (ec) {
         LOG_ERROR(LOG_NODE, fmt::format(KTH_NODE_START_FAIL, ec.message()));
 //        stop(ec);
@@ -269,13 +334,15 @@ void executor::handle_started(kth::code const& ec) {
         return;
     }
 
-    LOG_INFO(LOG_NODE, KTH_NODE_SEEDED);
-
-    // This is the beginning of the stop sequence.
-    node_->subscribe_stop(std::bind(&executor::handle_stopped, this, _1));
-
-    // This is the beginning of the run sequence.
-    node_->run(std::bind(&executor::handle_running, this, _1));
+    if (mods == start_modules::just_chain) {
+        node_->run_chain(std::bind(&executor::handle_running, this, _1));
+    } else {
+        LOG_INFO(LOG_NODE, KTH_NODE_SEEDED);
+        // This is the beginning of the stop sequence.
+        node_->subscribe_stop(std::bind(&executor::handle_stopped, this, _1));
+        // This is the beginning of the run sequence.
+        node_->run(std::bind(&executor::handle_running, this, _1));
+    }
 }
 
 // This is the end of the run sequence.
@@ -328,8 +395,6 @@ void executor::handle_stop(int code) {
 
 void executor::signal_stop() {
     stop(kth::code());
-    // static std::once_flag stop_mutex;
-    // std::call_once(stop_mutex, [&](){ stopping_.set_value(kth::code()); });
 }
 
 // Manage the race between console stop and server stop.

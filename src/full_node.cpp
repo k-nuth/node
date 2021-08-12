@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Knuth Project developers.
+// Copyright (c) 2016-2021 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -29,8 +29,8 @@ tabulate::Row& last(tabulate::Table& table) {
     while (f != l) {
         p = f;
         ++f;
-    } 
-    return *p;    
+    }
+    return *p;
 }
 #endif
 
@@ -78,6 +78,24 @@ void full_node::start(result_handler handler) {
     p2p::start(handler);
 }
 
+void full_node::start_chain(result_handler handler) {
+    if ( ! stopped()) {
+        handler(error::operation_failed);
+        return;
+    }
+
+    if ( ! chain_.start()) {
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
+        handler(error::operation_failed);
+        return;
+    }
+
+    std::thread t1([this, handler] {
+        p2p::start_fake(handler);
+    });
+    t1.detach();
+}
+
 // Run sequence.
 // ----------------------------------------------------------------------------
 
@@ -108,6 +126,17 @@ void full_node::run(result_handler handler) {
     ////header_sync->start(
     ////    std::bind(&full_node::handle_headers_synchronized,
     ////        this, _1, handler));
+}
+
+void full_node::run_chain(result_handler handler) {
+    if (stopped()) {
+        handler(error::service_stopped);
+        return;
+    }
+
+    // Skip sync sessions.
+    handle_running_chain(error::success, handler);
+    return;
 }
 
 void full_node::handle_headers_synchronized(code const& ec, result_handler handler) {
@@ -151,7 +180,7 @@ void full_node::handle_running(code const& ec, result_handler handler) {
 
     if ( ! chain_.get_last_height(top_height) ||
          ! chain_.get_block_hash(top_hash, top_height)) {
-        LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
+             LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
         handler(error::operation_failed);
         return;
     }
@@ -166,6 +195,40 @@ void full_node::handle_running(code const& ec, result_handler handler) {
     // This is invoked on a new thread.
     // This is the end of the derived run startup sequence.
     p2p::run(handler);
+}
+
+void full_node::handle_running_chain(code const& ec, result_handler handler) {
+    if (stopped()) {
+        handler(error::service_stopped);
+        return;
+    }
+
+    if (ec) {
+        LOG_ERROR(LOG_NODE, "Failure synchronizing blocks: ", ec.message());
+        handler(ec);
+        return;
+    }
+
+    size_t top_height;
+    hash_digest top_hash;
+
+    if ( ! chain_.get_last_height(top_height) ||
+         ! chain_.get_block_hash(top_hash, top_height)) {
+             LOG_ERROR(LOG_NODE, "The blockchain is corrupt.");
+        handler(error::operation_failed);
+        return;
+    }
+
+    set_top_block({ std::move(top_hash), top_height });
+
+    LOG_INFO(LOG_NODE, "Node start height is (", top_height, ").");
+
+    subscribe_blockchain(
+        std::bind(&full_node::handle_reorganized, this, _1, _2, _3, _4));
+
+    // This is invoked on a new thread.
+    // This is the end of the derived run startup sequence.
+    handler(error::success);
 }
 
 // A typical reorganization consists of one incoming and zero outgoing blocks.
@@ -244,20 +307,13 @@ bool full_node::stop() {
 
 // This must be called from the thread that constructed this class (see join).
 bool full_node::close() {
-    // LOG_INFO(LOG_NODE, "full_node::close()");
-    
-    // LOG_INFO(LOG_NODE, "Before calling full_node::stop()");
     // Invoke own stop to signal work suspension.
     if ( ! full_node::stop()) {
-        // LOG_INFO(LOG_NODE, "full_node::stop() failed");
         return false;
     }
 
-    // LOG_INFO(LOG_NODE, "Before calling p2p::close()");
     auto const p2p_close = p2p::close();
-    // LOG_INFO(LOG_NODE, "Before calling chain_.close()");
     auto const chain_close = chain_.close();
-    // LOG_INFO(LOG_NODE, "After chain_.close()");
 
     if ( ! p2p_close) {
         LOG_ERROR(LOG_NODE, "Failed to close network.");
@@ -380,7 +436,7 @@ void screen_clear() {
 
 
 //TODO(fernando): could be outside the class
-void full_node::print_stat_item_sum(tabulate::Table& stats, size_t from, size_t to, 
+void full_node::print_stat_item_sum(tabulate::Table& stats, size_t from, size_t to,
                         double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
                         double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
                         double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
@@ -427,7 +483,7 @@ void full_node::print_stat_item_sum(tabulate::Table& stats, size_t from, size_t 
 
 
 //TODO(fernando): could be outside the class
-void full_node::print_stat_item(tabulate::Table& stats, size_t from, size_t to, std::string const& cat, 
+void full_node::print_stat_item(tabulate::Table& stats, size_t from, size_t to, std::string const& cat,
                         double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
                         double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
                         double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
@@ -478,8 +534,8 @@ void full_node::print_statistics(size_t height) const {
 
     // auto formatted = fmt::format("Sum [{}-{}] {:f} txs {:f} ins "
     //     "{:f} wms {:f} vms {:f} vus {:f} rus {:f} cus {:f} pus "
-    //     "{:f} aus {:f} sus {:f} dus {:f}", 
-    //     from1, height, 
+    //     "{:f} aus {:f} sus {:f} dus {:f}",
+    //     from1, height,
     //     boost::accumulators::sum(stats_current1_accum_transactions_),
     //     boost::accumulators::sum(stats_current1_accum_inputs_),
     //     boost::accumulators::sum(stats_current1_accum_wait_total_ms_),
@@ -492,12 +548,12 @@ void full_node::print_statistics(size_t height) const {
     //     boost::accumulators::sum(stats_current1_accum_connect_per_input_us_),
     //     boost::accumulators::sum(stats_current1_accum_deposit_per_input_us_),
     //     boost::accumulators::sum(stats_current1_accum_cache_efficiency_));
-    
+
     // LOG_INFO(LOG_BLOCKCHAIN, "************************************************************************************************************************");
     // LOG_INFO(LOG_BLOCKCHAIN, "Stats:");
     // LOG_INFO(LOG_BLOCKCHAIN, formatted);
 
-    print_stat_item_sum(stats, from1, height, 
+    print_stat_item_sum(stats, from1, height,
         sum(stats_current1_accum_transactions_),
         sum(stats_current1_accum_inputs_),
         sum(stats_current1_accum_outputs_),
@@ -540,7 +596,7 @@ void full_node::print_statistics(size_t height) const {
         median(stats_current1_accum_deposit_per_input_us_));
 
     stdev_sample stdev;
-    print_stat_item(stats, from1, height, "StDev", 
+    print_stat_item(stats, from1, height, "StDev",
         stdev(stats_current1_accum_transactions_),
         stdev(stats_current1_accum_inputs_),
         stdev(stats_current1_accum_outputs_),
@@ -553,7 +609,7 @@ void full_node::print_statistics(size_t height) const {
         stdev(stats_current1_accum_accept_per_input_us_),
         stdev(stats_current1_accum_connect_per_input_us_),
         stdev(stats_current1_accum_deposit_per_input_us_));
-    
+
 
     for (size_t i = 2; i < 14; ++i) {
         stats.column(i).format().font_align(tabulate::FontAlign::right);

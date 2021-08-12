@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Knuth Project developers.
+// Copyright (c) 2016-2021 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -114,14 +114,14 @@ options_metadata parser::load_options() {
         value<bool>(&configured.initchain)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory."
-    ) 
+    )
     (
         "init_run,r",
         value<bool>(&configured.init_and_run)->
             default_value(false)->zero_tokens(),
         "Initialize blockchain in the configured directory, then start the node."
-    ) 
-#endif // ! defined(KTH_DB_READONLY)    
+    )
+#endif // ! defined(KTH_DB_READONLY)
     (
         KTH_SETTINGS_VARIABLE ",s",
         value<bool>(&configured.settings)->
@@ -285,7 +285,7 @@ options_metadata parser::load_settings() {
         "The advertised public address of this node, defaults to none."
     )(
         "network.blacklist",
-        value<infrastructure::config::authority::list>(&configured.network.blacklists),
+        value<infrastructure::config::authority::list>(&configured.network.blacklist),
         "IP address to disallow as a peer, multiple entries allowed."
     )(
         "network.peer",
@@ -332,11 +332,11 @@ options_metadata parser::load_settings() {
     )(
         "database.safe_mode",
         value<bool>(&configured.database.safe_mode),
-        "safe mode is more secure but not the fastest, defaults to true."                  
+        "safe mode is more secure but not the fastest, defaults to true."
     )
 #endif // KTH_DB_NEW
 
-#ifdef KTH_DB_LEGACY    
+#ifdef KTH_DB_LEGACY
     (
         "database.block_table_buckets",
         value<uint32_t>(&configured.database.block_table_buckets),
@@ -347,7 +347,7 @@ options_metadata parser::load_settings() {
         "Transaction hash table size, defaults to 110000000."
     )
 #endif // KTH_DB_LEGACY
-#ifdef KTH_DB_TRANSACTION_UNCONFIRMED    
+#ifdef KTH_DB_TRANSACTION_UNCONFIRMED
     (
         "database.transaction_unconfirmed_table_buckets",
         value<uint32_t>(&configured.database.transaction_unconfirmed_table_buckets),
@@ -496,15 +496,16 @@ options_metadata parser::load_settings() {
     //     value<uint64_t>(&configured.chain.euler_activation_time),
     //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
     // )
-    (
-        "fork.gauss_activation_time",
-        value<uint64_t>(&configured.chain.gauss_activation_time),
-        "Unix time used for MTP activation of 2021-May-15 hard fork, defaults to 1621080000."
-    )
+    // No HF for 2021-May-15
+    // (
+    //     "fork.gauss_activation_time",
+    //     value<uint64_t>(&configured.chain.gauss_activation_time),
+    //     "Unix time used for MTP activation of ????-???-?? hard fork, defaults to 9999999999."
+    // )
     // (
     //     "fork.unnamed_activation_time",
     //     value<uint64_t>(&configured.chain.unnamed_activation_time),
-    //     "Unix time used for MTP activation of 2021-Nov-15 hard fork, defaults to 9999999999."
+    //     "Unix time used for MTP activation of ????-???-?? hard fork, defaults to 9999999999."
     // )
     (
         "fork.asert_half_life",
@@ -651,7 +652,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
 
         // Update bound variables in metadata.settings.
         notify(variables);
-        
+
         if ( ! version_sett_help && configured.chain.fix_checkpoints) {
             fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
         }
