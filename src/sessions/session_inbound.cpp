@@ -9,6 +9,8 @@
 #include <kth/node/full_node.hpp>
 #include <kth/node/protocols/protocol_block_in.hpp>
 #include <kth/node/protocols/protocol_block_out.hpp>
+#include <kth/node/protocols/protocol_double_spend_proofs_in.hpp>
+#include <kth/node/protocols/protocol_double_spend_proofs_out.hpp>
 #include <kth/node/protocols/protocol_transaction_in.hpp>
 #include <kth/node/protocols/protocol_transaction_out.hpp>
 
@@ -24,9 +26,7 @@ session_inbound::session_inbound(full_node& network, safe_chain& chain)
     , chain_(chain)
     , CONSTRUCT_TRACK(node::session_inbound)
 {
-    LOG_INFO(LOG_NODE
-       , "Starting inbound session on port ("
-       , network .network_settings().inbound_port, ").");
+    LOG_INFO(LOG_NODE, "Starting inbound session on port (", network.network_settings().inbound_port, ").");
 }
 
 void session_inbound::attach_protocols(channel::ptr channel) {
@@ -45,6 +45,8 @@ void session_inbound::attach_protocols(channel::ptr channel) {
     attach<protocol_address_31402>(channel)->start();
     attach<protocol_block_in>(channel, chain_)->start();
     attach<protocol_block_out>(channel, chain_)->start();
+    attach<protocol_double_spend_proofs_in>(channel, chain_)->start();
+    attach<protocol_double_spend_proofs_out>(channel, chain_)->start();
     attach<protocol_transaction_in>(channel, chain_)->start();
     attach<protocol_transaction_out>(channel, chain_)->start();
 }

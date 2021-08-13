@@ -32,4 +32,4 @@ protected:
 
 } // namespace kth::node
 
-#endif
+#endif // KTH_NODE_SESSION_OUTBOUND_HPP

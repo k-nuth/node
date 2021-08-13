@@ -591,7 +591,7 @@ options_metadata parser::load_settings() {
         "Compact Blocks High-Bandwidth mode, default to true."
     )(
         "node.ds_proofs",
-        value<bool>(&configured.node.ds_proofs),
+        value<bool>(&configured.node.ds_proofs_enabled),
         "Double-Spend Proofs, default to true."
     )
 #ifdef KTH_WITH_KEOKEN

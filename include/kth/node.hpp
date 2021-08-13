@@ -23,6 +23,8 @@
 #include <kth/node/protocols/protocol_block_in.hpp>
 #include <kth/node/protocols/protocol_block_out.hpp>
 #include <kth/node/protocols/protocol_block_sync.hpp>
+#include <kth/node/protocols/protocol_double_spend_proofs_in.hpp>
+#include <kth/node/protocols/protocol_double_spend_proofs_out.hpp>
 #include <kth/node/protocols/protocol_header_sync.hpp>
 #include <kth/node/protocols/protocol_transaction_in.hpp>
 #include <kth/node/protocols/protocol_transaction_out.hpp>

@@ -69,13 +69,13 @@ private:
     full_node& node_;
     blockchain::safe_chain& chain_;
     const asio::duration block_latency_;
-    const bool headers_from_peer_;
-    const bool compact_from_peer_;
-    const bool blocks_from_peer_;
+    bool const headers_from_peer_;
+    bool const compact_from_peer_;
+    bool const blocks_from_peer_;
 
 #if ! defined(KTH_CURRENCY_BCH)
-    const bool require_witness_;
-    const bool peer_witness_;
+    bool const require_witness_;
+    bool const peer_witness_;
 #endif
 
     // This is protected by mutex.

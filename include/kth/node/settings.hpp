@@ -33,7 +33,7 @@ public:
     //Compact Blocks
     bool compact_blocks_high_bandwidth;
 
-    bool ds_proofs;
+    bool ds_proofs_enabled;
 
 #ifdef KTH_WITH_KEOKEN
     size_t keoken_genesis_height;
