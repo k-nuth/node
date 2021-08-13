@@ -113,6 +113,7 @@ public:
     using ptr = std::shared_ptr<full_node>;
     using reorganize_handler = blockchain::block_chain::reorganize_handler;
     using transaction_handler = blockchain::block_chain::transaction_handler;
+    using ds_proof_handler = blockchain::block_chain::ds_proof_handler;
 
     /// Construct the full node.
     full_node(configuration const& configuration);
@@ -178,8 +179,12 @@ public:
     void subscribe_blockchain(reorganize_handler&& handler);
 
     /// Subscribe to transaction pool acceptance and stop events.
-    virtual 
+    virtual
     void subscribe_transaction(transaction_handler&& handler);
+
+    /// Subscribe to DSProof pool acceptance and stop events.
+    virtual
+    void subscribe_ds_proof(ds_proof_handler&& handler);
 
     // Init node utils.
     // ------------------------------------------------------------------------
