@@ -39,7 +39,7 @@ void protocol_double_spend_proofs_in::start() {
     protocol_events::start(BIND1(handle_stop, _1));
 
     SUBSCRIBE2(inventory, handle_receive_inventory, _1, _2);
-    SUBSCRIBE2(transaction, handle_receive_ds_proof_data, _1, _2);
+    SUBSCRIBE2(double_spend_proofs, handle_receive_ds_proof_data, _1, _2);
 }
 
 // Receive inventory sequence.

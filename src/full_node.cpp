@@ -363,6 +363,10 @@ void full_node::subscribe_transaction(transaction_handler&& handler) {
     chain().subscribe_transaction(std::move(handler));
 }
 
+// void full_node::subscribe_ds_proof(ds_proof_handler&& handler) {
+//     chain().subscribe_transaction(std::move(handler));
+// }
+
 // Init node utils.
 // ------------------------------------------------------------------------
 

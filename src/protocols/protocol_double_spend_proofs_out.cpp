@@ -52,7 +52,7 @@ void protocol_double_spend_proofs_out::start() {
 
     // // TODO: move memory pool to a derived class protocol_double_spend_proofs_out_60002.
     // SUBSCRIBE2(memory_pool, handle_receive_memory_pool, _1, _2);
-    SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
+    // SUBSCRIBE2(get_data, handle_receive_get_data, _1, _2);
 }
 
 // Receive send_headers.
@@ -160,14 +160,14 @@ void protocol_double_spend_proofs_out::start() {
 //     }
 
 //     // Treat already confirmed transactions as not found.
-//     auto confirmed = ! ec 
-// #if defined(KTH_DB_LEGACY) 
+//     auto confirmed = ! ec
+// #if defined(KTH_DB_LEGACY)
 //                     && position != transaction_database::unconfirmed
 // #elif defined(KTH_DB_NEW_FULL)
 //                     && position != position_max
 // #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
 //                     ;
-                    
+
 //     if (ec == error::not_found || confirmed) {
 //         LOG_DEBUG(LOG_NODE, "Transaction requested by [", authority(), "] not found.");
 

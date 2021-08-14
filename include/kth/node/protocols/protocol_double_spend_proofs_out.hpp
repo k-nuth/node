@@ -30,7 +30,7 @@ private:
     // void send_next_data(inventory_ptr inventory);
     // void send_transaction(code const& ec, transaction_const_ptr message, size_t position, size_t height, inventory_ptr inventory);
 
-    bool handle_receive_get_data(code const& ec, get_data_const_ptr message);
+    // bool handle_receive_get_data(code const& ec, get_data_const_ptr message);
     void handle_stop(code const& ec);
     // void handle_send_next(code const& ec, inventory_ptr inventory);
     // bool handle_transaction_pool(code const& ec, transaction_const_ptr message);
