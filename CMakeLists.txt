@@ -294,7 +294,7 @@ endif()
 # Warn on extra stuff.
 #------------------------------------------------------------------------------
 if (NOT MSVC)
-  # _add_c_compile_flag(-Wextra _has_extra_warning_flag)
+  _add_c_compile_flag(-Wextra _has_extra_warning_flag)
 endif()
 
 # Be really annoying.
