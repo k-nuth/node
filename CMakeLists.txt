@@ -294,7 +294,7 @@ endif()
 # Warn on extra stuff.
 #------------------------------------------------------------------------------
 if (NOT MSVC)
-  _add_c_compile_flag(-Wextra _has_extra_warning_flag)
+  # _add_c_compile_flag(-Wextra _has_extra_warning_flag)
 endif()
 
 # Be really annoying.
@@ -361,8 +361,8 @@ set(kth_node_sources_just_legacy
   src/protocols/protocol_block_in.cpp
   src/protocols/protocol_block_out.cpp
   src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_double_spend_proofs_in.cpp
-  src/protocols/protocol_double_spend_proofs_out.cpp
+  src/protocols/protocol_double_spend_proof_in.cpp
+  src/protocols/protocol_double_spend_proof_out.cpp
   src/protocols/protocol_header_sync.cpp
   src/protocols/protocol_transaction_in.cpp
   src/protocols/protocol_transaction_out.cpp
@@ -505,8 +505,8 @@ set(_kth_headers
         kth/node/protocols/protocol_block_in.hpp
         kth/node/protocols/protocol_block_out.hpp
         kth/node/protocols/protocol_block_sync.hpp
-        kth/node/protocols/protocol_double_spend_proofs_in.hpp
-        kth/node/protocols/protocol_double_spend_proofs_out.hpp
+        kth/node/protocols/protocol_double_spend_proof_in.hpp
+        kth/node/protocols/protocol_double_spend_proof_out.hpp
         kth/node/protocols/protocol_header_sync.hpp
         kth/node/protocols/protocol_transaction_in.hpp
         kth/node/protocols/protocol_transaction_out.hpp
