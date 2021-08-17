@@ -346,12 +346,6 @@ block_chain& full_node::chain_kth() {
     return chain_;
 }
 
-// #ifdef WITH_KEOKEN
-// knuth::keoken::manager<knuth::keoken::state_delegated>& full_node::keoken_manager() {
-//     return keoken_manager_;
-// }
-// #endif
-
 // Subscriptions.
 // ----------------------------------------------------------------------------
 
@@ -363,9 +357,9 @@ void full_node::subscribe_transaction(transaction_handler&& handler) {
     chain().subscribe_transaction(std::move(handler));
 }
 
-// void full_node::subscribe_ds_proof(ds_proof_handler&& handler) {
-//     chain().subscribe_transaction(std::move(handler));
-// }
+void full_node::subscribe_ds_proof(ds_proof_handler&& handler) {
+    chain().subscribe_ds_proof(std::move(handler));
+}
 
 // Init node utils.
 // ------------------------------------------------------------------------

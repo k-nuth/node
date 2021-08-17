@@ -182,15 +182,12 @@ public:
     virtual
     void subscribe_transaction(transaction_handler&& handler);
 
-    // /// Subscribe to DSProof pool acceptance and stop events.
-    // virtual
-    // void subscribe_ds_proof(ds_proof_handler&& handler);
+    /// Subscribe to DSProof pool acceptance and stop events.
+    virtual
+    void subscribe_ds_proof(ds_proof_handler&& handler);
 
     // Init node utils.
     // ------------------------------------------------------------------------
-    // static
-    // domain::chain::block get_genesis_block(blockchain::settings const& settings);
-
     static
     domain::chain::block get_genesis_block(domain::config::network network);
 
