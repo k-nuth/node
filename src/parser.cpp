@@ -592,7 +592,7 @@ options_metadata parser::load_settings() {
     )(
         "node.ds_proofs",
         value<bool>(&configured.node.ds_proofs_enabled),
-        "Double-Spend Proofs, default to true."
+        "Double-Spend Proofs, default to false."
     )
 #ifdef KTH_WITH_KEOKEN
     (
