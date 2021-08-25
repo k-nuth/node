@@ -22,7 +22,7 @@
 
 //TODO(fernando): remove this workaround when Tabulate people fix their library.
 namespace tabulate {
-class Table;    
+class Table;
 }
 
 #endif
@@ -55,7 +55,7 @@ struct stdev_sample {
     template <typename T>
     auto operator()(T const& x) {
         auto n = boost::accumulators::count(x);
-        return std::sqrt(boost::accumulators::variance(x) * (n / (n - 1.0)));        
+        return std::sqrt(boost::accumulators::variance(x) * (n / (n - 1.0)));
     }
 };
 
@@ -77,15 +77,15 @@ struct statistics_entry {
     T2 cache_efficiency;                        // (hits/queries)
 };
 
-using accum_t = boost::accumulators::accumulator_set<double, 
+using accum_t = boost::accumulators::accumulator_set<double,
     boost::accumulators::stats<
-        boost::accumulators::tag::sum, 
-        boost::accumulators::tag::count, 
-        boost::accumulators::tag::mean, 
-        boost::accumulators::tag::median, 
+        boost::accumulators::tag::sum,
+        boost::accumulators::tag::count,
+        boost::accumulators::tag::mean,
+        boost::accumulators::tag::median,
         boost::accumulators::tag::variance>>;
 
-#endif    
+#endif
 
 struct multi_crypto_setter {
     multi_crypto_setter(network::settings const& net_settings) {
@@ -94,13 +94,13 @@ struct multi_crypto_setter {
             case netmagic::bch_mainnet:
                 set_cashaddr_prefix("bitcoincash");
                 break;
-            case netmagic::bch_testnet: 
+            case netmagic::bch_testnet:
                 set_cashaddr_prefix("bchtest");
                 break;
-            case netmagic::bch_regtest: 
+            case netmagic::bch_regtest:
                 set_cashaddr_prefix("bchreg");
                 break;
-            default: 
+            default:
                 set_cashaddr_prefix("");
         }
 #endif
@@ -113,6 +113,7 @@ public:
     using ptr = std::shared_ptr<full_node>;
     using reorganize_handler = blockchain::block_chain::reorganize_handler;
     using transaction_handler = blockchain::block_chain::transaction_handler;
+    using ds_proof_handler = blockchain::block_chain::ds_proof_handler;
 
     /// Construct the full node.
     full_node(configuration const& configuration);
@@ -150,20 +151,20 @@ public:
     // ------------------------------------------------------------------------
 
     /// Node configuration settings.
-    virtual 
+    virtual
     const node::settings& node_settings() const;
 
     /// Node configuration settings.
-    virtual 
+    virtual
     blockchain::settings const& chain_settings() const;
 
     /// Blockchain query interface.
-    virtual 
+    virtual
     blockchain::safe_chain& chain();
 
     /// Blockchain.
     //TODO: remove this function and use safe_chain in the rpc lib
-    virtual 
+    virtual
     blockchain::block_chain& chain_kth();
 
 // #ifdef WITH_KEOKEN
@@ -174,19 +175,20 @@ public:
     // ------------------------------------------------------------------------
 
     /// Subscribe to blockchain reorganization and stop events.
-    virtual 
+    virtual
     void subscribe_blockchain(reorganize_handler&& handler);
 
     /// Subscribe to transaction pool acceptance and stop events.
-    virtual 
+    virtual
     void subscribe_transaction(transaction_handler&& handler);
+
+    /// Subscribe to DSProof pool acceptance and stop events.
+    virtual
+    void subscribe_ds_proof(ds_proof_handler&& handler);
 
     // Init node utils.
     // ------------------------------------------------------------------------
-    // static 
-    // domain::chain::block get_genesis_block(blockchain::settings const& settings);
-
-    static 
+    static
     domain::chain::block get_genesis_block(domain::config::network network);
 
 
@@ -317,14 +319,14 @@ public:
     }
 
     //TODO(fernando): could be outside the class
-    void print_stat_item_sum(tabulate::Table& stats, size_t from, size_t to, 
+    void print_stat_item_sum(tabulate::Table& stats, size_t from, size_t to,
                          double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
                          double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
                          double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
                          double accum_connect_per_input, double accum_deposit_per_input) const;
 
     //TODO(fernando): could be outside the class
-    void print_stat_item(tabulate::Table& stats, size_t from, size_t to, std::string const& cat, 
+    void print_stat_item(tabulate::Table& stats, size_t from, size_t to, std::string const& cat,
                          double accum_transactions, double accum_inputs, double accum_outputs, double accum_wait_total,
                          double accum_validation_total, double accum_validation_per_input, double accum_deserialization_per_input,
                          double accum_check_per_input, double accum_population_per_input, double accum_accept_per_input,
@@ -360,8 +362,8 @@ public:
 
     //     // auto formatted = fmt::format("{} [{}-{}] {:f} txs {:f} ins {:f} outs "
     //     //     "{:f} wms {:f} vms {:f} vus {:f} rus {:f} cus {:f} pus "
-    //     //     "{:f} aus {:f} sus {:f} dus {:f}", 
-    //     //     cat, from, too, 
+    //     //     "{:f} aus {:f} sus {:f} dus {:f}",
+    //     //     cat, from, too,
     //     //     f(stats_current1_accum_transactions_),
     //     //     f(stats_current1_accum_inputs_),
     //     //     f(stats_current1_accum_outputs_),
@@ -375,7 +377,7 @@ public:
     //     //     f(stats_current1_accum_connect_per_input_us_),
     //     //     f(stats_current1_accum_deposit_per_input_us_),
     //     //     f(stats_current1_accum_cache_efficiency_));
-        
+
     //     // LOG_INFO(LOG_BLOCKCHAIN, formatted);
     // }
 
@@ -399,10 +401,10 @@ protected:
     network::session_outbound::ptr attach_outbound_session() override;
 
     /// Override to attach specialized node sessions.
-    virtual 
+    virtual
     session_header_sync::ptr attach_header_sync_session();
-    
-    virtual 
+
+    virtual
     session_block_sync::ptr attach_block_sync_session();
 
     ///For mining

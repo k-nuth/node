@@ -41,9 +41,8 @@ private:
     // These are thread safe.
     blockchain::safe_chain& chain_;
     std::atomic<uint64_t> minimum_peer_fee_;
-    ////std::atomic<bool> compact_to_peer_;
-    const bool relay_to_peer_;
-    const bool enable_witness_;
+    bool const relay_to_peer_;
+    bool const enable_witness_;
 };
 
 } // namespace kth::node

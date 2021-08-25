@@ -361,6 +361,8 @@ set(kth_node_sources_just_legacy
   src/protocols/protocol_block_in.cpp
   src/protocols/protocol_block_out.cpp
   src/protocols/protocol_block_sync.cpp
+  src/protocols/protocol_double_spend_proof_in.cpp
+  src/protocols/protocol_double_spend_proof_out.cpp
   src/protocols/protocol_header_sync.cpp
   src/protocols/protocol_transaction_in.cpp
   src/protocols/protocol_transaction_out.cpp
@@ -379,32 +381,32 @@ set(kth_node_sources_just_legacy
 )
 
 if (WITH_KEOKEN)
-  set(kth_node_sources_just_kth 
-    ${kth_node_sources_just_kth}         
+  set(kth_node_sources_just_kth
+    ${kth_node_sources_just_kth}
     # src/keoken/manager.cpp
   )
 endif()
 
 if (NOT JUST_KTH_SOURCES)
-  set(kth_node_sources 
-    ${kth_node_sources_just_legacy}         
+  set(kth_node_sources
+    ${kth_node_sources_just_legacy}
   )
 endif()
 
-set(kth_node_sources 
-  ${kth_node_sources}   
-  ${kth_node_sources_just_kth}         
+set(kth_node_sources
+  ${kth_node_sources}
+  ${kth_node_sources_just_kth}
 )
 
 add_library(kth-node ${MODE} ${kth_node_sources})
 
 
 
-if (ENABLE_POSITION_INDEPENDENT_CODE) 
+if (ENABLE_POSITION_INDEPENDENT_CODE)
   set_property(TARGET kth-node PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif(ENABLE_POSITION_INDEPENDENT_CODE)
 
-  
+
 target_include_directories(kth-node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
@@ -462,7 +464,7 @@ if (WITH_TESTS)
 
   target_link_libraries(kth_node_test PUBLIC kth-node)
   _group_sources(kth_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
-        
+
   target_include_directories(kth_node_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test>)
 
@@ -503,6 +505,8 @@ set(_kth_headers
         kth/node/protocols/protocol_block_in.hpp
         kth/node/protocols/protocol_block_out.hpp
         kth/node/protocols/protocol_block_sync.hpp
+        kth/node/protocols/protocol_double_spend_proof_in.hpp
+        kth/node/protocols/protocol_double_spend_proof_out.hpp
         kth/node/protocols/protocol_header_sync.hpp
         kth/node/protocols/protocol_transaction_in.hpp
         kth/node/protocols/protocol_transaction_out.hpp

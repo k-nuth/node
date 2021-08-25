@@ -38,12 +38,12 @@ private:
     // These are thread safe.
     blockchain::safe_chain& chain_;
     const uint64_t minimum_relay_fee_;
-    const bool relay_from_peer_;
-    const bool refresh_pool_;
+    bool const relay_from_peer_;
+    bool const refresh_pool_;
 
-#if ! defined(KTH_CURRENCY_BCH)
-    const bool require_witness_;
-    const bool peer_witness_;
+#if defined(KTH_SEGWIT_ENABLED)
+    bool const require_witness_;
+    bool const peer_witness_;
 #endif
 };
 
