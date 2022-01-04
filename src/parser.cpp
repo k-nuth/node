@@ -497,11 +497,16 @@ options_metadata parser::load_settings() {
     //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
     // )
     // No HF for 2021-May-15
-    // (
-    //     "fork.gauss_activation_time",
-    //     value<uint64_t>(&configured.chain.gauss_activation_time),
-    //     "Unix time used for MTP activation of ????-???-?? hard fork, defaults to 9999999999."
-    // )
+    (
+        "fork.gauss_activation_time",
+        value<uint64_t>(&configured.chain.gauss_activation_time),
+        "Unix time used for MTP activation of 2022-May-15 hard fork, defaults to 1652616000."
+    )
+    (
+        "fork.descartes_activation_time",
+        value<uint64_t>(&configured.chain.descartes_activation_time),
+        "Unix time used for MTP activation of 2023-May-15 hard fork, defaults to 1684152000."
+    )
     // (
     //     "fork.unnamed_activation_time",
     //     value<uint64_t>(&configured.chain.unnamed_activation_time),
