@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -292,7 +292,7 @@ void reservation::import(block_const_ptr block) {
         static auto const unit_size = 1u;
         update_rate(unit_size, cost);
         auto const record = rate();
-        auto formatted = fmt::format("Imported block #%06i (%02i) [%s] %06.2f %05.2f%%", 
+        auto formatted = fmt::format("Imported block #%06i (%02i) [%s] %06.2f %05.2f%%",
             height, slot(), encoded, record.total() * micro_per_second, record.ratio() * 100);
         LOG_INFO(LOG_NODE, formatted);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -33,7 +33,7 @@ public:
 
 // Coerce division into double and error into zero.
 template<typename Quotient, typename Dividend, typename Divisor>
-static 
+static
 Quotient divide(Dividend dividend, Divisor divisor) {
     auto const quotient = static_cast<Quotient>(dividend) / divisor;
     return std::isnan(quotient) || std::isinf(quotient) ? 0.0 : quotient;

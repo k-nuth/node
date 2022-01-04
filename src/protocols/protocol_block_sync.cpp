@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -90,7 +90,7 @@ bool protocol_block_sync::handle_receive_block(code const& ec, block_const_ptr m
 #if ! defined(KTH_DB_READONLY)
     // Add the block to the blockchain store.
     reservation_->import(message);
-#endif    
+#endif
 
     if (reservation_->toggle_partitioned()) {
         LOG_DEBUG(LOG_NODE, "Restarting partitioned slot (", reservation_->slot(), ").");

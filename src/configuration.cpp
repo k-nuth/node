@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,7 +17,7 @@ configuration::configuration(domain::config::network net)
 #if ! defined(KTH_DB_READONLY)
     , initchain(false)
     , init_and_run(false)
-#endif  
+#endif
     , settings(false)
     , version(false)
     , net(net)
@@ -30,10 +30,10 @@ configuration::configuration(domain::config::network net)
 // Copy constructor.
 configuration::configuration(configuration const& other)
     : help(other.help)
-#if ! defined(KTH_DB_READONLY)  
+#if ! defined(KTH_DB_READONLY)
     , initchain(other.initchain)
     , init_and_run(other.init_and_run)
-#endif  
+#endif
     , settings(other.settings)
     , version(other.version)
     , net(other.net)

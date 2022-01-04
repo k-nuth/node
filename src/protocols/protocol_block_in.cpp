@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,7 +13,7 @@
 #include <memory>
 #include <string>
 
-//Note(fernando): to force a debugger breakpoint we can use 
+//Note(fernando): to force a debugger breakpoint we can use
 //      asm("int $3");
 
 #define FMT_HEADER_ONLY 1
@@ -35,7 +35,7 @@ using namespace kth::network;
 using namespace std::chrono;
 using namespace std::placeholders;
 
-constexpr 
+constexpr
 bool is_witness(uint64_t services) {
 #if defined(KTH_CURRENCY_BCH)
     return false;
@@ -64,7 +64,7 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
 
     // TODO: move send_compact to a derived class protocol_block_in_70014.
     compact_from_peer_(negotiated_version() >= version::level::bip152),
-    
+
     compact_blocks_high_bandwidth_set_(false),
 
     // This patch is treated as integral to basic block handling.
@@ -124,7 +124,7 @@ void protocol_block_in::start() {
             LOG_DEBUG(LOG_NODE, "The chain is not stale, send sendcmcpt with configured setting [", authority(), "]");
             SEND2((send_compact{node_.node_settings().compact_blocks_high_bandwidth, get_compact_blocks_version()}), handle_send, _1, send_compact::command);
             compact_blocks_high_bandwidth_set_ = node_.node_settings().compact_blocks_high_bandwidth;
-        } 
+        }
     }
 
     send_get_blocks(null_hash);
@@ -208,7 +208,7 @@ bool protocol_block_in::handle_receive_headers(code const& ec, headers_const_ptr
     } else {
         message->to_inventory(response->inventories(), inventory::type_id::block);
     }
-   
+
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -222,13 +222,13 @@ bool protocol_block_in::handle_receive_inventory(code const& ec, inventory_const
     }
 
     auto const response = std::make_shared<get_data>();
-    
+
     if (compact_from_peer_) {
         message->reduce(response->inventories(), inventory::type_id::compact_block);
     } else {
         message->reduce(response->inventories(), inventory::type_id::block);
     }
-    
+
     // Remove hashes of blocks that we already have.
     chain_.filter_blocks(response, BIND2(send_get_data, _1, response));
     return true;
@@ -407,7 +407,7 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
     if (stopped(ec)) {
         return false;
     }
-      
+
     auto it = compact_blocks_map_.find(message->block_hash());
     if (it == compact_blocks_map_.end()) {
         LOG_DEBUG(LOG_NODE
@@ -440,9 +440,9 @@ bool protocol_block_in::handle_receive_block_transactions(code const& ec, block_
             }
             txn_available[i] = std::move(vtx_missing[tx_missing_offset]);
             ++tx_missing_offset;
-        } 
+        }
     }
-  
+
     if (vtx_missing.size() != tx_missing_offset) {
        LOG_DEBUG(LOG_NODE
            , "Compact Block [", encode_hash(message->block_hash())
@@ -478,8 +478,8 @@ void protocol_block_in::handle_fetch_block_locator_compact_block(code const& ec,
     if (message->start_hashes().empty()) {
         return;
     }
-    
-    message->set_stop_hash(stop_hash);  
+
+    message->set_stop_hash(stop_hash);
     SEND2(*message, handle_send, _1, message->command);
 
     LOG_DEBUG(LOG_NODE
@@ -496,7 +496,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //TODO(Mario): purge old compact blocks
 
     //the header of the compact block is the header of the block
-    auto const& header_temp = message->header();    
+    auto const& header_temp = message->header();
 
     if ( ! header_temp.is_valid()) {
         LOG_DEBUG(LOG_NODE
@@ -510,18 +510,18 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     if (compact_blocks_map_.count(header_temp.hash()) > 0) {
         return true;
     }
-            
+
     //if we haven't the parent block already, send a get_header message and return
     if ( ! chain_.get_block_exists_safe(header_temp.previous_block_hash() ) ) {
         LOG_DEBUG(LOG_NODE
            , "Compact Block parent block not exists [ ", encode_hash(header_temp.previous_block_hash())
            , " [", authority(), "]");
-        
+
         if ( ! chain_.is_stale() ) {
             LOG_DEBUG(LOG_NODE, "The chain isn't stale sending getheaders message [", authority(), "]");
             auto const heights = block::locator_heights(node_.top_block().height());
             chain_.fetch_block_locator(heights,BIND3(handle_fetch_block_locator_compact_block, _1, _2, null_hash));
-        } 
+        }
         return true;
     }
     //  else {
@@ -529,19 +529,19 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     //        , "Compact Block parent block EXISTS [ ", encode_hash(header_temp.previous_block_hash())
     //        , " [", authority(), "]");
     // }
-        
-   
+
+
     //the nonce used to calculate the short id
     auto const nonce = message->nonce();
     auto const& prefiled_txs = message->transactions();
     auto const& short_ids = message->short_ids();
-        
+
     std::vector<domain::chain::transaction> txs_available(short_ids.size() + prefiled_txs.size());
     int32_t lastprefilledindex = -1;
-    
+
     for (size_t i = 0; i < prefiled_txs.size(); ++i) {
         if ( ! prefiled_txs[i].is_valid()) {
-            
+
             LOG_DEBUG(LOG_NODE
                 , "Compact Block [", encode_hash(header_temp.hash())
                 , "] The prefilled transaction is invalid [", authority(), "]");
@@ -551,10 +551,10 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
         //encoded = (current_index - prev_index) - 1
         // current = +1 + prev
-        //       prev            current       
+        //       prev            current
         lastprefilledindex += prefiled_txs[i].index() + 1;
 
-        
+
         if (lastprefilledindex > std::numeric_limits<uint16_t>::max()) {
             LOG_DEBUG(LOG_NODE
                 , "Compact Block [", encode_hash(header_temp.hash())
@@ -562,7 +562,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
             stop(error::channel_stopped);
             return false;
         }
-          
+
         if ((uint32_t)lastprefilledindex > short_ids.size() + i) {
             // If we are inserting a tx at an index greater than our full list
             // of shorttxids plus the number of prefilled txn we've inserted,
@@ -578,16 +578,16 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
 
         txs_available[lastprefilledindex] = prefiled_txs[i].transaction();
     }
- 
+
     // Calculate map of txids -> positions and check mempool to see what we have
     // (or don't). Because well-formed cmpctblock messages will have a
     // (relatively) uniform distribution of short IDs, any highly-uneven
     // distribution of elements can be safely treated as a READ_STATUS_FAILED.
     std::unordered_map<uint64_t, uint16_t> shorttxids(short_ids.size());
     uint16_t index_offset = 0;
-    
+
     for (size_t i = 0; i < short_ids.size(); ++i) {
-                
+
         while (txs_available[i + index_offset].is_valid()) {
             ++index_offset;
         }
@@ -603,19 +603,19 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         // S * (1 - cdf(binomial(n=S,p=1/S), N)). If we assume blocks of up to
         // 16000, allowing 12 elements per bucket should only fail once per ~1
         // million block transfers (per peer and connection).
-        
+
         if (shorttxids.bucket_size(shorttxids.bucket(short_ids[i])) > 12) {
             // Duplicate txindexes, the block is now in-flight, so
             // just request it.
-            
+
             LOG_INFO(LOG_NODE, "Compact Block, sendening getdata for hash (", encode_hash(header_temp.hash()), ") to [", authority(), "]");
             send_get_data_compact_block(ec, header_temp.hash());
-            
+
             return true;
         }
     }
-   
-    
+
+
     // TODO: in the shortid-collision case, we should instead request both
     // transactions which collided. Falling back to full-block-request here is
     // overkill.
@@ -629,7 +629,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     size_t mempool_count = 0;
 #if defined(KTH_DB_TRANSACTION_UNCONFIRMED) || defined(KTH_DB_NEW_FULL)
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
-#endif 
+#endif
 
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;
@@ -644,7 +644,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     if (txs.empty()) {
-        auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txs_available)); 
+        auto const tempblock = std::make_shared<domain::message::block>(std::move(header_temp), std::move(txs_available));
         organize_block(tempblock);
         return true;
     } else {
@@ -652,7 +652,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
         auto req_tx = get_block_transactions(header_temp.hash(),txs);
         SEND2(req_tx, handle_send, _1, get_block_transactions::command);
         return true;
-    } 
+    }
 }
 
 void protocol_block_in::send_get_data_compact_block(code const& ec, hash_digest const& hash) {
@@ -782,7 +782,7 @@ void protocol_block_in::handle_stop(code const&) {
 // Block reporting.
 //-----------------------------------------------------------------------------
 
-inline 
+inline
 bool enabled(size_t height) {
     // Vary the reporting performance reporting interval by height.
     auto const modulus =
@@ -792,18 +792,18 @@ bool enabled(size_t height) {
     return height % modulus == 0;
 }
 
-inline 
+inline
 float difference(const asio::time_point& start, const asio::time_point& end) {
     auto const elapsed = duration_cast<asio::microseconds>(end - start);
     return static_cast<float>(elapsed.count());
 }
 
-inline 
+inline
 size_t unit_cost(const asio::time_point& start, const asio::time_point& end, size_t value) {
     return static_cast<size_t>(std::round(difference(start, end) / value));
 }
 
-inline 
+inline
 size_t total_cost_ms(const asio::time_point& start, const asio::time_point& end) {
     static constexpr size_t microseconds_per_millisecond = 1000;
     return unit_cost(start, end, microseconds_per_millisecond);
@@ -858,7 +858,7 @@ void protocol_block_in::report(domain::chain::block const& block) {
 
         auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
             "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
-            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs, 
+            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs,
 
             // wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check),
