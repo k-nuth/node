@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -92,7 +92,7 @@ protected:
     std::chrono::microseconds rate_window() const;
 
     // Isolation of side effect to enable unit testing.
-    virtual 
+    virtual
     std::chrono::high_resolution_clock::time_point now() const;
 
 private:

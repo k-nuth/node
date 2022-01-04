@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -197,7 +197,7 @@ bool session_header_sync::initialize() {
         LOG_ERROR(LOG_NODE, "Block hash list must not be initialized.");
         return false;
     }
-#ifdef KTH_DB_LEGACY     
+#ifdef KTH_DB_LEGACY
     block_database::heights gaps;
     // Populate hash buckets from full database empty height scan.
     if ( ! chain_.get_gaps(gaps)) {
@@ -207,7 +207,7 @@ bool session_header_sync::initialize() {
     hashes_.reserve(gaps);
 //#else
    //return false;
-#endif // KTH_DB_LEGACY     
+#endif // KTH_DB_LEGACY
 
     //*************************************************************************
     // TODO: get top and pair up checkpoints into slots.

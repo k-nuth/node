@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -191,9 +191,9 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
 
 //#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
     chain_.fetch_block(block_hash, witness, [this, message](code const& ec, block_const_ptr block, uint64_t) {
-            
+
         if (ec == error::success) {
-                    
+
             auto indexes = message->indexes();
 
             //TODO(Mario)
@@ -206,7 +206,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
                 // expensive disk reads, because it will require the peer to
                 // actually receive all the data read from disk over the network.
             }*/
-      
+
             uint16_t offset = 0;
             for (size_t j = 0; j < indexes.size(); j++) {
                 if (uint64_t(message->indexes()[j]) + uint64_t(offset) > std::numeric_limits<uint16_t>::max()) {
@@ -216,11 +216,11 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
                     stop(error::channel_stopped);
                     return;
                 }
-                    
+
                 indexes[j] = indexes[j] + offset;
                 offset = indexes[j] + 1;
             }
-            
+
             domain::chain::transaction::list txs_list(indexes.size());
 
             for (size_t i = 0; i < indexes.size(); i++) {
@@ -236,7 +236,7 @@ bool protocol_block_out::handle_receive_get_block_transactions(code const& ec, g
 
             block_transactions response(message->block_hash(),txs_list);
             SEND2(response, handle_send, _1, block_transactions::command);
-        } 
+        }
     });
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
 
@@ -366,7 +366,7 @@ void protocol_block_out::send_next_data(inventory_ptr inventory) {
                 stop(error::channel_stopped);
                 return;
             }
-//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL) 
+//#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_BLOCKS) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_block(entry.hash(), true, BIND4(send_block, _1, _2, _3, inventory));
 //#endif // KTH_DB_LEGACY || KTH_DB_NEW_BLOCKS || defined(KTH_DB_NEW_FULL)
             break;
@@ -521,7 +521,7 @@ bool protocol_block_out::handle_reorganized(code ec, size_t fork_height, block_c
         auto const block = incoming->front();
 
         if (block->validation.originator != nonce()) {
-            compact_block announce = compact_block::factory_from_block(*block);  
+            compact_block announce = compact_block::factory_from_block(*block);
             SEND2(announce, handle_send, _1, announce.command);
         }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -28,7 +28,7 @@ using namespace boost::adaptors;
 using namespace std::placeholders;
 
 //TODO(fernando): it is repeater everywhere
-inline 
+inline
 bool is_witness(uint64_t services) {
 #if defined(KTH_CURRENCY_BCH)
     return false;
@@ -162,7 +162,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
     auto const& entry = inventory->inventories().back();
 
     switch (entry.type()) {
-#if defined(KTH_SEGWIT_ENABLED)        
+#if defined(KTH_SEGWIT_ENABLED)
         case inventory::type_id::witness_transaction: {
             if ( ! enable_witness_) {
                 stop(error::channel_stopped);
@@ -173,7 +173,7 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         }
-#endif // defined(KTH_SEGWIT_ENABLED)        
+#endif // defined(KTH_SEGWIT_ENABLED)
 
         case inventory::type_id::transaction: {
 #if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
@@ -193,14 +193,14 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
     }
 
     // Treat already confirmed transactions as not found.
-    auto confirmed = ! ec 
-#if defined(KTH_DB_LEGACY) 
+    auto confirmed = ! ec
+#if defined(KTH_DB_LEGACY)
                     && position != transaction_database::unconfirmed
 #elif defined(KTH_DB_NEW_FULL)
                     && position != position_max
 #endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
                     ;
-                    
+
     if (ec == error::not_found || confirmed) {
         LOG_DEBUG(LOG_NODE, "Transaction requested by [", authority(), "] not found.");
 

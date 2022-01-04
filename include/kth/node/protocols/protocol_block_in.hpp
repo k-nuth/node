@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -38,10 +38,10 @@ private:
 
 
 #if defined(KTH_STATISTICS_ENABLED)
-    static 
+    static
     void report(domain::chain::block const& block, full_node& node);
 #else
-    static 
+    static
     void report(domain::chain::block const& block);
 #endif
 

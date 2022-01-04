@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -26,7 +26,7 @@ public:
     using get_assets_list = typename State::get_assets_list;
     using get_all_asset_addresses_list = typename State::get_all_asset_addresses_list;
 
-    //class invariant: keoken_genesis_height > 0 
+    //class invariant: keoken_genesis_height > 0
 
     base_manager(kth::blockchain::block_chain& chain, size_t keoken_genesis_height)
     // precondition: keoken_genesis_height > 0
@@ -88,7 +88,7 @@ private:
     void initialize_from_blockchain(size_t from_height, size_t to_height) {
         bool witness = false;   //TODO(fernando): what to do with this...
 
-        chain_.for_each_transaction_non_coinbase(from_height, to_height, witness, 
+        chain_.for_each_transaction_non_coinbase(from_height, to_height, witness,
             [this](kth::code const& ec, size_t height, kth::domain::chain::transaction const& tx) {
                 if (ec == kth::error::success) {
                     interpreter_.process(height, tx);
@@ -105,7 +105,7 @@ private:
             interpreter_.process(height, tx);
         });
     }
-    
+
     // A typical reorganization consists of one incoming and zero outgoing blocks.
     bool handle_reorganized(kth::code ec, size_t fork_height, kth::block_const_ptr_list_const_ptr const& incoming, kth::block_const_ptr_list_const_ptr const& outgoing) {
         if (ec == kth::error::service_stopped) {
@@ -120,7 +120,7 @@ private:
         if ( ! incoming || incoming->empty()) {
             return true;
         }
-        
+
         if (processed_height_ + 1 < fork_height) {
             initialize_from_blockchain(processed_height_ + 1, fork_height - 1);
         }

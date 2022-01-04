@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -51,7 +51,7 @@ domain::message::headers::ptr message_factory(size_t count,
 reservation_fixture::reservation_fixture(reservations& reservations,
     size_t slot, uint32_t sync_timeout_seconds, clock::time_point now)
     : reservation(reservations, slot, sync_timeout_seconds)
-    , now_(now) 
+    , now_(now)
 {}
 
 // Accessor
@@ -79,7 +79,7 @@ std::chrono::high_resolution_clock::time_point reservation_fixture::now() const 
 blockchain_fixture::blockchain_fixture(bool import_result, size_t gap_trigger, size_t gap_height)
     : import_result_(import_result)
     , gap_trigger_(gap_trigger)
-    , gap_height_(gap_height) 
+    , gap_height_(gap_height)
 {}
 
 bool blockchain_fixture::get_gap_range(size_t& out_first, size_t& out_last) const {

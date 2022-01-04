@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,7 +13,7 @@
 #include <kth/node/define.hpp>
 #include <kth/node/configuration.hpp>
 
-namespace kth::node { 
+namespace kth::node {
 
 /// Parse configurable values from environment variables, settings file, and
 /// command line positional and non-positional options.
@@ -23,28 +23,28 @@ public:
     parser(configuration const& defaults);
 
     /// Parse all configuration into member settings.
-    // virtual 
+    // virtual
     bool parse(int argc, char const* argv[], std::ostream& error);
 
-    // virtual 
+    // virtual
     bool parse_from_file(kth::path const& config_path, std::ostream& error);
-    
+
     void set_default_configuration();
 
     /// Load command line options (named).
-    // virtual 
+    // virtual
     domain::options_metadata load_options();
 
     /// Load command line arguments (positional).
-    // virtual 
+    // virtual
     domain::arguments_metadata load_arguments();
 
     /// Load configuration file settings.
-    // virtual 
+    // virtual
     domain::options_metadata load_settings();
 
     /// Load environment variable settings.
-    // virtual 
+    // virtual
     domain::options_metadata load_environment();
 
     /// The populated configuration settings values.

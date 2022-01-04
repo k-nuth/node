@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2021 Knuth Project developers.
+// Copyright (c) 2016-2022 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -25,7 +25,7 @@ using namespace kth::domain::message;
 using namespace kth::network;
 using namespace std::placeholders;
 
-inline 
+inline
 bool is_witness(uint64_t services) {
 #if defined(KTH_CURRENCY_BCH)
     return false;
@@ -34,7 +34,7 @@ bool is_witness(uint64_t services) {
 #endif
 }
 
-inline 
+inline
 uint64_t to_relay_fee(float minimum_byte_fee) {
     // Spending one standard prevout with one output is nominally 189 bytes.
     static size_t const small_transaction_size = 189;
