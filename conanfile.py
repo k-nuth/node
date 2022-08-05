@@ -23,10 +23,6 @@ class KnuthNodeConan(KnuthConanFile):
         "tests": [True, False],
         "currency": ['BCH', 'BTC', 'LTC'],
 
-        "microarchitecture": "ANY", #["x86_64", "haswell", "ivybridge", "sandybridge", "bulldozer", ...]
-        "fix_march": [True, False],
-        "march_id": "ANY",
-
         "verbose": [True, False],
         # "keoken": [True, False],
         "mempool": [True, False],
@@ -142,6 +138,7 @@ class KnuthNodeConan(KnuthConanFile):
         cmake.definitions["LOG_LIBRARY"] = self.options.log
         cmake.definitions["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
         cmake.definitions["STATISTICS"] = option_on_off(self.options.statistics)
+        cmake.definitions["CONAN_DISABLE_CHECK_COMPILER"] = option_on_off(True)
 
         cmake.configure(source_dir=self.source_folder)
         if not self.options.cmake_export_compile_commands:
