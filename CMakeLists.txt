@@ -41,18 +41,10 @@ option(ENABLE_POSITION_INDEPENDENT_CODE "Enable POSITION_INDEPENDENT_CODE proper
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
 
-
 set(KTH_PROJECT_VERSION "0.0.0" CACHE STRING "Specify the Knuth Project Version.")
 message( STATUS "Knuth: Compiling version ${KTH_PROJECT_VERSION}")
 
-set(MICROARCHITECTURE "x86_64" CACHE STRING "Specify the Microarchitecture (x86_64|...).")
-message( STATUS "Knuth: Compiling for ${MICROARCHITECTURE}")
-# add_definitions(-DKTH_MICROARCHITECTURE=${MICROARCHITECTURE})
-
-#TODO(fernando): replace with march id
-# add_definitions(-DKTH_MICROARCHITECTURE_STR="${MICROARCHITECTURE}")
 add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
-
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
 message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
 
