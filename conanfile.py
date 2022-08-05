@@ -28,8 +28,10 @@ class KnuthNodeConan(KnuthConanFile):
         "march_id": "ANY",
 
         "verbose": [True, False],
-
         # "keoken": [True, False],
+        "mempool": [True, False],
+        "db": ['legacy', 'legacy_full', 'pruned', 'default', 'full'],
+        "db_readonly": [True, False],
 
         "march_id": "ANY",
         "march_strategy": ["download_if_possible", "optimized", "download_or_fail"],
