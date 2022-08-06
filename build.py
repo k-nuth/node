@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 # opts_bch_keoken["%s:db" % name] = "full"
 
                 opts_bch_no_keoken["%s:currency" % name] = "BCH"
-                opts_bch_no_keoken["%s:keoken" % name] = False
+                # opts_bch_no_keoken["%s:keoken" % name] = False
 
                 # opts_btc["%s:currency" % name] = "BTC"
                 # opts_ltc["%s:currency" % name] = "LTC"
