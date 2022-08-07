@@ -22,16 +22,15 @@ class KnuthNodeConan(KnuthConanFile):
         "fPIC": [True, False],
         "tests": [True, False],
         "currency": ['BCH', 'BTC', 'LTC'],
-        "microarchitecture": "ANY", #["x86_64", "haswell", "ivybridge", "sandybridge", "bulldozer", ...]
-        "fix_march": [True, False],
-        "march_id": "ANY",
 
         "verbose": [True, False],
-        "keoken": [True, False],
+        # "keoken": [True, False],
         "mempool": [True, False],
         "db": ['legacy', 'legacy_full', 'pruned', 'default', 'full'],
         "db_readonly": [True, False],
 
+        "march_id": "ANY",
+        "march_strategy": ["download_if_possible", "optimized", "download_or_fail"],
 
         "cxxflags": "ANY",
         "cflags": "ANY",
@@ -48,12 +47,12 @@ class KnuthNodeConan(KnuthConanFile):
         "fPIC": True,
         "tests": False,
         "currency": "BCH",
-        "microarchitecture": "_DUMMY_",
-        "fix_march": False,
+
         "march_id": "_DUMMY_",
+        "march_strategy": "download_if_possible",
 
         "verbose": False,
-        "keoken": False,
+        # "keoken": False,
         "mempool": False,
         "db": "default",
         "db_readonly": False,
@@ -74,9 +73,9 @@ class KnuthNodeConan(KnuthConanFile):
     package_files = "build/lkth-node.a"
     build_policy = "missing"
 
-    @property
-    def is_keoken(self):
-        return self.options.currency == "BCH" and self.options.get_safe("keoken")
+    # @property
+    # def is_keoken(self):
+    #     return self.options.currency == "BCH" and self.options.get_safe("keoken")
 
     def requirements(self):
         self.requires("blockchain/0.X@%s/%s" % (self.user, self.channel))
@@ -88,22 +87,25 @@ class KnuthNodeConan(KnuthConanFile):
         if self.options.tests:
             self.requires("catch2/2.13.8")
 
+    def validate(self):
+        KnuthConanFile.validate(self)
+
     def config_options(self):
         KnuthConanFile.config_options(self)
 
     def configure(self):
         KnuthConanFile.configure(self)
 
-        if self.options.keoken and self.options.currency != "BCH":
-            self.output.warn("For the moment Keoken is only enabled for BCH. Building without Keoken support...")
-            del self.options.keoken
-        else:
-            self.options["*"].keoken = self.options.keoken
+        # if self.options.keoken and self.options.currency != "BCH":
+        #     self.output.warn("For the moment Keoken is only enabled for BCH. Building without Keoken support...")
+        #     del self.options.keoken
+        # else:
+        #     self.options["*"].keoken = self.options.keoken
 
-        if self.is_keoken:
-            if self.options.db == "pruned" or self.options.db == "default":
-                self.output.warn("Keoken mode requires db=full and your configuration is db=%s, it has been changed automatically..." % (self.options.db,))
-                self.options.db = "full"
+        # if self.is_keoken:
+        #     if self.options.db == "pruned" or self.options.db == "default":
+        #         self.output.warn("Keoken mode requires db=full and your configuration is db=%s, it has been changed automatically..." % (self.options.db,))
+        #         self.options.db = "full"
 
         self.options["*"].mempool = self.options.mempool
 
@@ -128,12 +130,15 @@ class KnuthNodeConan(KnuthConanFile):
         cmake = self.cmake_basis()
 
         # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
-        cmake.definitions["WITH_KEOKEN"] = option_on_off(self.is_keoken)
+        cmake.definitions["WITH_KEOKEN"] = option_on_off(False)
+        # cmake.definitions["WITH_KEOKEN"] = option_on_off(self.is_keoken)
+
         cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
         cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
         cmake.definitions["LOG_LIBRARY"] = self.options.log
         cmake.definitions["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
         cmake.definitions["STATISTICS"] = option_on_off(self.options.statistics)
+        cmake.definitions["CONAN_DISABLE_CHECK_COMPILER"] = option_on_off(True)
 
         cmake.configure(source_dir=self.source_folder)
         if not self.options.cmake_export_compile_commands:

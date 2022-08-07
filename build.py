@@ -2,7 +2,7 @@ import copy
 import os
 import cpuid
 import platform
-from kthbuild import get_base_march_ids, get_builder, handle_microarchs, copy_env_vars, filter_valid_exts, filter_marchs_tests
+from kthbuild import get_base_march_ids, get_builder, handle_microarchs, copy_env_vars, filter_marchs_tests
 
 if __name__ == "__main__":
     full_build = os.getenv('KTH_FULL_BUILD', '0') == '1'
@@ -35,7 +35,7 @@ if __name__ == "__main__":
                 # opts_bch_keoken["%s:db" % name] = "full"
 
                 opts_bch_no_keoken["%s:currency" % name] = "BCH"
-                opts_bch_no_keoken["%s:keoken" % name] = False
+                # opts_bch_no_keoken["%s:keoken" % name] = False
 
                 # opts_btc["%s:currency" % name] = "BTC"
                 # opts_ltc["%s:currency" % name] = "LTC"
