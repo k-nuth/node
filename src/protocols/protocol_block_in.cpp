@@ -856,9 +856,46 @@ void protocol_block_in::report(domain::chain::block const& block) {
             block.validation.cache_efficiency);
 #endif
 
+        // auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
+        //     "{:>4} wms {:>5} vms {:>4} vµs {:>4} rµs {:>4} cµs {:>4} pµs "
+        //     "{:>4} aµs {:>4} sµs {:>4} dµs {:>4} tdms {:f}", height, transactions, inputs,
+
+        //     // wait total (ms)
+        //     total_cost_ms(times.end_deserialize, times.start_check),
+
+        //     // validation total (ms)
+        //     total_cost_ms(start_validate, times.start_notify),
+
+        //     // validation per input (µs)
+        //     unit_cost(start_validate, times.start_notify, inputs),
+
+        //     // deserialization (read) per input (µs)
+        //     unit_cost(times.start_deserialize, times.end_deserialize, inputs),
+
+        //     // check per input (µs)
+        //     unit_cost(times.start_check, times.start_populate, inputs),
+
+        //     // population per input (µs)
+        //     unit_cost(times.start_populate, times.start_accept, inputs),
+
+        //     // accept per input (µs)
+        //     unit_cost(times.start_accept, times.start_connect, inputs),
+
+        //     // connect (script) per input (µs)
+        //     unit_cost(times.start_connect, times.start_notify, inputs),
+
+        //     // deposit per input (µs)
+        //     unit_cost(times.start_push, times.end_push, inputs),
+
+        //     // deposit total (ms)
+        //     total_cost_ms(times.start_push, times.end_push),
+
+        //     // this block transaction cache efficiency (hits/queries)
+        //     block.validation.cache_efficiency);
+
         auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
-            "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
-            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs,
+            "{:>5} wms {:>5} vms {:>5} rms {:>5} cms {:>5} pms "
+            "{:>5} ams {:>5} sms {:>5} dms {:f}", height, transactions, inputs,
 
             // wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check),
@@ -866,26 +903,23 @@ void protocol_block_in::report(domain::chain::block const& block) {
             // validation total (ms)
             total_cost_ms(start_validate, times.start_notify),
 
-            // validation per input (µs)
-            unit_cost(start_validate, times.start_notify, inputs),
+            // deserialization (read) per input (ms)
+            total_cost_ms(times.start_deserialize, times.end_deserialize),
 
-            // deserialization (read) per input (µs)
-            unit_cost(times.start_deserialize, times.end_deserialize, inputs),
+            // check per input (ms)
+            total_cost_ms(times.start_check, times.start_populate),
 
-            // check per input (µs)
-            unit_cost(times.start_check, times.start_populate, inputs),
+            // population per input (ms)
+            total_cost_ms(times.start_populate, times.start_accept),
 
-            // population per input (µs)
-            unit_cost(times.start_populate, times.start_accept, inputs),
+            // accept per input (ms)
+            total_cost_ms(times.start_accept, times.start_connect),
 
-            // accept per input (µs)
-            unit_cost(times.start_accept, times.start_connect, inputs),
+            // connect (script) per input (ms)
+            total_cost_ms(times.start_connect, times.start_notify),
 
-            // connect (script) per input (µs)
-            unit_cost(times.start_connect, times.start_notify, inputs),
-
-            // deposit per input (µs)
-            unit_cost(times.start_push, times.end_push, inputs),
+            // deposit per input (ms)
+            total_cost_ms(times.start_push, times.end_push),
 
             // this block transaction cache efficiency (hits/queries)
             block.validation.cache_efficiency);
