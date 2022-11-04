@@ -41,7 +41,7 @@ Each of our modules has its own Github repository, but in case you want to creat
 [badge.Cirrus]: https://api.cirrus-ci.com/github/k-nuth/node.svg?branch=master
 [badge.GhA]: https://github.com/k-nuth/node/workflows/Build%20and%20Test/badge.svg?branch=master
 [badge.version]: https://badge.fury.io/gh/k-nuth%2Fnode.svg
-[badge.release]: https://img.shields.io/github/release/k-nuth/node.svg
+[badge.release]: https://img.shields.io/github/v/release/k-nuth/node?display_name=tag&style=for-the-badge&color=00599C&logo=cplusplus
 [badge.cpp]: https://img.shields.io/badge/C++-17-blue.svg?style=flat&logo=c%2B%2B
 [badge.telegram]: https://img.shields.io/badge/telegram-badge-blue.svg?logo=telegram
 [badge.slack]: https://img.shields.io/badge/slack-badge-orange.svg?logo=slack
