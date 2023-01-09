@@ -48,6 +48,10 @@ add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
 message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
 
+add_definitions(-DKTH_MARCH_NAMES_FULL_STR="${MARCH_NAMES_FULL_STR}")
+set(MARCH_NAMES_FULL_STR "" CACHE STRING "String with full list of CPU instructions/extensions.")
+message( STATUS "Knuth: Built for CPU instructions/extensions: ${MARCH_NAMES_FULL_STR}")
+
 message( STATUS "Knuth: CONAN_CXX_FLAGS ${CONAN_CXX_FLAGS}")
 message( STATUS "Knuth: CONAN_C_FLAGS ${CONAN_C_FLAGS}")
 
