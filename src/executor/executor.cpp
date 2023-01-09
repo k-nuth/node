@@ -115,8 +115,16 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     //handle_stop(initialize_stop);
 }
 
+static constexpr std::string_view march_names() {
+#if defined(KTH_MARCH_NAMES_FULL_STR)
+    return KTH_MARCH_NAMES_FULL_STR;
+#else
+    return "unknown";
+#endif
+}
+
 void executor::print_version(std::string_view extra) {
-    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_MARCH_NAMES_FULL_STR, KTH_DB_TYPE) << std::endl;
+    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, march_names(), KTH_DB_TYPE) << std::endl;
 }
 
 #if ! defined(KTH_DB_READONLY)
@@ -142,7 +150,7 @@ bool executor::init_directory(error_code& ec) {
 }
 
 // CAPI
-bool executor::do_initchain(std::string const& extra) {
+bool executor::do_initchain(std::string_view extra) {
     initialize_output(extra);
 
     error_code ec;
@@ -214,7 +222,7 @@ error_code executor::init_directory_if_necessary() {
     return ec;
 }
 
-bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
+bool executor::init_run_and_wait_for_signal(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -278,7 +286,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
     return res;
 }
 
-bool executor::init_run(std::string const& extra, start_modules mods, kth::handle0 handler) {
+bool executor::init_run(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -407,7 +415,7 @@ void executor::stop(kth::code const& ec) {
 // ----------------------------------------------------------------------------
 
 // Set up logging.
-void executor::initialize_output(std::string const& extra) {
+void executor::initialize_output(std::string_view extra) {
     auto const& file = config_.file;
 
     if (file.empty()) {
@@ -420,6 +428,7 @@ void executor::initialize_output(std::string const& extra) {
     LOG_INFO(LOG_NODE, extra);
     LOG_INFO(LOG_NODE, fmt::format(KTH_CRYPTOCURRENCY_INIT, KTH_CURRENCY_SYMBOL_STR, KTH_CURRENCY_STR));
     LOG_INFO(LOG_NODE, fmt::format(KTH_MICROARCHITECTURE_INIT, KTH_MICROARCHITECTURE_STR));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_MARCH_EXTS_INIT, march_names()));
     LOG_INFO(LOG_NODE, fmt::format(KTH_DB_TYPE_INIT, KTH_DB_TYPE));
 
 #ifndef NDEBUG
@@ -429,8 +438,6 @@ void executor::initialize_output(std::string const& extra) {
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier)), config_.network.identifier));
     LOG_INFO(LOG_NODE, fmt::format(KTH_BLOCKCHAIN_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_CORES_INIT, kth::thread_ceiling(config_.network.threads)));
-    //TODO(fernando): Runing from exe of C-API
-    //TODO(fernando): Node version and (Exe or C-API version)
 }
 
 // Use missing directory as a sentinel indicating lack of initialization.

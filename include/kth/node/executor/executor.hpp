@@ -22,14 +22,14 @@ public:
     void operator=(executor const&) = delete;
 
 #if ! defined(KTH_DB_READONLY)
-    bool do_initchain(std::string const& extra);
+    bool do_initchain(std::string_view extra);
 #endif
 
     // bool run(kth::handle0 handler);
 
 #if ! defined(KTH_DB_READONLY)
-    bool init_run(std::string const& extra, start_modules mod, kth::handle0 handler);
-    bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
+    bool init_run(std::string_view extra, start_modules mod, kth::handle0 handler);
+    bool init_run_and_wait_for_signal(std::string_view extra, start_modules mod, kth::handle0 handler);
 #endif
 
     void signal_stop();
@@ -45,7 +45,7 @@ public:
     // void do_help();
     // void do_settings();
     void print_version(std::string_view extra);
-    void initialize_output(std::string const& extra);
+    void initialize_output(std::string_view extra);
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);
@@ -107,14 +107,15 @@ private:
 #define KTH_USING_DEFAULT_CONFIG "Using default configuration settings."
 
 #ifdef NDEBUG
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  CPU instructions/extensions: {}\n  db type: {}"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}"
 #else
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  CPU instructions/extensions: {}\n  db type: {}\n  (Debug Build)"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}\n  (Debug Build)"
 #endif
 
 #define KTH_VERSION_MESSAGE_INIT "Node C++ lib v{}."
 #define KTH_CRYPTOCURRENCY_INIT "Currency: {} - {}."
 #define KTH_MICROARCHITECTURE_INIT "Optimized for microarchitecture: {}."
+#define KTH_MARCH_EXTS_INIT "Built for CPU instructions/extensions: {}."
 #define KTH_DB_TYPE_INIT "Database type: {}."
 #define KTH_DEBUG_BUILD_INIT "(Debug Build)"
 #define KTH_NETWORK_INIT "Network: {0} ({1} - {1:#x})."
