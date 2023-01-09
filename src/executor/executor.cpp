@@ -115,8 +115,8 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     //handle_stop(initialize_stop);
 }
 
-void executor::print_version(std::string const& extra) {
-    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_DB_TYPE) << std::endl;
+void executor::print_version(std::string_view extra) {
+    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_MARCH_NAMES_FULL_STR, KTH_DB_TYPE) << std::endl;
 }
 
 #if ! defined(KTH_DB_READONLY)

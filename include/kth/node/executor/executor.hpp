@@ -7,6 +7,7 @@
 
 #include <future>
 #include <iostream>
+#include <string_view>
 
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
@@ -43,7 +44,7 @@ public:
 
     // void do_help();
     // void do_settings();
-    void print_version(std::string const& extra);
+    void print_version(std::string_view extra);
     void initialize_output(std::string const& extra);
 
 #if ! defined(KTH_DB_READONLY)
@@ -106,9 +107,9 @@ private:
 #define KTH_USING_DEFAULT_CONFIG "Using default configuration settings."
 
 #ifdef NDEBUG
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}"
+#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  CPU instructions/extensions: {}\n  db type: {}"
 #else
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}\n  (Debug Build)"
+#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  CPU instructions/extensions: {}\n  db type: {}\n  (Debug Build)"
 #endif
 
 #define KTH_VERSION_MESSAGE_INIT "Node C++ lib v{}."
