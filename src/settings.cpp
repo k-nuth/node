@@ -20,9 +20,6 @@ settings::settings()
     , compact_blocks_high_bandwidth(true)
     , rpc_allow_all_ips(false)
     , ds_proofs_enabled(false)
-#ifdef KTH_WITH_KEOKEN
-    , keoken_genesis_height(kth::max_size_t)
-#endif
 {
     rpc_allow_ip.push_back("127.0.0.1");
 }

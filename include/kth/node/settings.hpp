@@ -35,10 +35,6 @@ public:
 
     bool ds_proofs_enabled;
 
-#ifdef KTH_WITH_KEOKEN
-    size_t keoken_genesis_height;
-#endif
-
     /// Helpers.
     asio::duration block_latency() const;
 };

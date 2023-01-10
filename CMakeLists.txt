@@ -55,15 +55,6 @@ message( STATUS "Knuth: Built for CPU instructions/extensions: ${MARCH_NAMES_FUL
 message( STATUS "Knuth: CONAN_CXX_FLAGS ${CONAN_CXX_FLAGS}")
 message( STATUS "Knuth: CONAN_C_FLAGS ${CONAN_C_FLAGS}")
 
-
-# Implement --with-keoken and declare KTH_WITH_KEOKEN.
-#------------------------------------------------------------------------------
-option(WITH_KEOKEN "Keoken enabled." OFF)
-if (WITH_KEOKEN)
-  message(STATUS "Knuth: Keoken enabled")
-  add_definitions(-DKTH_WITH_KEOKEN)
-endif()
-
 # Implement --with-mempool and declare WITH_MEMPOOL.
 #------------------------------------------------------------------------------
 option(WITH_MEMPOOL "Mempool enabled." OFF)
@@ -375,13 +366,6 @@ set(kth_node_sources_just_legacy
   src/utility/reservation.cpp
   src/utility/reservations.cpp
 )
-
-if (WITH_KEOKEN)
-  set(kth_node_sources_just_kth
-    ${kth_node_sources_just_kth}
-    # src/keoken/manager.cpp
-  )
-endif()
 
 if (NOT JUST_KTH_SOURCES)
   set(kth_node_sources

@@ -36,10 +36,6 @@ class Table;
 #include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/utility/check_list.hpp>
 
-// #ifdef WITH_KEOKEN
-// #include <knuth/keoken/manager.hpp>
-// #endif
-
 namespace kth::node {
 
 enum class start_modules {
@@ -166,10 +162,6 @@ public:
     //TODO: remove this function and use safe_chain in the rpc lib
     virtual
     blockchain::block_chain& chain_kth();
-
-// #ifdef WITH_KEOKEN
-//     knuth::keoken::manager<knuth::keoken::state_delegated>& keoken_manager();
-// #endif
 
     // Subscriptions.
     // ------------------------------------------------------------------------

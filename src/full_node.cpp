@@ -49,9 +49,6 @@ full_node::full_node(configuration const& configuration)
     , protocol_maximum_(configuration.network.protocol_maximum)
     , chain_settings_(configuration.chain)
     , node_settings_(configuration.node)
-// #ifdef WITH_KEOKEN
-//     , keoken_manager_(chain_, node_settings().keoken_genesis_height)
-// #endif
 {}
 
 full_node::~full_node() {
