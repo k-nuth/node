@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -107,14 +107,15 @@ private:
 #define KTH_USING_DEFAULT_CONFIG "Using default configuration settings."
 
 #ifdef NDEBUG
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}"
 #else
-#define KTH_VERSION_MESSAGE "Knuth Node C++ lib v{}\n  {}\n  currency: {}\n  microarchitecture: {}\n  db type: {}\n  (Debug Build)"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}\n  (Debug Build)"
 #endif
 
 #define KTH_VERSION_MESSAGE_INIT "Node C++ lib v{}."
 #define KTH_CRYPTOCURRENCY_INIT "Currency: {} - {}."
 #define KTH_MICROARCHITECTURE_INIT "Optimized for microarchitecture: {}."
+#define KTH_MARCH_EXTS_INIT "Built for CPU instructions/extensions: {}."
 #define KTH_DB_TYPE_INIT "Database type: {}."
 #define KTH_DEBUG_BUILD_INIT "(Debug Build)"
 #define KTH_NETWORK_INIT "Network: {0} ({1} - {1:#x})."

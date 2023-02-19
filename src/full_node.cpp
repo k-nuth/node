@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -49,9 +49,6 @@ full_node::full_node(configuration const& configuration)
     , protocol_maximum_(configuration.network.protocol_maximum)
     , chain_settings_(configuration.chain)
     , node_settings_(configuration.node)
-// #ifdef WITH_KEOKEN
-//     , keoken_manager_(chain_, node_settings().keoken_genesis_height)
-// #endif
 {}
 
 full_node::~full_node() {

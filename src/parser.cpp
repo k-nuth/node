@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -608,13 +608,6 @@ options_metadata parser::load_settings() {
         value<bool>(&configured.node.ds_proofs_enabled),
         "Double-Spend Proofs, default to false."
     )
-#ifdef KTH_WITH_KEOKEN
-    (
-        "node.keoken_genesis_height",
-        value<size_t>(&configured.node.keoken_genesis_height),
-        "Block height where the first keoken transaction is stored."
-    )
-#endif
 
 #if defined(KTH_WITH_MEMPOOL)
     (

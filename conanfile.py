@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Knuth Project developers.
+# Copyright (c) 2016-2023 Knuth Project developers.
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -24,7 +24,6 @@ class KnuthNodeConan(KnuthConanFile):
         "currency": ['BCH', 'BTC', 'LTC'],
 
         "verbose": [True, False],
-        # "keoken": [True, False],
         "mempool": [True, False],
         "db": ['legacy', 'legacy_full', 'pruned', 'default', 'full'],
         "db_readonly": [True, False],
@@ -52,7 +51,6 @@ class KnuthNodeConan(KnuthConanFile):
         "march_strategy": "download_if_possible",
 
         "verbose": False,
-        # "keoken": False,
         "mempool": False,
         "db": "default",
         "db_readonly": False,
@@ -73,10 +71,6 @@ class KnuthNodeConan(KnuthConanFile):
     package_files = "build/lkth-node.a"
     build_policy = "missing"
 
-    # @property
-    # def is_keoken(self):
-    #     return self.options.currency == "BCH" and self.options.get_safe("keoken")
-
     def requirements(self):
         self.requires("blockchain/0.X@%s/%s" % (self.user, self.channel))
         self.requires("network/0.X@%s/%s" % (self.user, self.channel))
@@ -95,17 +89,6 @@ class KnuthNodeConan(KnuthConanFile):
 
     def configure(self):
         KnuthConanFile.configure(self)
-
-        # if self.options.keoken and self.options.currency != "BCH":
-        #     self.output.warn("For the moment Keoken is only enabled for BCH. Building without Keoken support...")
-        #     del self.options.keoken
-        # else:
-        #     self.options["*"].keoken = self.options.keoken
-
-        # if self.is_keoken:
-        #     if self.options.db == "pruned" or self.options.db == "default":
-        #         self.output.warn("Keoken mode requires db=full and your configuration is db=%s, it has been changed automatically..." % (self.options.db,))
-        #         self.options.db = "full"
 
         self.options["*"].mempool = self.options.mempool
 
@@ -130,8 +113,6 @@ class KnuthNodeConan(KnuthConanFile):
         cmake = self.cmake_basis()
 
         # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
-        cmake.definitions["WITH_KEOKEN"] = option_on_off(False)
-        # cmake.definitions["WITH_KEOKEN"] = option_on_off(self.is_keoken)
 
         cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
         cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)

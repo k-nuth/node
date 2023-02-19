@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -115,8 +115,16 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     //handle_stop(initialize_stop);
 }
 
+static constexpr std::string_view march_names() {
+#if defined(KTH_MARCH_NAMES_FULL_STR)
+    return KTH_MARCH_NAMES_FULL_STR;
+#else
+    return "unknown";
+#endif
+}
+
 void executor::print_version(std::string_view extra) {
-    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_DB_TYPE) << std::endl;
+    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, march_names(), KTH_DB_TYPE) << std::endl;
 }
 
 #if ! defined(KTH_DB_READONLY)
@@ -420,6 +428,7 @@ void executor::initialize_output(std::string_view extra) {
     LOG_INFO(LOG_NODE, extra);
     LOG_INFO(LOG_NODE, fmt::format(KTH_CRYPTOCURRENCY_INIT, KTH_CURRENCY_SYMBOL_STR, KTH_CURRENCY_STR));
     LOG_INFO(LOG_NODE, fmt::format(KTH_MICROARCHITECTURE_INIT, KTH_MICROARCHITECTURE_STR));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_MARCH_EXTS_INIT, march_names()));
     LOG_INFO(LOG_NODE, fmt::format(KTH_DB_TYPE_INIT, KTH_DB_TYPE));
 
 #ifndef NDEBUG
@@ -429,8 +438,6 @@ void executor::initialize_output(std::string_view extra) {
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier, config_.network.inbound_port == 488333)), config_.network.identifier));
     LOG_INFO(LOG_NODE, fmt::format(KTH_BLOCKCHAIN_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_CORES_INIT, kth::thread_ceiling(config_.network.threads)));
-    //TODO(fernando): Runing from exe of C-API
-    //TODO(fernando): Node version and (Exe or C-API version)
 }
 
 // Use missing directory as a sentinel indicating lack of initialization.

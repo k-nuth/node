@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2022 Knuth Project developers.
+# Copyright (c) 2016-2023 Knuth Project developers.
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -48,17 +48,12 @@ add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
 message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
 
+add_definitions(-DKTH_MARCH_NAMES_FULL_STR="${MARCH_NAMES_FULL_STR}")
+set(MARCH_NAMES_FULL_STR "" CACHE STRING "String with full list of CPU instructions/extensions.")
+message( STATUS "Knuth: Built for CPU instructions/extensions: ${MARCH_NAMES_FULL_STR}")
+
 message( STATUS "Knuth: CONAN_CXX_FLAGS ${CONAN_CXX_FLAGS}")
 message( STATUS "Knuth: CONAN_C_FLAGS ${CONAN_C_FLAGS}")
-
-
-# Implement --with-keoken and declare KTH_WITH_KEOKEN.
-#------------------------------------------------------------------------------
-option(WITH_KEOKEN "Keoken enabled." OFF)
-if (WITH_KEOKEN)
-  message(STATUS "Knuth: Keoken enabled")
-  add_definitions(-DKTH_WITH_KEOKEN)
-endif()
 
 # Implement --with-mempool and declare WITH_MEMPOOL.
 #------------------------------------------------------------------------------
@@ -371,13 +366,6 @@ set(kth_node_sources_just_legacy
   src/utility/reservation.cpp
   src/utility/reservations.cpp
 )
-
-if (WITH_KEOKEN)
-  set(kth_node_sources_just_kth
-    ${kth_node_sources_just_kth}
-    # src/keoken/manager.cpp
-  )
-endif()
 
 if (NOT JUST_KTH_SOURCES)
   set(kth_node_sources
