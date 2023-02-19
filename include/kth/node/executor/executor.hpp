@@ -7,6 +7,7 @@
 
 #include <future>
 #include <iostream>
+#include <string_view>
 
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
@@ -21,14 +22,14 @@ public:
     void operator=(executor const&) = delete;
 
 #if ! defined(KTH_DB_READONLY)
-    bool do_initchain(std::string const& extra);
+    bool do_initchain(std::string_view extra);
 #endif
 
     // bool run(kth::handle0 handler);
 
 #if ! defined(KTH_DB_READONLY)
-    bool init_run(std::string const& extra, start_modules mod, kth::handle0 handler);
-    bool init_run_and_wait_for_signal(std::string const& extra, start_modules mod, kth::handle0 handler);
+    bool init_run(std::string_view extra, start_modules mod, kth::handle0 handler);
+    bool init_run_and_wait_for_signal(std::string_view extra, start_modules mod, kth::handle0 handler);
 #endif
 
     void signal_stop();
@@ -43,8 +44,8 @@ public:
 
     // void do_help();
     // void do_settings();
-    void print_version(std::string const& extra);
-    void initialize_output(std::string const& extra);
+    void print_version(std::string_view extra);
+    void initialize_output(std::string_view extra);
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);

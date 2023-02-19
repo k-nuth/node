@@ -85,7 +85,7 @@ class KnuthNodeConan(KnuthConanFile):
             self.requires("tabulate/1.0@")
 
         if self.options.tests:
-            self.requires("catch2/3.2.1")
+            self.requires("catch2/3.3.1")
 
     def validate(self):
         KnuthConanFile.validate(self)

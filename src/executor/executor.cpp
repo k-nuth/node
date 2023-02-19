@@ -115,7 +115,7 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     //handle_stop(initialize_stop);
 }
 
-void executor::print_version(std::string const& extra) {
+void executor::print_version(std::string_view extra) {
     std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, KTH_DB_TYPE) << std::endl;
 }
 
@@ -125,7 +125,7 @@ bool executor::init_directory(error_code& ec) {
 
     if (create_directories(directory, ec)) {
         LOG_INFO(LOG_NODE, fmt::format(KTH_INITIALIZING_CHAIN, directory.string()));
-        auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier));
+        auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier, config_.network.inbound_port == 48333));
         auto const& settings = config_.database;
         auto const result = data_base(settings).create(genesis);
 
@@ -142,7 +142,7 @@ bool executor::init_directory(error_code& ec) {
 }
 
 // CAPI
-bool executor::do_initchain(std::string const& extra) {
+bool executor::do_initchain(std::string_view extra) {
     initialize_output(extra);
 
     error_code ec;
@@ -214,7 +214,7 @@ error_code executor::init_directory_if_necessary() {
     return ec;
 }
 
-bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modules mods, kth::handle0 handler) {
+bool executor::init_run_and_wait_for_signal(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -255,7 +255,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
     }
 
 #ifdef KTH_WITH_RPC
-    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::domain::config::network::testnet;
+    bool const testnet = kth::get_network(metadata_.configured.network.identifier, metadata_.configured.network.inbound_port == 48333) == kth::domain::config::network::testnet;
 
     std::string message = "RPC port: " + std::to_string(metadata_.configured.node.rpc_port) + ". ZMQ port: " + std::to_string(metadata_.configured.node.subscriber_port);
     LOG_INFO(LOG_NODE, message);
@@ -278,7 +278,7 @@ bool executor::init_run_and_wait_for_signal(std::string const& extra, start_modu
     return res;
 }
 
-bool executor::init_run(std::string const& extra, start_modules mods, kth::handle0 handler) {
+bool executor::init_run(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
     initialize_output(extra);
@@ -407,7 +407,7 @@ void executor::stop(kth::code const& ec) {
 // ----------------------------------------------------------------------------
 
 // Set up logging.
-void executor::initialize_output(std::string const& extra) {
+void executor::initialize_output(std::string_view extra) {
     auto const& file = config_.file;
 
     if (file.empty()) {
@@ -426,7 +426,7 @@ void executor::initialize_output(std::string const& extra) {
     LOG_INFO(LOG_NODE, KTH_DEBUG_BUILD_INIT);
 #endif
 
-    LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier)), config_.network.identifier));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier, config_.network.inbound_port == 488333)), config_.network.identifier));
     LOG_INFO(LOG_NODE, fmt::format(KTH_BLOCKCHAIN_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_CORES_INIT, kth::thread_ceiling(config_.network.threads)));
     //TODO(fernando): Runing from exe of C-API
