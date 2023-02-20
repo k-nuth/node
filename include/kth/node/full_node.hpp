@@ -91,6 +91,9 @@ struct multi_crypto_setter {
                 set_cashaddr_prefix("bitcoincash");
                 break;
             case netmagic::bch_testnet:
+            case netmagic::bch_testnet4:
+            case netmagic::bch_scalenet:
+            // case netmagic::bch_chipnet:  // same net magic as bch_testnet4
                 set_cashaddr_prefix("bchtest");
                 break;
             case netmagic::bch_regtest:
