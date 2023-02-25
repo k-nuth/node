@@ -15,7 +15,7 @@
 // using namespace kth::node;
 // using namespace kth::node::test;
 
-// // Start Boost Suite: reservation tests
+// // Start Test Suite: reservation tests
 
 // // slot
 // //-----------------------------------------------------------------------------
@@ -534,4 +534,4 @@
 //     REQUIRE( ! table[4]->expired());
 // }
 
-// // End Boost Suite
+// // End Test Suite

@@ -7,7 +7,7 @@
 
 using namespace kth;
 
-// Start Boost Suite: settings tests
+// Start Test Suite: settings tests
 
 // constructors
 //-----------------------------------------------------------------------------
@@ -56,4 +56,4 @@ TEST_CASE("settings construct testnet context expected", "[settings tests]") {
     REQUIRE(configuration.refresh_transactions == true);
 }
 
-// End Boost Suite
+// End Test Suite

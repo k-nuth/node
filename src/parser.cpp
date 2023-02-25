@@ -99,7 +99,11 @@ options_metadata parser::load_options() {
     description.add_options() (
         KTH_NETWORK_VARIABLE ",n",
         value<domain::config::network>(&configured.net),
-        "Specify the network (mainnet, testnet, regtest, etc.)."
+#if defined(KTH_CURRENCY_BCH)
+        "Specify the network (mainnet, testnet, regtest, testnet4, scalenet, chipnet)."
+#else
+        "Specify the network (mainnet, testnet, regtest)."
+#endif
     )(
         KTH_CONFIG_VARIABLE ",c",
         value<path>(&configured.file),

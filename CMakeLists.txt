@@ -2,13 +2,9 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.23)
 
-# kth-node
-#==============================================================================
-project(kth-node
-        VERSION 0
-        LANGUAGES CXX C)
+project(kth-node VERSION 0 LANGUAGES CXX C)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -22,12 +18,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Implement --use-conan
 #------------------------------------------------------------------------------
-option(USE_CONAN "Use Conan Build Tool." OFF)
-option(NO_CONAN_AT_ALL "Conan totally disabled." OFF)
+# option(USE_CONAN "Use Conan Build Tool." OFF)
+# option(NO_CONAN_AT_ALL "Conan totally disabled." OFF)
 
-if (NO_CONAN_AT_ALL)
-  set(USE_CONAN OFF)
-endif()
+# if (NO_CONAN_AT_ALL)
+#   set(USE_CONAN OFF)
+# endif()
 
 # Inherit --enable-shared and define BOOST_TEST_DYN_LINK.
 #------------------------------------------------------------------------------
@@ -209,52 +205,55 @@ endif()
 message(STATUS "Knuth: Cryptocurrency: ${CURRENCY}")
 
 
-# Conan infrastructure
-#==============================================================================
-if(EXISTS ${CMAKE_SOURCE_DIR}/ci_utils/cmake/knuthbuildinfo.cmake)
-    include(${CMAKE_SOURCE_DIR}/ci_utils/cmake/knuthbuildinfo.cmake)
-else()
-    message( STATUS "knuthbuildinfo doent exists")
-endif()
+# # Conan infrastructure
+# #==============================================================================
+# if(EXISTS ${CMAKE_SOURCE_DIR}/ci_utils/cmake/knuthbuildinfo.cmake)
+#     include(${CMAKE_SOURCE_DIR}/ci_utils/cmake/knuthbuildinfo.cmake)
+# else()
+#     message( STATUS "knuthbuildinfo doent exists")
+# endif()
 
 
 
 # Check dependencies.
 #==============================================================================
 #------------------------------------------------------------------------------
-if (NO_CONAN_AT_ALL)
-  # Require Boost of at least version 1.56.0 and output ${boost_CPPFLAGS/LDFLAGS}.
-  #------------------------------------------------------------------------------
-  if (NOT ENABLE_SHARED)
-    set(Boost_USE_STATIC_LIBS ON)
-  endif()
+# if (NO_CONAN_AT_ALL)
+#   # Require Boost of at least version 1.56.0 and output ${boost_CPPFLAGS/LDFLAGS}.
+#   #------------------------------------------------------------------------------
+#   if (NOT ENABLE_SHARED)
+#     set(Boost_USE_STATIC_LIBS ON)
+#   endif()
 
-  if (MSVC)
-    find_package(
-      Boost 1.56.0 REQUIRED
-      COMPONENTS atomic chrono date_time filesystem iostreams locale log log_setup program_options regex system thread unit_test_framework
-    )
-  else()
-    find_package(
-      Boost 1.56.0 REQUIRED
-      COMPONENTS chrono date_time filesystem iostreams locale log program_options regex system thread unit_test_framework
-    )
-  endif()
-endif()
+#   if (MSVC)
+#     find_package(
+#       Boost 1.56.0 REQUIRED
+#       COMPONENTS atomic chrono date_time filesystem iostreams locale log log_setup program_options regex system thread unit_test_framework
+#     )
+#   else()
+#     find_package(
+#       Boost 1.56.0 REQUIRED
+#       COMPONENTS chrono date_time filesystem iostreams locale log program_options regex system thread unit_test_framework
+#     )
+#   endif()
+# endif()
 
-if (NOT USE_CONAN)
-  # Require kth-blockchain of at least version 0 and output ${kth_node_CPPFLAGS/LIBS/PKG}.
-  #------------------------------------------------------------------------------
-  if (NOT TARGET kth-blockchain)
-    find_package(kth-blockchain 0 REQUIRED)
-  endif()
+# if (NOT USE_CONAN)
+#   # Require kth-blockchain of at least version 0 and output ${kth_node_CPPFLAGS/LIBS/PKG}.
+#   #------------------------------------------------------------------------------
+#   if (NOT TARGET kth-blockchain)
+#     find_package(kth-blockchain 0 REQUIRED)
+#   endif()
 
-  # Require kth-network of at least version 0 and output ${kth_network_CPPFLAGS/LIBS/PKG}.
-  #------------------------------------------------------------------------------
-  if (NOT TARGET kth-network)
-    find_package(kth-network 0 REQUIRED)
-  endif()
-endif()
+#   # Require kth-network of at least version 0 and output ${kth_network_CPPFLAGS/LIBS/PKG}.
+#   #------------------------------------------------------------------------------
+#   if (NOT TARGET kth-network)
+#     find_package(kth-network 0 REQUIRED)
+#   endif()
+# endif()
+
+find_package(kth-blockchain REQUIRED)
+find_package(kth-network REQUIRED)
 
 
 # Set flags.
@@ -392,8 +391,7 @@ target_include_directories(kth-node PUBLIC
         $<INSTALL_INTERFACE:include>)
 
 
-# target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="\\"${KTH_PROJECT_VERSION}\\"") #TODO(fernando): manage with Conan????
-target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="${KTH_PROJECT_VERSION}") #TODO(fernando): manage with Conan????
+target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="${KTH_PROJECT_VERSION}")
 
 
 if (NOT ENABLE_SHARED)
@@ -404,19 +402,20 @@ if (NOT MSVC)
   target_compile_definitions(kth-node PUBLIC -DSYSCONFDIR=\"${SYSCONFDIR}\")
 endif()
 
-if (NOT USE_CONAN)
-  target_link_libraries(kth-node PUBLIC kth-blockchain kth-network)
-endif()
+# if (NOT USE_CONAN)
+#   target_link_libraries(kth-node PUBLIC kth-blockchain kth-network)
+# endif()
+target_link_libraries(kth-node PUBLIC kth-blockchain kth-network)
 
-if (NOT NO_CONAN_AT_ALL)
-  target_link_libraries(kth-node PUBLIC ${CONAN_LIBS})
-endif()
+# if (NOT NO_CONAN_AT_ALL)
+#   # target_link_libraries(kth-node PUBLIC ${CONAN_LIBS})
+# endif()
 
-if (USE_CONAN)
+# if (USE_CONAN)
   if (MINGW)
-    target_link_libraries(kth-node PUBLIC ws2_32 wsock32) #TODO(fernando): manage with Conan
+    target_link_libraries(kth-node PUBLIC ws2_32 wsock32)
   endif()
-endif()
+# endif()
 
 _group_sources(kth-node "${CMAKE_CURRENT_LIST_DIR}")
 
@@ -424,11 +423,8 @@ _group_sources(kth-node "${CMAKE_CURRENT_LIST_DIR}")
 #==============================================================================
 if (WITH_TESTS)
   enable_testing()
-endif()
+  find_package(Catch2 3 REQUIRED)
 
-# local: test/kth_node_test
-#------------------------------------------------------------------------------
-if (WITH_TESTS)
   add_executable(kth_node_test
           test/check_list.cpp
           test/configuration.cpp
@@ -442,25 +438,16 @@ if (WITH_TESTS)
           test/utility.cpp
           test/utility.hpp)
 
-  target_link_libraries(kth_node_test PUBLIC kth-node)
-  _group_sources(kth_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
+  target_include_directories(kth_node_test PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test>)
 
-  target_include_directories(kth_node_test PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/test>)
+  target_link_libraries(kth_node_test PUBLIC kth-node)
+  target_link_libraries(kth_node_test PRIVATE Catch2::Catch2WithMain)
+
+  _group_sources(kth_node_test "${CMAKE_CURRENT_LIST_DIR}/test")
 
   include(CTest)
   include(Catch)
   catch_discover_tests(kth_node_test)
-
-
-  # _add_tests(kth_node_test
-  #         configuration_tests
-  #         node_tests
-  #         #header_queue_tests
-  #         performance_tests
-  #         #reservation_tests
-  #         #reservations_tests
-  #         settings_tests)
 endif()
 
 
@@ -469,7 +456,6 @@ endif()
 install(TARGETS kth-node
         EXPORT kth-node
         ARCHIVE DESTINATION lib)
-
 
 set(_kth_headers
         # include_kth_HEADERS =
@@ -503,6 +489,7 @@ set(_kth_headers
         kth/node/utility/performance.hpp
         kth/node/utility/reservation.hpp
         kth/node/utility/reservations.hpp)
+
 foreach (_header ${_kth_headers})
   get_filename_component(_directory "${_header}" DIRECTORY)
   install(FILES "include/${_header}" DESTINATION "include/${_directory}")

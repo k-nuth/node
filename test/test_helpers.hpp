@@ -7,7 +7,7 @@
 #ifndef KTH_NODE_TEST_HELPERS_HPP
 #define KTH_NODE_TEST_HELPERS_HPP
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 // #define CHECK_MESSAGE(cond, msg) do { INFO(msg); CHECK(cond); } while((void)0, 0)
 // #define REQUIRE_MESSAGE(cond, msg) do { INFO(msg); REQUIRE(cond); } while((void)0, 0)

@@ -7,7 +7,7 @@
 
 using namespace kth;
 
-// Start Boost Suite: configuration tests
+// Start Test Suite: configuration tests
 
 // constructors
 //-----------------------------------------------------------------------------
@@ -123,4 +123,4 @@ TEST_CASE("configuration  construct2  chipnet context  expected", "[configuratio
 }
 #endif
 
-// End Boost Suite
+// End Test Suite
