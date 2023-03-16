@@ -37,8 +37,8 @@ option(ENABLE_POSITION_INDEPENDENT_CODE "Enable POSITION_INDEPENDENT_CODE proper
 #------------------------------------------------------------------------------
 option(WITH_TESTS "Compile with unit tests." ON)
 
-set(KTH_PROJECT_VERSION "0.0.0" CACHE STRING "Specify the Knuth Project Version.")
-message( STATUS "Knuth: Compiling version ${KTH_PROJECT_VERSION}")
+# set(KTH_PROJECT_VERSION "0.0.0" CACHE STRING "Specify the Knuth Project Version.")
+# message( STATUS "Knuth: Compiling version ${KTH_PROJECT_VERSION}")
 
 add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
@@ -391,7 +391,12 @@ target_include_directories(kth-node PUBLIC
         $<INSTALL_INTERFACE:include>)
 
 
+<<<<<<< Updated upstream
 target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="${KTH_PROJECT_VERSION}")
+=======
+# target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="\\"${KTH_PROJECT_VERSION}\\"") #TODO(fernando): manage with Conan????
+# target_compile_definitions(kth-node PUBLIC -DKTH_PROJECT_VERSION="${KTH_PROJECT_VERSION}") #TODO(fernando): manage with Conan????
+>>>>>>> Stashed changes
 
 
 if (NOT ENABLE_SHARED)
