@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,13 +45,10 @@ using namespace std::placeholders;
 full_node::full_node(configuration const& configuration)
     : multi_crypto_setter(configuration.network)
     , p2p(configuration.network)
-    , chain_(thread_pool(), configuration.chain, configuration.database, get_network(configuration.network.identifier),configuration.network.relay_transactions)
+    , chain_(thread_pool(), configuration.chain, configuration.database, get_network(configuration.network.identifier, configuration.network.inbound_port == 48333),configuration.network.relay_transactions)
     , protocol_maximum_(configuration.network.protocol_maximum)
     , chain_settings_(configuration.chain)
     , node_settings_(configuration.node)
-// #ifdef WITH_KEOKEN
-//     , keoken_manager_(chain_, node_settings().keoken_genesis_height)
-// #endif
 {}
 
 full_node::~full_node() {
@@ -376,6 +373,8 @@ domain::chain::block full_node::get_genesis_block(domain::config::network networ
             return domain::chain::block::genesis_testnet4();
         case domain::config::network::scalenet:
             return domain::chain::block::genesis_scalenet();
+        case domain::config::network::chipnet:
+            return domain::chain::block::genesis_chipnet();
 #endif
         default:
         case domain::config::network::mainnet:

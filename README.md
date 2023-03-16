@@ -5,7 +5,7 @@
 
 
 
-> Bitcoin full node as a C++17 library
+> Bitcoin full node as a C++20 library
 
 ## Getting started
 

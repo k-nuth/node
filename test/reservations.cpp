@@ -1,4 +1,4 @@
-// // Copyright (c) 2016-2022 Knuth Project developers.
+// // Copyright (c) 2016-2023 Knuth Project developers.
 // // Distributed under the MIT software license, see the accompanying
 // // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,7 +14,7 @@
 // using namespace kth::node;
 // using namespace kth::node::test;
 
-// // Start Boost Suite: reservations tests
+// // Start Test Suite: reservations tests
 
 // // max_request
 // //-----------------------------------------------------------------------------
@@ -680,4 +680,4 @@
 //     REQUIRE(rates2.standard_deviation == std::sqrt(2.5));
 // }
 
-// // End Boost Suite
+// // End Test Suite

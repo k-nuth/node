@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -35,10 +35,6 @@ class Table;
 #include <kth/node/sessions/session_block_sync.hpp>
 #include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/utility/check_list.hpp>
-
-// #ifdef WITH_KEOKEN
-// #include <knuth/keoken/manager.hpp>
-// #endif
 
 namespace kth::node {
 
@@ -95,6 +91,9 @@ struct multi_crypto_setter {
                 set_cashaddr_prefix("bitcoincash");
                 break;
             case netmagic::bch_testnet:
+            case netmagic::bch_testnet4:
+            case netmagic::bch_scalenet:
+            // case netmagic::bch_chipnet:  // same net magic as bch_testnet4
                 set_cashaddr_prefix("bchtest");
                 break;
             case netmagic::bch_regtest:
@@ -166,10 +165,6 @@ public:
     //TODO: remove this function and use safe_chain in the rpc lib
     virtual
     blockchain::block_chain& chain_kth();
-
-// #ifdef WITH_KEOKEN
-//     knuth::keoken::manager<knuth::keoken::state_delegated>& keoken_manager();
-// #endif
 
     // Subscriptions.
     // ------------------------------------------------------------------------

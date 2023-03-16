@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 
 using namespace kth;
 
-// Start Boost Suite: settings tests
+// Start Test Suite: settings tests
 
 // constructors
 //-----------------------------------------------------------------------------
@@ -33,6 +33,13 @@ TEST_CASE("settings construct scalenet context expected", "[settings tests]") {
     REQUIRE(configuration.sync_timeout_seconds == 5u);
     REQUIRE(configuration.refresh_transactions == true);
 }
+
+TEST_CASE("settings construct chipnet context expected", "[settings tests]") {
+    node::settings configuration(domain::config::network::chipnet);
+    REQUIRE(configuration.sync_peers == 0u);
+    REQUIRE(configuration.sync_timeout_seconds == 5u);
+    REQUIRE(configuration.refresh_transactions == true);
+}
 #endif
 
 TEST_CASE("settings construct mainnet context expected", "[settings tests]") {
@@ -49,4 +56,4 @@ TEST_CASE("settings construct testnet context expected", "[settings tests]") {
     REQUIRE(configuration.refresh_transactions == true);
 }
 
-// End Boost Suite
+// End Test Suite

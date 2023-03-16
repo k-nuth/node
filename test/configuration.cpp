@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,7 +7,7 @@
 
 using namespace kth;
 
-// Start Boost Suite: configuration tests
+// Start Test Suite: configuration tests
 
 // constructors
 //-----------------------------------------------------------------------------
@@ -25,6 +25,16 @@ TEST_CASE("configuration  construct1  testnet4 context  expected", "[configurati
 
 TEST_CASE("configuration  construct1  scalenet context  expected", "[configuration tests]") {
     node::configuration instance(domain::config::network::scalenet);
+    REQUIRE( ! instance.help);
+    REQUIRE( ! instance.initchain);
+    REQUIRE( ! instance.settings);
+    REQUIRE( ! instance.version);
+    REQUIRE(instance.node.sync_peers == 0u);
+    REQUIRE(instance.node.sync_timeout_seconds == 5u);
+}
+
+TEST_CASE("configuration  construct1  chipnet context  expected", "[configuration tests]") {
+    node::configuration instance(domain::config::network::chipnet);
     REQUIRE( ! instance.help);
     REQUIRE( ! instance.initchain);
     REQUIRE( ! instance.settings);
@@ -92,6 +102,25 @@ TEST_CASE("configuration  construct2  scalenet context  expected", "[configurati
     REQUIRE(instance2.node.sync_peers == 42u);
     REQUIRE(instance2.node.sync_timeout_seconds == 24u);
 }
+
+TEST_CASE("configuration  construct2  chipnet context  expected", "[configuration tests]") {
+    node::configuration instance1(domain::config::network::chipnet);
+    instance1.help = true;
+    instance1.initchain = true;
+    instance1.settings = true;
+    instance1.version = true;
+    instance1.node.sync_peers = 42;
+    instance1.node.sync_timeout_seconds = 24;
+
+    node::configuration instance2(instance1);
+
+    REQUIRE(instance2.help);
+    REQUIRE(instance2.initchain);
+    REQUIRE(instance2.settings);
+    REQUIRE(instance2.version);
+    REQUIRE(instance2.node.sync_peers == 42u);
+    REQUIRE(instance2.node.sync_timeout_seconds == 24u);
+}
 #endif
 
-// End Boost Suite
+// End Test Suite

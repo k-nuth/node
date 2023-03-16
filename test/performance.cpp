@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,7 +8,7 @@
 using namespace kth;
 using namespace kth::node;
 
-// Start Boost Suite: performance tests
+// Start Test Suite: performance tests
 
 // normal
 //-----------------------------------------------------------------------------
@@ -186,4 +186,4 @@ TEST_CASE("performance  total  1 over 2  0 point 5", "[performance tests]") {
     REQUIRE(instance.total() == 0.5);
 }
 
-// End Boost Suite
+// End Test Suite

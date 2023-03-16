@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2022 Knuth Project developers.
+// Copyright (c) 2016-2023 Knuth Project developers.
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -133,7 +133,7 @@ bool executor::init_directory(error_code& ec) {
 
     if (create_directories(directory, ec)) {
         LOG_INFO(LOG_NODE, fmt::format(KTH_INITIALIZING_CHAIN, directory.string()));
-        auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier));
+        auto const genesis = kth::node::full_node::get_genesis_block(get_network(config_.network.identifier, config_.network.inbound_port == 48333));
         auto const& settings = config_.database;
         auto const result = data_base(settings).create(genesis);
 
@@ -263,7 +263,7 @@ bool executor::init_run_and_wait_for_signal(std::string_view extra, start_module
     }
 
 #ifdef KTH_WITH_RPC
-    bool const testnet = kth::get_network(metadata_.configured.network.identifier) == kth::domain::config::network::testnet;
+    bool const testnet = kth::get_network(metadata_.configured.network.identifier, metadata_.configured.network.inbound_port == 48333) == kth::domain::config::network::testnet;
 
     std::string message = "RPC port: " + std::to_string(metadata_.configured.node.rpc_port) + ". ZMQ port: " + std::to_string(metadata_.configured.node.subscriber_port);
     LOG_INFO(LOG_NODE, message);
@@ -435,7 +435,7 @@ void executor::initialize_output(std::string_view extra) {
     LOG_INFO(LOG_NODE, KTH_DEBUG_BUILD_INIT);
 #endif
 
-    LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier)), config_.network.identifier));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_INIT, name(kth::get_network(config_.network.identifier, config_.network.inbound_port == 488333)), config_.network.identifier));
     LOG_INFO(LOG_NODE, fmt::format(KTH_BLOCKCHAIN_CORES_INIT, kth::thread_ceiling(config_.chain.cores)));
     LOG_INFO(LOG_NODE, fmt::format(KTH_NETWORK_CORES_INIT, kth::thread_ceiling(config_.network.threads)));
 }
