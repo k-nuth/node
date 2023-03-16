@@ -3,7 +3,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 import os
-from conans import CMake
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from kthbuild import option_on_off, march_conan_manip, pass_march_to_compiler
 from kthbuild import KnuthConanFile
 
@@ -65,11 +65,16 @@ class KnuthNodeConan(KnuthConanFile):
     }
     # "with_console=True",
 
-    generators = "cmake"
+    # generators = "cmake"
     exports = "conan_*", "ci_utils/*"
     exports_sources = "src/*", "CMakeLists.txt", "cmake/*", "kth-nodeConfig.cmake.in", "knuthbuildinfo.cmake", "include/*", "test/*", "console/*"
     package_files = "build/lkth-node.a"
-    build_policy = "missing"
+    # build_policy = "missing"
+
+
+    def build_requirements(self):
+        if self.options.tests:
+            self.test_requires("catch2/3.3.1")
 
     def requirements(self):
         self.requires("blockchain/0.X@%s/%s" % (self.user, self.channel))
@@ -78,11 +83,10 @@ class KnuthNodeConan(KnuthConanFile):
         if self.options.statistics:
             self.requires("tabulate/1.0@")
 
-        if self.options.tests:
-            self.requires("catch2/2.13.8")
-
     def validate(self):
         KnuthConanFile.validate(self)
+        if self.info.settings.compiler.cppstd:
+            check_min_cppstd(self, "20")
 
     def config_options(self):
         KnuthConanFile.config_options(self)
@@ -105,23 +109,29 @@ class KnuthNodeConan(KnuthConanFile):
         self.options["*"].use_libmdbx = self.options.use_libmdbx
         self.output.info("Compiling with use_libmdbx: %s" % (self.options.use_libmdbx,))
 
-
     def package_id(self):
         KnuthConanFile.package_id(self)
 
+    def layout(self):
+        cmake_layout(self)
+
+    def generate(self):
+        tc = self.cmake_toolchain_basis()
+        # tc.variables["CMAKE_VERBOSE_MAKEFILE"] = True
+        # tc.variables["WITH_CONSOLE"] = option_on_off(self.with_console)
+        tc.variables["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
+        tc.variables["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
+        tc.variables["LOG_LIBRARY"] = self.options.log
+        tc.variables["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
+        tc.variables["STATISTICS"] = option_on_off(self.options.statistics)
+        tc.variables["CONAN_DISABLE_CHECK_COMPILER"] = option_on_off(True)
+        tc.generate()
+        tc = CMakeDeps(self)
+        tc.generate()
+
     def build(self):
-        cmake = self.cmake_basis()
-
-        # cmake.definitions["WITH_CONSOLE"] = option_on_off(self.with_console)
-
-        cmake.definitions["WITH_MEMPOOL"] = option_on_off(self.options.mempool)
-        cmake.definitions["DB_READONLY_MODE"] = option_on_off(self.options.db_readonly)
-        cmake.definitions["LOG_LIBRARY"] = self.options.log
-        cmake.definitions["USE_LIBMDBX"] = option_on_off(self.options.use_libmdbx)
-        cmake.definitions["STATISTICS"] = option_on_off(self.options.statistics)
-        cmake.definitions["CONAN_DISABLE_CHECK_COMPILER"] = option_on_off(True)
-
-        cmake.configure(source_dir=self.source_folder)
+        cmake = CMake(self)
+        cmake.configure()
         if not self.options.cmake_export_compile_commands:
             cmake.build()
             if self.options.tests:

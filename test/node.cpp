@@ -7,11 +7,11 @@
 
 using namespace kth;
 
-// Start Boost Suite: node tests
+// Start Test Suite: node tests
 
 // Just a basic test to get some coverage output.
 TEST_CASE("node test", "[node tests]") {
     REQUIRE(true);
 }
 
-// End Boost Suite
+// End Test Suite

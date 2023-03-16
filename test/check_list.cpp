@@ -7,10 +7,10 @@
 
 using namespace kth;
 
-// Start Boost Suite: check list tests
+// Start Test Suite: check list tests
 
 TEST_CASE("check_list TODO", "[check list tests]") {
     REQUIRE(true);
 }
 
-// End Boost Suite
+// End Test Suite

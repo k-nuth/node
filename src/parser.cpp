@@ -36,13 +36,15 @@ void validate(boost::any& v, std::vector<std::string> const& values, network* ta
         v = boost::any(network::testnet4);
     } else if (s == "scalenet") {
         v = boost::any(network::scalenet);
+    } else if (s == "chipnet") {
+        v = boost::any(network::chipnet);
 #endif
     } else {
         throw validation_error(validation_error::invalid_option_value);
     }
 }
 
-}
+} // namespace kth::domain::config
 
 
 // TODO: localize descriptions.
@@ -97,7 +99,11 @@ options_metadata parser::load_options() {
     description.add_options() (
         KTH_NETWORK_VARIABLE ",n",
         value<domain::config::network>(&configured.net),
-        "Specify the network (mainnet, testnet, regtest, etc.)."
+#if defined(KTH_CURRENCY_BCH)
+        "Specify the network (mainnet, testnet, regtest, testnet4, scalenet, chipnet)."
+#else
+        "Specify the network (mainnet, testnet, regtest)."
+#endif
     )(
         KTH_CONFIG_VARIABLE ",c",
         value<path>(&configured.file),
@@ -496,16 +502,23 @@ options_metadata parser::load_settings() {
     //     value<uint64_t>(&configured.chain.euler_activation_time),
     //     "Unix time used for MTP activation of 2020-Nov-15 hard fork, defaults to 1605441600."
     // )
+
     // No HF for 2021-May-15
-    (
-        "fork.gauss_activation_time",
-        value<uint64_t>(&configured.chain.gauss_activation_time),
-        "Unix time used for MTP activation of 2022-May-15 hard fork, defaults to 1652616000."
-    )
+
+    // (
+    //     "fork.gauss_activation_time",
+    //     value<uint64_t>(&configured.chain.gauss_activation_time),
+    //     "Unix time used for MTP activation of 2022-May-15 hard fork, defaults to 1652616000."
+    // )
     (
         "fork.descartes_activation_time",
         value<uint64_t>(&configured.chain.descartes_activation_time),
         "Unix time used for MTP activation of 2023-May-15 hard fork, defaults to 1684152000."
+    )
+    (
+        "fork.lobachevski_activation_time",
+        value<uint64_t>(&configured.chain.lobachevski_activation_time),
+        "Unix time used for MTP activation of 2024-May-15 hard fork, defaults to 1715774400."
     )
     // (
     //     "fork.unnamed_activation_time",
@@ -656,7 +669,7 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         notify(variables);
 
         if ( ! version_sett_help && configured.chain.fix_checkpoints) {
-            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
+            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints, configured.network.inbound_port == 48333);
         }
 
         // Clear the config file path if it wasn't used.
@@ -688,7 +701,7 @@ bool parser::parse_from_file(kth::path const& config_path, std::ostream& error) 
         notify(variables);
 
         if (configured.chain.fix_checkpoints) {
-            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints);
+            fix_checkpoints(configured.network.identifier, configured.chain.checkpoints, configured.network.inbound_port == 48333);
         }
 
         // Clear the config file path if it wasn't used.
