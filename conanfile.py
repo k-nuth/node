@@ -55,6 +55,9 @@ class KnuthNodeConan(KnuthConanFileV2):
 
     exports_sources = "src/*", "CMakeLists.txt", "ci_utils/cmake/*", "cmake/*", "knuthbuildinfo.cmake", "include/*", "test/*", "console/*"
 
+    def _is_legacy_db(self):
+        return self.options.db == "legacy" or self.options.db == "legacy_full"
+
     def validate(self):
         KnuthConanFileV2.validate(self)
         if self.info.settings.compiler.cppstd:
@@ -68,8 +71,8 @@ class KnuthNodeConan(KnuthConanFileV2):
         self.requires("infrastructure/0.24.0")
         self.requires("domain/0.29.0")
         self.requires("database/0.28.0")
-        if self.options.consensus:
-            self.requires("consensus/0.23.0")
+        # if self.options.consensus:
+        self.requires("consensus/0.23.0")
 
         self.requires("blockchain/0.27.0")
         self.requires("network/0.32.0@")
