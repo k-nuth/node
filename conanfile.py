@@ -68,14 +68,14 @@ class KnuthNodeConan(KnuthConanFileV2):
             self.test_requires("catch2/3.3.1")
 
     def requirements(self):
-        self.requires("infrastructure/0.25.0")
-        self.requires("domain/0.30.0")
-        self.requires("database/0.29.0")
+        self.requires("infrastructure/0.26.0")
+        self.requires("domain/0.31.0")
+        self.requires("database/0.30.0")
         # if self.options.consensus:
-        self.requires("consensus/0.24.0")
+        self.requires("consensus/0.25.0")
 
-        self.requires("blockchain/0.28.0")
-        self.requires("network/0.33.0@")
+        self.requires("blockchain/0.29.0")
+        self.requires("network/0.34.0@")
 
         self.requires("boost/1.81.0")
         self.requires("fmt/9.1.0")
