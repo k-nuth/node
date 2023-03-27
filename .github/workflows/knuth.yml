@@ -75,58 +75,57 @@ jobs:
   #     - if: ${{ steps.check.outputs.exists == 'false' }}
   #       run: docker push ${{ env.name }}:${{ steps.version.outputs.version }}
 
-  calc-deps:
-    name: Dependencies Calculation
-    needs: [setup, check]
-    if: needs.check.outputs.permitted == 'true'
-    runs-on: ubuntu-latest
-    container:
-      image: "kthnode/gcc12-ubuntu18.04"
-      # image: ${{ needs.build-base-docker-image.outputs.name }}
-      # credentials:
-      #   username: ${{ github.repository_owner }}
-      #   password: ${{ github.token }}
+  generate-matrix:
+    name: Generate Job Matrix
+    runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-
-      - uses: actions/cache@v3
-        with:
-          path: ~/.conan/data
-          key: alpine-${{ hashFiles('**/conan.lock') }}
-      - uses: ./ci_utils/.github/actions/setup-conan
-      - uses: ./ci_utils/.github/actions/setup-kthbuild
-      - name: conan login
-        run: conan remote login -p ${{ secrets.CONAN_3_PASSWORD }} $CONAN_REMOTE ${{ secrets.CONAN_LOGIN_USERNAME }}
-
-      - name: build order
-        working-directory: .
+      - name: Generate Job Matrix
+        id: set-matrix
         run: |
-          conan lock create conanfile.py --version ${{ needs.setup.outputs.build-version }} --lockfile=conan.lock --lockfile-out=build/conan.lock -pr linux-ci-cd -s build_type=Release
-          # conan lock build-order build/conan.lock --json=build_order.json
-          conan graph build-order conanfile.py --lockfile=build/conan.lock -f json > build_order.json
-      - uses: actions/upload-artifact@v3
-        with:
-          name: conan-lockfile
-          path: build/conan.lock
-      - id: set-matrix
-        name: output
-        run: |
-          cp ./ci_utils/.github/matrix.json platform.json
-          echo $(cat build_order.json)
-          # cd backend
-          python3 ./ci_utils/build-order-to-matrix.py
-          MATRIX=$(cat matrix.json)
+          MATRIX=$(cat ./ci_utils/.github/matrix.json)
           echo "${MATRIX}"
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
 
-  build-deps-with-container:
-    needs: [calc-deps]
+  calc-deps-with-container:
+    needs: [setup, generate-matrix]
     strategy:
-      matrix: ${{ fromJson(needs.calc-deps.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    name: ${{ matrix.config.name }}
+    uses: k-nuth/ci-utils/.github/workflows/calc-deps-with-container.yml@master
+    with:
+      if: ${{ matrix.config.compiler == 'GCC' }}
+      os: ${{ matrix.config.os }}
+      image: "kthnode/gcc${{ matrix.config.version }}${{ matrix.config.docker_suffix }}"
+      conan-remote: "kth"
+      build-version: ${{ needs.setup.outputs.build-version }}
+    secrets:
+      conan-user: ${{ secrets.CONAN_LOGIN_USERNAME }}
+      conan-password: ${{ secrets.CONAN_3_PASSWORD }}
+
+  calc-deps-without-container:
+    needs: [setup, generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    name: ${{ matrix.config.name }}
+    uses: k-nuth/ci-utils/.github/workflows/calc-deps-without-container.yml@master
+    with:
+      if: ${{ matrix.config.compiler != 'GCC' }}
+      os: ${{ matrix.config.os }}
+      conan-remote: "kth"
+      build-version: ${{ needs.setup.outputs.build-version }}
+    secrets:
+      conan-user: ${{ secrets.CONAN_LOGIN_USERNAME }}
+      conan-password: ${{ secrets.CONAN_3_PASSWORD }}
+
+  build-deps-with-container:
+    needs: [calc-deps-with-container]
+    strategy:
+      matrix: ${{ fromJson(needs.calc-deps-with-container.outputs.matrix) }}
     name: ${{ matrix.config.name }}
     uses: k-nuth/ci-utils/.github/workflows/build-deps-with-container.yml@master
     with:
@@ -140,9 +139,9 @@ jobs:
       conan-password: ${{ secrets.CONAN_3_PASSWORD }}
 
   build-deps-without-container:
-    needs: [calc-deps]
+    needs: [calc-deps-without-container]
     strategy:
-      matrix: ${{ fromJson(needs.calc-deps.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.calc-deps-without-container.outputs.matrix) }}
     name: ${{ matrix.config.name }}
     uses: k-nuth/ci-utils/.github/workflows/build-deps-without-container.yml@master
     with:
@@ -153,28 +152,6 @@ jobs:
     secrets:
       conan-user: ${{ secrets.CONAN_LOGIN_USERNAME }}
       conan-password: ${{ secrets.CONAN_3_PASSWORD }}
-
-  generate-matrix:
-    name: Generate Job Matrix
-    # needs: wait-for-dependencies
-    runs-on: ubuntu-20.04
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Generate Job Matrix
-        id: set-matrix
-        run: |
-          MATRIX=$(cat ./ci_utils/.github/matrix.json)
-          echo "${MATRIX}"
-          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
-
-          # echo "::set-output name=matrix::${MATRIX}"
-          # # JSON=$(cat ./ci_utils/.github/matrix.json)
-          # # echo "::set-output name=${JSON//'%'/'%25'}"
 
   build-with-container:
     needs: [setup, generate-matrix]
@@ -234,3 +211,4 @@ jobs:
         shell: bash
         run: |
           echo ${{github.ref}}
+
