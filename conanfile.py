@@ -68,31 +68,31 @@ class KnuthNodeConan(KnuthConanFileV2):
             self.test_requires("catch2/3.3.1")
 
     def requirements(self):
-        self.requires("infrastructure/0.23.0")
-        self.requires("domain/0.25.0")
-        self.requires("database/0.28.0")
-        # if self.options.consensus:
-        self.requires("consensus/0.23.0")
+        # self.requires("infrastructure/0.23.0")
+        # self.requires("domain/0.25.0")
+        # self.requires("database/0.28.0")
+        # # if self.options.consensus:
+        # self.requires("consensus/0.23.0")
 
         self.requires("blockchain/0.27.0")
         self.requires("network/0.32.0@")
 
-        self.requires("boost/1.81.0")
-        self.requires("fmt/9.1.0")
-        self.requires("spdlog/1.11.0")
+        # self.requires("boost/1.81.0")
+        # self.requires("fmt/9.1.0")
+        # self.requires("spdlog/1.11.0")
 
-        if not self._is_legacy_db():
-            if self.options.use_libmdbx:
-                self.requires("libmdbx/0.7.0@kth/stable")
-                self.output.info("Using libmdbx for DB management")
-            else:
-                self.requires("lmdb/0.9.29")
-                self.output.info("Using lmdb for DB management")
-        else:
-            self.output.info("Using legacy DB")
+        # if not self._is_legacy_db():
+        #     if self.options.use_libmdbx:
+        #         self.requires("libmdbx/0.7.0@kth/stable")
+        #         self.output.info("Using libmdbx for DB management")
+        #     else:
+        #         self.requires("lmdb/0.9.29")
+        #         self.output.info("Using lmdb for DB management")
+        # else:
+        #     self.output.info("Using legacy DB")
 
         if self.options.statistics:
-            self.requires("tabulate/1.0@")
+            self.requires("tabulate/1.0@", transitive_headers=True, transitive_libs=True)
 
 
     def config_options(self):

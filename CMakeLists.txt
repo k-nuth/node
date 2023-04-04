@@ -293,16 +293,16 @@ if (NOT MSVC)
 endif()
 
 
-target_link_libraries(${PROJECT_NAME} PUBLIC infrastructure::infrastructure)
-target_link_libraries(${PROJECT_NAME} PUBLIC domain::domain)
-target_link_libraries(${PROJECT_NAME} PUBLIC database::database)
+# target_link_libraries(${PROJECT_NAME} PUBLIC infrastructure::infrastructure)
+# target_link_libraries(${PROJECT_NAME} PUBLIC domain::domain)
+# target_link_libraries(${PROJECT_NAME} PUBLIC database::database)
 target_link_libraries(${PROJECT_NAME} PUBLIC blockchain::blockchain)
 target_link_libraries(${PROJECT_NAME} PUBLIC network::network)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
-target_link_libraries(${PROJECT_NAME} PUBLIC lmdb::lmdb)
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
+# target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt)
+# target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
+# target_link_libraries(${PROJECT_NAME} PUBLIC lmdb::lmdb)
+# target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
 
 
 if (MINGW)
