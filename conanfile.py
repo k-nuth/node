@@ -74,8 +74,8 @@ class KnuthNodeConan(KnuthConanFileV2):
         # # if self.options.consensus:
         # self.requires("consensus/0.23.0")
 
-        self.requires("blockchain/0.27.0")
-        self.requires("network/0.32.0@")
+        self.requires("blockchain/0.27.0", transitive_headers=True, transitive_libs=True)
+        self.requires("network/0.32.0@", transitive_headers=True, transitive_libs=True)
 
         # self.requires("boost/1.81.0")
         # self.requires("fmt/9.1.0")
