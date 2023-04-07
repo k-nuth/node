@@ -15,7 +15,7 @@
         "consensus/0.24.0#8ef7efcd5bce0acfbf10aea17c86167b%1680863840.265",
         "bzip2/1.0.8#411fc05e80d47a89045edc1ee6f23c1d%1678293522.814",
         "boost/1.81.0#8dcd9d9df9e0d320714b83cceddbe120%1679835354.277",
-        "blockchain/0.29.0#86f9d325362b984cfb741d61d37c53de%1680877705.307"
+        "blockchain/0.30.0#53090255f68aa850be098a60b6a2b756%1680885853.1376443"
     ],
     "build_requires": [
         "m4/1.4.19#c1c4b1ee919e34630bb9b50046253d3c%1676610086.39",
