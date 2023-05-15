@@ -40,3 +40,4 @@ CMakeSettings.json
 
 test_package/
 .DS_Store
+CMakeUserPresets.json
