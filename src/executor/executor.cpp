@@ -53,6 +53,42 @@ static constexpr int directory_exists = 0;
 static constexpr int directory_not_found = 2;
 static auto const mode = std::ofstream::out | std::ofstream::app;
 
+
+static constexpr
+std::string_view microarchitecture() {
+    return KTH_MICROARCHITECTURE_STR;
+}
+
+static constexpr
+std::string_view march_names() {
+#if defined(KTH_MARCH_NAMES_FULL_STR)
+    return KTH_MARCH_NAMES_FULL_STR;
+#else
+    return "unknown";
+#endif
+}
+
+static constexpr
+std::string_view node_version() {
+    return KTH_NODE_VERSION;
+}
+
+static constexpr
+std::string_view currency_symbol() {
+    return KTH_CURRENCY_SYMBOL_STR;
+}
+
+static constexpr
+std::string_view currency() {
+    return KTH_CURRENCY_STR;
+}
+
+static constexpr
+std::string_view db_type() {
+    return KTH_DB_TYPE;
+}
+
+
 std::promise<kth::code> executor::stopping_; //NOLINT
 
 executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
@@ -113,14 +149,6 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
 
     //OJO: esto estaba sólo en node-exe
     //handle_stop(initialize_stop);
-}
-
-static constexpr std::string_view march_names() {
-#if defined(KTH_MARCH_NAMES_FULL_STR)
-    return KTH_MARCH_NAMES_FULL_STR;
-#else
-    return "unknown";
-#endif
 }
 
 void executor::print_version(std::string_view extra) {

@@ -14,6 +14,22 @@
 
 namespace kth::node {
 
+
+static constexpr
+std::string_view march_names();
+
+static constexpr
+std::string_view node_version();
+
+static constexpr
+std::string_view currency_symbol();
+
+static constexpr
+std::string_view currency();
+
+static constexpr
+std::string_view db_type();
+
 class executor {
 public:
     executor(kth::node::configuration const& config, bool stdout_enabled = true);
