@@ -17,14 +17,7 @@ namespace kth::node {
 /// A thread safe checkpoint queue.
 class BCN_API check_list {
 public:
-
-#ifdef KTH_DB_LEGACY
-    using heights = database::block_database::heights;
-#endif // KTH_DB_LEGACY
-
-#ifdef KTH_DB_NEW
     using heights = std::vector<size_t>;
-#endif // KTH_DB_NEW
 
     /// The queue contains no checkpoints.
     bool empty() const;

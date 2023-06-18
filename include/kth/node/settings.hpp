@@ -22,17 +22,7 @@ public:
     uint32_t sync_timeout_seconds;
     uint32_t block_latency_seconds;
     bool refresh_transactions;
-
-    /// Mining
-    uint32_t rpc_port;
-    // bool testnet;
-    uint32_t subscriber_port;
-    std::vector<std::string> rpc_allow_ip;
-    bool rpc_allow_all_ips;
-
-    //Compact Blocks
     bool compact_blocks_high_bandwidth;
-
     bool ds_proofs_enabled;
 
     /// Helpers.

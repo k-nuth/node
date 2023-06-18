@@ -62,10 +62,6 @@ parser::parser(configuration const& defaults)
 
 void parser::set_default_configuration() {
     // kth_node use history
-    configured.database.index_start_height = 0;
-    // node doesn't use history, and history is expensive.
-    // configured.database.index_start_height = kth::max_uint32;
-
     using serve = domain::message::version::service;
 
     // A node allows 8 inbound connections by default.
@@ -317,17 +313,6 @@ options_metadata parser::load_settings() {
         value<path>(&configured.database.directory),
         "The blockchain database directory, defaults to 'blockchain'."
     )(
-        "database.flush_writes",
-        value<bool>(&configured.database.flush_writes),
-        "Flush each write to disk, defaults to false."
-    )(
-        "database.file_growth_rate",
-        value<uint16_t>(&configured.database.file_growth_rate),
-        "Full database files increase by this percentage, defaults to 50."
-    )
-
-#ifdef KTH_DB_NEW
-    (
         "database.reorg_pool_limit",
         value<uint32_t>(&configured.database.reorg_pool_limit),
         "Approximate number of blocks to store in the reorganization pool, defaults to 100."        //TODO(fernando): look for a good default
@@ -339,28 +324,7 @@ options_metadata parser::load_settings() {
         "database.safe_mode",
         value<bool>(&configured.database.safe_mode),
         "safe mode is more secure but not the fastest, defaults to true."
-    )
-#endif // KTH_DB_NEW
-
-#ifdef KTH_DB_LEGACY
-    (
-        "database.block_table_buckets",
-        value<uint32_t>(&configured.database.block_table_buckets),
-        "Block hash table size, defaults to 650000."
     )(
-        "database.transaction_table_buckets",
-        value<uint32_t>(&configured.database.transaction_table_buckets),
-        "Transaction hash table size, defaults to 110000000."
-    )
-#endif // KTH_DB_LEGACY
-#ifdef KTH_DB_TRANSACTION_UNCONFIRMED
-    (
-        "database.transaction_unconfirmed_table_buckets",
-        value<uint32_t>(&configured.database.transaction_unconfirmed_table_buckets),
-        "Unconfirmed Transaction hash table size, defaults to 10000."
-    )
-#endif // KTH_DB_TRANSACTION_UNCONFIRMED
-    (
         "database.cache_capacity",
         value<uint32_t>(&configured.database.cache_capacity),
         "The maximum number of entries in the unspent outputs cache, defaults to 10000."
@@ -585,29 +549,6 @@ options_metadata parser::load_settings() {
         "node.refresh_transactions",
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
-    )
-    // TODO(kth): ver como implementamos esto para diferenciar server y node
-    (
-        /* Internally this database, but it applies to server.*/
-        "node.index_start_height",
-        value<uint32_t>(&configured.database.index_start_height),
-        "The lower limit of address and spend indexing, defaults to 0."
-    )(
-        "node.rpc_port",
-        value<uint32_t>(&configured.node.rpc_port),
-        "TCP port for the HTTP-JSON-RPC connection, default to 8332 (8332 mainnet, 18332 testnet)."
-    )(
-        "node.zmq_publisher_port",
-        value<uint32_t>(&configured.node.subscriber_port),
-        "ZMQ publisher port, defaults to 5556."
-    )(
-        "node.rpc_allow_ip",
-        value<std::vector<std::string>>(&configured.node.rpc_allow_ip),
-        "RPC allowed ip defaults to 127.0.0.1."
-    )(
-        "node.rpc_allow_all_ips",
-        value<bool>(&configured.node.rpc_allow_all_ips),
-        "RPC allowed ip defaults to false."
     )(
         "node.compact_blocks_high_bandwidth",
         value<bool>(&configured.node.compact_blocks_high_bandwidth),

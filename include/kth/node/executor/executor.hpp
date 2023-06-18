@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string_view>
 
+#include <kth/database/databases/property_code.hpp>
+
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
 
@@ -48,10 +50,8 @@ public:
 
     bool stopped() const;
 
-    // void do_help();
-    // void do_settings();
     void print_version(std::string_view extra);
-    void initialize_output(std::string_view extra);
+    void initialize_output(std::string_view extra, kth::database::db_mode_type db_mode);
 
 #if ! defined(KTH_DB_READONLY)
     bool init_directory(std::error_code& ec);
@@ -113,9 +113,9 @@ private:
 #define KTH_USING_DEFAULT_CONFIG "Using default configuration settings."
 
 #ifdef NDEBUG
-#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}"
 #else
-#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  DB Type: {}\n  (Debug Build)"
+#define KTH_VERSION_MESSAGE "Knuth Node\n  C++ lib v{}\n  {}\n  Currency: {}\n  Microarchitecture: {}\n  Built for CPU instructions/extensions: {}\n  (Debug Build)"
 #endif
 
 #define KTH_VERSION_MESSAGE_INIT "Node C++ lib v{}."
@@ -128,19 +128,9 @@ private:
 #define KTH_BLOCKCHAIN_CORES_INIT "Blockchain configured to use {} threads."
 #define KTH_NETWORK_CORES_INIT "Networking configured to use {} threads."
 
-// #define KTH_LOG_HEADER "================= startup {} =================="
-
-#if defined(KTH_DB_NEW_FULL)
-#define KTH_DB_TYPE "full-indexed"
-#elif defined(KTH_DB_NEW_BLOCKS)
-#define KTH_DB_TYPE "normal"
-#elif defined(KTH_DB_NEW)
-#define KTH_DB_TYPE "pruned"
-#elif defined(KTH_DB_HISTORY)
-#define KTH_DB_TYPE "full-indexed, legacy"
-#else
-#define KTH_DB_TYPE "TXs and Blocks, legacy"
-#endif
+#define KTH_DB_TYPE_FULL "full-indexed"
+#define KTH_DB_TYPE_BLOCKS "blocks-indexed"
+#define KTH_DB_TYPE_PRUNED "pruned"
 
 } // namespace kth::node
 

@@ -15,14 +15,9 @@ settings::settings()
     , sync_timeout_seconds(5)
     , block_latency_seconds(60)
     , refresh_transactions(true)
-    , rpc_port(8332)
-    , subscriber_port(5556)
     , compact_blocks_high_bandwidth(true)
-    , rpc_allow_all_ips(false)
     , ds_proofs_enabled(false)
-{
-    rpc_allow_ip.push_back("127.0.0.1");
-}
+{}
 
 // There are no current distinctions spanning chain contexts.
 settings::settings(domain::config::network context)
