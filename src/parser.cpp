@@ -309,6 +309,10 @@ options_metadata parser::load_settings() {
 
     /* [database] */
     (
+        "database.db_mode",
+        value<db_mode_type>(&configured.database.db_mode),
+        "The DB storage/indexation mode (pruned, blocks, full), defaults to blocks."
+    )(
         "database.directory",
         value<path>(&configured.database.directory),
         "The blockchain database directory, defaults to 'blockchain'."
