@@ -28,11 +28,6 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #endif
 
-#ifdef KTH_WITH_RPC
-#include <kth/rpc/manager.hpp>
-#include <unordered_set>
-#endif
-
 namespace kth::node {
 
 using namespace boost;
@@ -73,8 +68,16 @@ std::string_view currency() {
     return KTH_CURRENCY_STR;
 }
 
-std::string_view db_type() {
-    return KTH_DB_TYPE;
+std::string_view db_type(kth::database::db_mode_type db_mode) {
+    std::string_view db_type_str;
+    if (db_mode == db_mode_type::full) {
+        return KTH_DB_TYPE_FULL;
+    }
+    if (db_mode == db_mode_type::blocks) {
+        return KTH_DB_TYPE_BLOCKS;
+    }
+    // db_mode == db_mode_type::pruned
+    return KTH_DB_TYPE_PRUNED;
 }
 
 std::promise<kth::code> executor::stopping_; //NOLINT
@@ -128,19 +131,10 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
 #else
 #endif
 #endif
-
-
-
-#if defined(KTH_LOG_LIBRARY_SPDLOG)
-
-#endif // defined(KTH_LOG_LIBRARY_SPDLOG)
-
-    //OJO: esto estaba sólo en node-exe
-    //handle_stop(initialize_stop);
 }
 
 void executor::print_version(std::string_view extra) {
-    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, march_names(), KTH_DB_TYPE) << std::endl;
+    std::cout << fmt::format(KTH_VERSION_MESSAGE, KTH_NODE_VERSION, extra, KTH_CURRENCY_SYMBOL_STR, KTH_MICROARCHITECTURE_STR, march_names()) << std::endl;
 }
 
 #if ! defined(KTH_DB_READONLY)
@@ -167,7 +161,7 @@ bool executor::init_directory(error_code& ec) {
 
 // CAPI
 bool executor::do_initchain(std::string_view extra) {
-    initialize_output(extra);
+    initialize_output(extra, config_.database.db_mode);
 
     error_code ec;
 
@@ -199,15 +193,6 @@ kth::node::full_node const& executor::node() const {
 // Close must be called from main thread.
 bool executor::close() {
     LOG_INFO(LOG_NODE, KTH_NODE_STOPPING);
-
-#ifdef KTH_WITH_RPC
-    if ( ! message_manager.is_stopped()) {
-        LOG_INFO(LOG_NODE, KTH_RPC_STOPPING);
-        message_manager.stop();
-        rpc_thread.join();
-        LOG_INFO(LOG_NODE, KTH_RPC_STOPPED);
-    }
-#endif
 
     // Close must be called from main thread.
     if (node_->close()) {
@@ -241,7 +226,7 @@ error_code executor::init_directory_if_necessary() {
 bool executor::init_run_and_wait_for_signal(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
-    initialize_output(extra);
+    initialize_output(extra, config_.database.db_mode);
 
     LOG_INFO(LOG_NODE, KTH_NODE_INTERRUPT);
     LOG_INFO(LOG_NODE, KTH_NODE_STARTING);
@@ -278,26 +263,6 @@ bool executor::init_run_and_wait_for_signal(std::string_view extra, start_module
         node_->start(std::bind(&executor::handle_started, this, _1, mods));
     }
 
-#ifdef KTH_WITH_RPC
-    bool const testnet = kth::get_network(metadata_.configured.network.identifier, metadata_.configured.network.inbound_port == 48333) == kth::domain::config::network::testnet;
-
-    std::string message = "RPC port: " + std::to_string(metadata_.configured.node.rpc_port) + ". ZMQ port: " + std::to_string(metadata_.configured.node.subscriber_port);
-    LOG_INFO(LOG_NODE, message);
-    if (metadata_.configured.node.rpc_allow_all_ips) {
-        LOG_INFO(LOG_NODE, "RPC is listening requests from all addresses");
-    }
-
-    std::unordered_set<std::string> rpc_allowed_ips;
-    for (auto const& ip : metadata_.configured.node.rpc_allow_ip) {
-        rpc_allowed_ips.insert(ip);
-    }
-
-    kth::rpc::manager message_manager(testnet, *node_, metadata_.configured.node.rpc_port, metadata_.configured.node.subscriber_port, rpc_allowed_ips, metadata_.configured.node.rpc_allow_all_ips);
-    auto rpc_thread = std::thread([&message_manager]() {
-        message_manager.start();
-    });
-#endif
-
     auto res = wait_for_signal_and_close();
     return res;
 }
@@ -305,7 +270,7 @@ bool executor::init_run_and_wait_for_signal(std::string_view extra, start_module
 bool executor::init_run(std::string_view extra, start_modules mods, kth::handle0 handler) {
     run_handler_ = std::move(handler);
 
-    initialize_output(extra);
+    initialize_output(extra, config_.database.db_mode);
 
     LOG_INFO(LOG_NODE, KTH_NODE_INTERRUPT);
     LOG_INFO(LOG_NODE, KTH_NODE_STARTING);
@@ -431,7 +396,7 @@ void executor::stop(kth::code const& ec) {
 // ----------------------------------------------------------------------------
 
 // Set up logging.
-void executor::initialize_output(std::string_view extra) {
+void executor::initialize_output(std::string_view extra, db_mode_type db_mode) {
     auto const& file = config_.file;
 
     if (file.empty()) {
@@ -440,12 +405,21 @@ void executor::initialize_output(std::string_view extra) {
         LOG_INFO(LOG_NODE, fmt::format(KTH_USING_CONFIG_FILE, file.string()));
     }
 
+    std::string_view db_type_str;
+    if (db_mode == db_mode_type::full) {
+        db_type_str = KTH_DB_TYPE_FULL;
+    } else if (db_mode == db_mode_type::blocks) {
+        db_type_str = KTH_DB_TYPE_BLOCKS;
+    } else if (db_mode == db_mode_type::pruned) {
+        db_type_str = KTH_DB_TYPE_PRUNED;
+    }
+
     LOG_INFO(LOG_NODE, fmt::format(KTH_VERSION_MESSAGE_INIT, KTH_NODE_VERSION));
     LOG_INFO(LOG_NODE, extra);
     LOG_INFO(LOG_NODE, fmt::format(KTH_CRYPTOCURRENCY_INIT, KTH_CURRENCY_SYMBOL_STR, KTH_CURRENCY_STR));
     LOG_INFO(LOG_NODE, fmt::format(KTH_MICROARCHITECTURE_INIT, KTH_MICROARCHITECTURE_STR));
     LOG_INFO(LOG_NODE, fmt::format(KTH_MARCH_EXTS_INIT, march_names()));
-    LOG_INFO(LOG_NODE, fmt::format(KTH_DB_TYPE_INIT, KTH_DB_TYPE));
+    LOG_INFO(LOG_NODE, fmt::format(KTH_DB_TYPE_INIT, db_type_str));
 
 #ifndef NDEBUG
     LOG_INFO(LOG_NODE, KTH_DEBUG_BUILD_INIT);

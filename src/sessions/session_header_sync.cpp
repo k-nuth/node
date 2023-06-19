@@ -197,18 +197,6 @@ bool session_header_sync::initialize() {
         LOG_ERROR(LOG_NODE, "Block hash list must not be initialized.");
         return false;
     }
-#ifdef KTH_DB_LEGACY
-    block_database::heights gaps;
-    // Populate hash buckets from full database empty height scan.
-    if ( ! chain_.get_gaps(gaps)) {
-        return false;
-    }
-    // TODO: consider populating this directly in the database.
-    hashes_.reserve(gaps);
-//#else
-   //return false;
-#endif // KTH_DB_LEGACY
-
     //*************************************************************************
     // TODO: get top and pair up checkpoints into slots.
     auto const& front = checkpoints_.front();

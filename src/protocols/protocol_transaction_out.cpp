@@ -168,17 +168,13 @@ void protocol_transaction_out::send_next_data(inventory_ptr inventory) {
                 stop(error::channel_stopped);
                 return;
             }
-#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, true, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         }
 #endif // defined(KTH_SEGWIT_ENABLED)
 
         case inventory::type_id::transaction: {
-#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL)
             chain_.fetch_transaction(entry.hash(), false, false, BIND5(send_transaction, _1, _2, _3, _4, inventory));
-#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
             break;
         } default: {
             KTH_ASSERT_MSG(false, "improperly-filtered inventory");
@@ -194,11 +190,7 @@ void protocol_transaction_out::send_transaction(code const& ec, transaction_cons
 
     // Treat already confirmed transactions as not found.
     auto confirmed = ! ec
-#if defined(KTH_DB_LEGACY)
-                    && position != transaction_database::unconfirmed
-#elif defined(KTH_DB_NEW_FULL)
                     && position != position_max
-#endif // KTH_DB_LEGACY || defined(KTH_DB_NEW_FULL)
                     ;
 
     if (ec == error::not_found || confirmed) {

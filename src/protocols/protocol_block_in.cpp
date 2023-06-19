@@ -627,9 +627,7 @@ bool protocol_block_in::handle_receive_compact_block(code const& ec, compact_blo
     }
 
     size_t mempool_count = 0;
-#if defined(KTH_DB_TRANSACTION_UNCONFIRMED) || defined(KTH_DB_NEW_FULL)
     chain_.fill_tx_list_from_mempool(*message, mempool_count, txs_available, shorttxids);
-#endif
 
     std::vector<uint64_t> txs;
     size_t prev_idx = 0;

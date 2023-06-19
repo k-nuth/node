@@ -32,13 +32,7 @@ reservations::reservations(check_list& hashes, fast_chain& chain, settings const
 }
 
 bool reservations::start() {
-#if defined(KTH_DB_LEGACY)
-    return chain_.begin_insert();
-#elif defined(KTH_DB_NEW)
     return true;
-#else
-#error You must define KTH_DB_LEGACY or KTH_DB_NEW
-#endif
 }
 
 #if ! defined(KTH_DB_READONLY)
@@ -50,13 +44,7 @@ bool reservations::import(block_const_ptr block, size_t height) {
 #endif //! defined(KTH_DB_READONLY)
 
 bool reservations::stop() {
-#if defined(KTH_DB_LEGACY)
-    return chain_.end_insert();
-#elif defined(KTH_DB_NEW)
     return true;
-#else
-#error You must define KTH_DB_LEGACY or KTH_DB_NEW
-#endif
 }
 
 // Rate methods.

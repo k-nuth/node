@@ -127,11 +127,9 @@ bool protocol_transaction_in::handle_receive_inventory(code const& ec, inventory
         return true;
     }
 
-#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL) || defined(KTH_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
-#endif
     return true;
 }
 
@@ -253,13 +251,11 @@ void protocol_transaction_in::send_get_transactions(transaction_const_ptr messag
 
     auto const request = std::make_shared<get_data>(std::move(missing), type);
 
-#if defined(KTH_DB_LEGACY) || defined(KTH_DB_NEW_FULL) || defined(KTH_WITH_MEMPOOL)
     // Remove hashes of (unspent) transactions that we already have.
     // This removes spent transactions which is not correnct, however given the
     // treatment of duplicate hashes by other nodes and the fact that this is
     // a set of pool transactions only, this is okay.
     chain_.filter_transactions(request, BIND2(send_get_data, _1, request));
-#endif
 }
 
 // Stop.
