@@ -20,7 +20,7 @@ std::string_view microarchitecture();
 std::string_view march_names();
 std::string_view currency_symbol();
 std::string_view currency();
-std::string_view db_type();
+std::string_view db_type(kth::database::db_mode_type db_mode);
 
 class executor {
 public:
