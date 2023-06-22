@@ -24,6 +24,6 @@
 #endif
 
 // Log name.
-#define LOG_NODE "node"
+#define LOG_NODE "[node]"
 
 #endif
