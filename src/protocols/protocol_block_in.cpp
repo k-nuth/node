@@ -854,7 +854,7 @@ void protocol_block_in::report(domain::chain::block const& block) {
             block.validation.cache_efficiency);
 #endif
 
-        auto formatted = fmt::format("Block [{}] {:>5} txs {:>5} ins "
+        auto formatted = fmt::format("Block [{:6}] {:>5} txs {:>5} ins "
             "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
             "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs,
 
@@ -893,7 +893,8 @@ void protocol_block_in::report(domain::chain::block const& block) {
             LOG_DEBUG(LOG_BLOCKCHAIN, formatted);
         }
 #else
-        LOG_INFO(LOG_BLOCKCHAIN, formatted);
+        // LOG_INFO(LOG_BLOCKCHAIN, formatted);
+        LOG_INFO(formatted);
 #endif
     }
 }
