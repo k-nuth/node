@@ -65,7 +65,7 @@ void full_node::start(result_handler handler) {
     }
 
     if ( ! chain_.start()) {
-        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain [full_node::start()].");
         handler(error::operation_failed);
         return;
     }
@@ -82,7 +82,7 @@ void full_node::start_chain(result_handler handler) {
     }
 
     if ( ! chain_.start()) {
-        LOG_ERROR(LOG_NODE, "Failure starting blockchain.");
+        LOG_ERROR(LOG_NODE, "Failure starting blockchain [full_node::start_chain()].");
         handler(error::operation_failed);
         return;
     }
