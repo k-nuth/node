@@ -10,9 +10,13 @@
 #include <memory>
 #include <vector>
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
+
+#if ! defined(__EMSCRIPTEN__)
 #include <kth/node/sessions/session.hpp>
+#endif
+
 #include <kth/node/settings.hpp>
 #include <kth/node/utility/check_list.hpp>
 #include <kth/node/utility/header_list.hpp>

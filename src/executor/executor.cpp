@@ -35,7 +35,11 @@ using namespace boost::system;
 using namespace kd::chain;
 using namespace kd::config;
 using namespace kth::database;
+
+#if ! defined(__EMSCRIPTEN__)
 using namespace kth::network;
+#endif
+
 using namespace std::placeholders;
 using boost::null_deleter;
 using std::error_code;
@@ -85,6 +89,7 @@ std::promise<kth::code> executor::stopping_; //NOLINT
 executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
     : config_(config)
 {
+#if ! defined(__EMSCRIPTEN__)
     auto& network = config_.network;
     auto const verbose = network.verbose;
 
@@ -111,8 +116,6 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
     };
 #endif
 
-// ,
-
 #if defined(KTH_STATISTICS_ENABLED)
     kth::log::initialize(debug_file, error_file, verbose);
 #else
@@ -131,6 +134,7 @@ executor::executor(kth::node::configuration const& config, bool stdout_enabled /
 #else
 #endif
 #endif
+#endif // ! defined(__EMSCRIPTEN__)
 }
 
 void executor::print_version(std::string_view extra) {

@@ -70,7 +70,12 @@ private:
 
     // This is protected by mutex.
     domain::chain::header::list list_;
+
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex mutex_;
+#else
+    mutable shared_mutex mutex_;
+#endif
 
     size_t const height_;
     infrastructure::config::checkpoint const start_;

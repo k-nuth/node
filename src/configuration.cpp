@@ -7,7 +7,7 @@
 #include <cstddef>
 
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 
 namespace kth::node {
 
@@ -24,7 +24,9 @@ configuration::configuration(domain::config::network net)
     , node(net)
     , chain(net)
     , database(net)
+#if ! defined(__EMSCRIPTEN__)
     , network(net)
+#endif
 {}
 
 // Copy constructor.
@@ -41,7 +43,9 @@ configuration::configuration(configuration const& other)
     , node(other.node)
     , chain(other.chain)
     , database(other.database)
+#if ! defined(__EMSCRIPTEN__)
     , network(other.network)
+#endif
 {}
 
 } // namespace kth::node

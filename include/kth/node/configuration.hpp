@@ -8,7 +8,7 @@
 #include <filesystem>
 
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 
 #include <kth/node/define.hpp>
 #include <kth/node/settings.hpp>
@@ -53,7 +53,9 @@ public:
     node::settings node;
     blockchain::settings chain;
     database::settings database;
+#if ! defined(__EMSCRIPTEN__)
     network::settings network;
+#endif
 };
 
 } // namespace kth::node

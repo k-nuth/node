@@ -9,7 +9,7 @@
 #include <functional>
 #include <stdexcept>
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 #include <kth/node/utility/reservation.hpp>

@@ -93,7 +93,9 @@ message(STATUS "Knuth: Cryptocurrency: ${CURRENCY}")
 
 if (NOT GLOBAL_BUILD)
   find_package(blockchain REQUIRED)
-  find_package(network REQUIRED)
+  if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    find_package(network REQUIRED)
+  endif()
 endif()
 
 include(CheckCXXCompilerFlag)
@@ -139,35 +141,42 @@ endif()
 
 set(kth_sources_just_legacy
   src/configuration.cpp
-  src/full_node.cpp
   src/parser.cpp
   src/settings.cpp
   src/version.cpp
   src/user_agent.cpp
 
-  src/executor/executor.cpp
-
-  src/protocols/protocol_block_in.cpp
-  src/protocols/protocol_block_out.cpp
-  src/protocols/protocol_block_sync.cpp
-  src/protocols/protocol_double_spend_proof_in.cpp
-  src/protocols/protocol_double_spend_proof_out.cpp
-  src/protocols/protocol_header_sync.cpp
-  src/protocols/protocol_transaction_in.cpp
-  src/protocols/protocol_transaction_out.cpp
-
-  src/sessions/session_block_sync.cpp
-  src/sessions/session_header_sync.cpp
-  src/sessions/session_inbound.cpp
-  src/sessions/session_manual.cpp
-  src/sessions/session_outbound.cpp
-
   src/utility/check_list.cpp
   src/utility/header_list.cpp
   src/utility/performance.cpp
-  src/utility/reservation.cpp
-  src/utility/reservations.cpp
 )
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  set(kth_sources_just_legacy
+    ${kth_sources_just_legacy}
+    src/full_node.cpp
+    src/executor/executor.cpp
+
+    src/protocols/protocol_block_in.cpp
+    src/protocols/protocol_block_out.cpp
+    src/protocols/protocol_block_sync.cpp
+    src/protocols/protocol_double_spend_proof_in.cpp
+    src/protocols/protocol_double_spend_proof_out.cpp
+    src/protocols/protocol_header_sync.cpp
+    src/protocols/protocol_transaction_in.cpp
+    src/protocols/protocol_transaction_out.cpp
+
+    src/sessions/session_block_sync.cpp
+    src/sessions/session_header_sync.cpp
+    src/sessions/session_inbound.cpp
+    src/sessions/session_manual.cpp
+    src/sessions/session_outbound.cpp
+
+    src/utility/reservation.cpp
+    src/utility/reservations.cpp
+
+  )
+endif()
 
 if (NOT JUST_KTH_SOURCES)
   set(kth_sources
@@ -186,20 +195,7 @@ set(kth_headers
   include/kth/node/user_agent.hpp
   include/kth/node/executor/executor.hpp
   include/kth/node/define.hpp
-  include/kth/node/sessions/session_header_sync.hpp
-  include/kth/node/sessions/session_outbound.hpp
-  include/kth/node/sessions/session_inbound.hpp
-  include/kth/node/sessions/session_block_sync.hpp
-  include/kth/node/sessions/session_manual.hpp
-  include/kth/node/sessions/session.hpp
-  include/kth/node/protocols/protocol_block_sync.hpp
-  include/kth/node/protocols/protocol_header_sync.hpp
-  include/kth/node/protocols/protocol_block_in.hpp
-  include/kth/node/protocols/protocol_transaction_out.hpp
-  include/kth/node/protocols/protocol_double_spend_proof_out.hpp
-  include/kth/node/protocols/protocol_double_spend_proof_in.hpp
-  include/kth/node/protocols/protocol_transaction_in.hpp
-  include/kth/node/protocols/protocol_block_out.hpp
+
   include/kth/node/utility/reservation.hpp
   include/kth/node/utility/check_list.hpp
   include/kth/node/utility/header_list.hpp
@@ -210,6 +206,27 @@ set(kth_headers
   include/kth/node/parser.hpp
   include/kth/node/version.hpp
 )
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  set(kth_headers
+    ${kth_headers}
+    include/kth/node/sessions/session_header_sync.hpp
+    include/kth/node/sessions/session_outbound.hpp
+    include/kth/node/sessions/session_inbound.hpp
+    include/kth/node/sessions/session_block_sync.hpp
+    include/kth/node/sessions/session_manual.hpp
+    include/kth/node/sessions/session.hpp
+    include/kth/node/protocols/protocol_block_sync.hpp
+    include/kth/node/protocols/protocol_header_sync.hpp
+    include/kth/node/protocols/protocol_block_in.hpp
+    include/kth/node/protocols/protocol_transaction_out.hpp
+    include/kth/node/protocols/protocol_double_spend_proof_out.hpp
+    include/kth/node/protocols/protocol_double_spend_proof_in.hpp
+    include/kth/node/protocols/protocol_transaction_in.hpp
+    include/kth/node/protocols/protocol_block_out.hpp
+  )
+endif()
+
 
 add_library(${PROJECT_NAME} ${MODE} ${kth_sources} ${kth_headers})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -233,7 +250,10 @@ if (NOT MSVC)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC blockchain::blockchain)
-target_link_libraries(${PROJECT_NAME} PUBLIC network::network)
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  target_link_libraries(${PROJECT_NAME} PUBLIC network::network)
+endif()
 
 if (MINGW)
   target_link_libraries(${PROJECT_NAME} PUBLIC ws2_32 wsock32)

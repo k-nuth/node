@@ -28,12 +28,16 @@ class Table;
 #endif
 
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/domain/multi_crypto_support.hpp>
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
+
+#if ! defined(__EMSCRIPTEN__)
 #include <kth/node/sessions/session_block_sync.hpp>
 #include <kth/node/sessions/session_header_sync.hpp>
+#endif
+
 #include <kth/node/utility/check_list.hpp>
 
 namespace kth::node {
@@ -84,6 +88,11 @@ using accum_t = boost::accumulators::accumulator_set<double,
 #endif
 
 struct multi_crypto_setter {
+    multi_crypto_setter() {
+        set_cashaddr_prefix("bitcoincash");
+    }
+
+#if ! defined(__EMSCRIPTEN__)
     multi_crypto_setter(network::settings const& net_settings) {
 #if defined(KTH_CURRENCY_BCH)
         switch (net_settings.identifier) {
@@ -104,11 +113,28 @@ struct multi_crypto_setter {
         }
 #endif
     }
+#endif
 };
 
+#if ! defined(__EMSCRIPTEN__)
+#define OVERRIDE_COND override
+#else
+#define OVERRIDE_COND
+#endif
+
+
 /// A full node on the Bitcoin P2P network.
-class BCN_API full_node : public multi_crypto_setter, public network::p2p {
+class BCN_API full_node
+    : public multi_crypto_setter
+#if ! defined(__EMSCRIPTEN__)
+    , public network::p2p
+#endif
+{
 public:
+#if defined(__EMSCRIPTEN__)
+    using result_handler = std::function<void(code const&)>;
+#endif
+
     using ptr = std::shared_ptr<full_node>;
     using reorganize_handler = blockchain::block_chain::reorganize_handler;
     using transaction_handler = blockchain::block_chain::transaction_handler;
@@ -124,27 +150,27 @@ public:
     // ------------------------------------------------------------------------
 
     /// Invoke startup and seeding sequence, call from constructing thread.
-    void start(result_handler handler) override;
+    void start(result_handler handler) OVERRIDE_COND;
 
     /// Invoke just chain startup, call from constructing thread.
     void start_chain(result_handler handler);
 
     /// Synchronize the blockchain and then begin long running sessions,
     /// call from start result handler. Call base method to skip sync.
-    void run(result_handler handler) override;
-    void run_chain(result_handler handler) override;
+    void run(result_handler handler) OVERRIDE_COND;
+    void run_chain(result_handler handler) OVERRIDE_COND;
 
     // Shutdown.
     // ------------------------------------------------------------------------
 
     /// Idempotent call to signal work stop, start may be reinvoked after.
     /// Returns the result of file save operation.
-    bool stop() override;
+    bool stop() OVERRIDE_COND;
 
     /// Blocking call to coalesce all work and then terminate all threads.
     /// Call from thread that constructed this class, or don't call at all.
     /// This calls stop, and start may be reinvoked after calling this.
-    bool close() override;
+    bool close() OVERRIDE_COND;
 
     // Properties.
     // ------------------------------------------------------------------------
@@ -389,11 +415,12 @@ protected:
         return std::make_shared<Session>(*this, std::forward<Args>(args)...);
     }
 
+#if ! defined(__EMSCRIPTEN__)
     /// Override to attach specialized p2p sessions.
-    ////network::session_seed::ptr attach_seed_session() override;
-    network::session_manual::ptr attach_manual_session() override;
-    network::session_inbound::ptr attach_inbound_session() override;
-    network::session_outbound::ptr attach_outbound_session() override;
+    ////network::session_seed::ptr attach_seed_session() OVERRIDE_COND;
+    network::session_manual::ptr attach_manual_session() OVERRIDE_COND;
+    network::session_inbound::ptr attach_inbound_session() OVERRIDE_COND;
+    network::session_outbound::ptr attach_outbound_session() OVERRIDE_COND;
 
     /// Override to attach specialized node sessions.
     virtual
@@ -401,6 +428,7 @@ protected:
 
     virtual
     session_block_sync::ptr attach_block_sync_session();
+#endif
 
     ///For mining
     blockchain::block_chain chain_;
@@ -481,9 +509,21 @@ private:
     // These are thread safe.
     check_list hashes_;
     //blockchain::block_chain chain_;
+
+#if ! defined(__EMSCRIPTEN__)
     const uint32_t protocol_maximum_;
+#endif
+
     const node::settings& node_settings_;
     blockchain::settings const& chain_settings_;
+
+#if defined(__EMSCRIPTEN__)
+    threadpool threadpool_;
+
+    threadpool& thread_pool() {
+        return threadpool_;
+    }
+#endif
 };
 
 } // namespace kth::node

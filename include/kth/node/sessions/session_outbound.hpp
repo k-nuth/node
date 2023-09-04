@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/sessions/session.hpp>
 

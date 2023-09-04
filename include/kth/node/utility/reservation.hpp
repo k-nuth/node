@@ -118,21 +118,42 @@ private:
 
     // Protected by rate mutex.
     performance rate_;
+
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex rate_mutex_;
+#else
+    mutable shared_mutex rate_mutex_;
+#endif
+
 
     // Protected by history mutex.
     rate_history history_;
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex history_mutex_;
+#else
+    mutable shared_mutex history_mutex_;
+#endif
+
 
     // Protected by stop mutex.
     bool stopped_;
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex stop_mutex_;
+#else
+    mutable shared_mutex stop_mutex_;
+#endif
+
 
     // Protected by hash mutex.
     bool pending_;
     bool partitioned_;
     hash_heights heights_;
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex hash_mutex_;
+#else
+    mutable shared_mutex hash_mutex_;
+#endif
+
 
     // Thread safe.
     reservations& reservations_;
