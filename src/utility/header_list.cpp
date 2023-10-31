@@ -17,12 +17,12 @@ using namespace kth::domain::config;
 
 // Locking is optimized for a single intended caller.
 header_list::header_list(size_t slot, infrastructure::config::checkpoint const& start, infrastructure::config::checkpoint const& stop)
-    : height_(safe_add(start.height(), size_t(1)))
+    : height_(*safe_add(start.height(), size_t(1)))
     , start_(start)
     , stop_(stop)
     , slot_(slot)
 {
-    list_.reserve(safe_subtract(stop.height(), start.height()));
+    list_.reserve(*safe_subtract(stop.height(), start.height()));
 }
 
 bool header_list::complete() const {

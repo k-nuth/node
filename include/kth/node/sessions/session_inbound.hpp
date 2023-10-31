@@ -7,9 +7,12 @@
 
 #include <memory>
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
+
+#if ! defined(__EMSCRIPTEN__)
 #include <kth/node/sessions/session.hpp>
+#endif
 
 namespace kth::node {
 

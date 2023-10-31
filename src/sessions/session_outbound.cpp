@@ -5,7 +5,7 @@
 #include <kth/node/sessions/session_outbound.hpp>
 
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/full_node.hpp>
 #include <kth/node/protocols/protocol_block_in.hpp>
 #include <kth/node/protocols/protocol_block_out.hpp>

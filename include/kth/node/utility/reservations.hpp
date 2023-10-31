@@ -87,7 +87,12 @@ private:
 
     // Protected by mutex.
     reservation::list table_;
+#if ! defined(__EMSCRIPTEN__)
     mutable upgrade_mutex mutex_;
+#else
+    mutable shared_mutex mutex_;
+#endif
+
 };
 
 } // namespace kth::node

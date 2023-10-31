@@ -10,7 +10,7 @@
 #include <memory>
 #include <queue>
 #include <kth/blockchain.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 
 namespace kth::node {

@@ -11,11 +11,14 @@
 #include <kth/blockchain.hpp>
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
+
+#if ! defined(__EMSCRIPTEN__)
 #include <kth/node/sessions/session_block_sync.hpp>
 #include <kth/node/sessions/session_header_sync.hpp>
 #include <kth/node/sessions/session_inbound.hpp>
 #include <kth/node/sessions/session_manual.hpp>
 #include <kth/node/sessions/session_outbound.hpp>
+#endif
 
 #if defined(KTH_STATISTICS_ENABLED)
 #include <tabulate/table.hpp>
@@ -39,16 +42,47 @@ namespace kth::node {
 using namespace kth::blockchain;
 using namespace kth::domain::chain;
 using namespace kth::domain::config;
+
+#if ! defined(__EMSCRIPTEN__)
 using namespace kth::network;
+#endif
+
 using namespace std::placeholders;
 
 full_node::full_node(configuration const& configuration)
+#if ! defined(__EMSCRIPTEN__)
     : multi_crypto_setter(configuration.network)
     , p2p(configuration.network)
-    , chain_(thread_pool(), configuration.chain, configuration.database, get_network(configuration.network.identifier, configuration.network.inbound_port == 48333),configuration.network.relay_transactions)
+#else
+    : multi_crypto_setter()
+#endif
+
+#if ! defined(__EMSCRIPTEN__)
+    , chain_(
+        thread_pool()
+        , configuration.chain
+        , configuration.database
+        , get_network(configuration.network.identifier, configuration.network.inbound_port == 48333)
+        , configuration.network.relay_transactions
+    )
+#else
+    , chain_(
+        thread_pool()
+        , configuration.chain
+        , configuration.database
+        , domain::config::network::mainnet
+    )
+#endif
+
+#if ! defined(__EMSCRIPTEN__)
     , protocol_maximum_(configuration.network.protocol_maximum)
+#endif
     , chain_settings_(configuration.chain)
     , node_settings_(configuration.node)
+
+#if defined(__EMSCRIPTEN__)
+    , threadpool_("")
+#endif
 {}
 
 full_node::~full_node() {
@@ -261,6 +295,7 @@ bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_
 // ----------------------------------------------------------------------------
 // Create derived sessions and override these to inject from derived node.
 
+#if ! defined(__EMSCRIPTEN__)
 // Must not connect until running, otherwise imports may conflict with sync.
 // But we establish the session in network so caller doesn't need to run.
 kth::network::session_manual::ptr full_node::attach_manual_session() {
@@ -282,6 +317,7 @@ session_header_sync::ptr full_node::attach_header_sync_session() {
 session_block_sync::ptr full_node::attach_block_sync_session() {
     return attach<session_block_sync>(hashes_, chain_, node_settings_);
 }
+#endif
 
 // Shutdown
 // ----------------------------------------------------------------------------

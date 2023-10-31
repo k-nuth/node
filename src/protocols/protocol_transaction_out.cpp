@@ -10,7 +10,7 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 

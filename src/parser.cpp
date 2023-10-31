@@ -13,9 +13,11 @@
 
 #include <kth/blockchain.hpp>
 #include <kth/domain/multi_crypto_support.hpp>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/full_node.hpp>
 #include <kth/node/settings.hpp>
+
+#include <kth/infrastructure/config/directory.hpp>
 
 namespace kth::domain::config {
 
@@ -64,6 +66,7 @@ void parser::set_default_configuration() {
     // kth_node use history
     using serve = domain::message::version::service;
 
+#if ! defined(__EMSCRIPTEN__)
     // A node allows 8 inbound connections by default.
     configured.network.inbound_connections = 8;
     // Logs will slow things if not rotated.
@@ -80,6 +83,7 @@ void parser::set_default_configuration() {
 #else
     // Expose full node (1) and witness (8) network services by default.
     configured.network.services = serve::node_network | serve::node_witness;
+#endif
 #endif
 }
 
@@ -162,6 +166,9 @@ options_metadata parser::load_environment() {
 options_metadata parser::load_settings() {
     options_metadata description("settings");
     description.add_options()
+
+#if ! defined(__EMSCRIPTEN__)
+
     /* [log] */
     (
         "log.debug_file",
@@ -200,6 +207,7 @@ options_metadata parser::load_settings() {
         value<bool>(&configured.network.verbose),
         "Enable verbose logging, defaults to false."
     )
+
     /* [network] */
     (
         "network.threads",
@@ -306,6 +314,7 @@ options_metadata parser::load_settings() {
         value<std::vector<std::string>>(&configured.network.user_agent_blacklist),
         "Blacklist user-agent starting with..."
     )
+#endif
 
     /* [database] */
     (
@@ -544,12 +553,16 @@ options_metadata parser::load_settings() {
         "node.minimum_output_satoshis",
         value<uint64_t>(&configured.chain.minimum_output_satoshis),
         "The minimum output value, defaults to 500."
-    )(
+    )
+#if ! defined(__EMSCRIPTEN__)
+    (
         /* Internally this is network, but it is conceptually a node setting. */
         "node.relay_transactions",
         value<bool>(&configured.network.relay_transactions),
         "Request that peers relay transactions, defaults to true."
-    )(
+    )
+#endif
+    (
         "node.refresh_transactions",
         value<bool>(&configured.node.refresh_transactions),
         "Request transactions on each channel start, defaults to true."
@@ -618,9 +631,11 @@ bool parser::parse(int argc, const char* argv[], std::ostream& error) {
         // Update bound variables in metadata.settings.
         notify(variables);
 
+#if ! defined(__EMSCRIPTEN__)
         if ( ! version_sett_help && configured.chain.fix_checkpoints) {
             fix_checkpoints(configured.network.identifier, configured.chain.checkpoints, configured.network.inbound_port == 48333);
         }
+#endif
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {
@@ -650,9 +665,11 @@ bool parser::parse_from_file(kth::path const& config_path, std::ostream& error) 
         // Update bound variables in metadata.settings.
         notify(variables);
 
+#if ! defined(__EMSCRIPTEN__)
         if (configured.chain.fix_checkpoints) {
             fix_checkpoints(configured.network.identifier, configured.chain.checkpoints, configured.network.inbound_port == 48333);
         }
+#endif
 
         // Clear the config file path if it wasn't used.
         if (file == load_error::default_config) {

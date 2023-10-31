@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
-#include <kth/network.hpp>
+// #include <kth/network.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 #include <kth/node/utility/header_list.hpp>
