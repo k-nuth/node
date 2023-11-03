@@ -18,6 +18,7 @@
 #include <kth/node/define.hpp>
 #include <kth/node/utility/performance.hpp>
 #include <kth/node/utility/reservations.hpp>
+#include <kth/infrastructure/utility/timer.hpp>
 
 namespace kth::node {
 

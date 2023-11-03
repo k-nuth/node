@@ -285,7 +285,7 @@ bool full_node::handle_reorganized(code ec, size_t fork_height, block_const_ptr_
            , encode_hash(block->header().hash()), "]");
     }
 
-    auto const height = safe_add(fork_height, incoming->size());
+    auto const height = *safe_add(fork_height, incoming->size());
 
     set_top_block({ incoming->back()->hash(), height });
     return true;
