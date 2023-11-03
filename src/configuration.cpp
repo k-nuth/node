@@ -7,7 +7,9 @@
 #include <cstddef>
 
 #include <kth/blockchain.hpp>
-// #include <kth/network.hpp>
+#if ! defined(__EMSCRIPTEN__)
+#include <kth/network.hpp>
+#endif
 
 namespace kth::node {
 

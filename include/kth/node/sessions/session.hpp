@@ -6,7 +6,9 @@
 #define KTH_NODE_SESSION_HPP
 
 #include <utility>
-// #include <kth/network.hpp>
+#if ! defined(__EMSCRIPTEN__)
+#include <kth/network.hpp>
+#endif
 #include <kth/node/define.hpp>
 
 namespace kth::node {

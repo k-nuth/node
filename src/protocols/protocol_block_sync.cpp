@@ -9,7 +9,9 @@
 #include <functional>
 #include <stdexcept>
 #include <kth/blockchain.hpp>
-// #include <kth/network.hpp>
+#if ! defined(__EMSCRIPTEN__)
+#include <kth/network.hpp>
+#endif
 #include <kth/node/define.hpp>
 #include <kth/node/full_node.hpp>
 #include <kth/node/utility/reservation.hpp>

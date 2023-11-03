@@ -9,7 +9,9 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
-// #include <kth/network.hpp>
+#if ! defined(__EMSCRIPTEN__)
+#include <kth/network.hpp>
+#endif
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
 #include <kth/node/utility/header_list.hpp>

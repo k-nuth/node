@@ -28,7 +28,9 @@ class Table;
 #endif
 
 #include <kth/blockchain.hpp>
-// #include <kth/network.hpp>
+#if ! defined(__EMSCRIPTEN__)
+#include <kth/network.hpp>
+#endif
 #include <kth/domain/multi_crypto_support.hpp>
 #include <kth/node/configuration.hpp>
 #include <kth/node/define.hpp>
