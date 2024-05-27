@@ -68,7 +68,7 @@ class KnuthNodeConan(KnuthConanFileV2):
             self.test_requires("catch2/3.6.0")
 
     def requirements(self):
-        self.requires("blockchain/0.38.0", transitive_headers=True, transitive_libs=True)
+        self.requires("blockchain/0.39.0", transitive_headers=True, transitive_libs=True)
 
         if self.settings.os != "Emscripten":
             self.requires("network/0.42.0", transitive_headers=True, transitive_libs=True)
