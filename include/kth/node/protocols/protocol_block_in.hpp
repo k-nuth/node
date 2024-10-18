@@ -75,11 +75,6 @@ private:
     bool const compact_from_peer_;
     bool const blocks_from_peer_;
 
-#if ! defined(KTH_CURRENCY_BCH)
-    bool const require_witness_;
-    bool const peer_witness_;
-#endif
-
     // This is protected by mutex.
     hash_queue backlog_;
     mutable upgrade_mutex mutex;
