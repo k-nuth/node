@@ -44,7 +44,7 @@ private:
     blockchain::safe_chain& chain_;
     std::atomic<uint64_t> minimum_peer_fee_;
     bool const relay_to_peer_;
-    bool const enable_witness_;
+    // bool const enable_witness_;
 };
 
 } // namespace kth::node

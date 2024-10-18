@@ -38,15 +38,6 @@ using namespace std::chrono;
 using namespace std::placeholders;
 
 constexpr
-bool is_witness(uint64_t services) {
-#if defined(KTH_CURRENCY_BCH)
-    return false;
-#else
-    return (services & version::service::node_witness) != 0;
-#endif
-}
-
-constexpr
 uint64_t get_compact_blocks_version() {
 #if defined(KTH_CURRENCY_BCH)
         return 1;
@@ -74,12 +65,6 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
         negotiated_version() > version::level::no_blocks_end ||
         negotiated_version() < version::level::no_blocks_start),
 
-#if ! defined(KTH_CURRENCY_BCH)
-    // Witness must be requested if possibly enforced.
-    require_witness_(is_witness(node.network_settings().services)),
-    peer_witness_(is_witness(channel->peer_version()->services())),
-#endif
-
     CONSTRUCT_TRACK(protocol_block_in)
 {}
 
@@ -89,15 +74,6 @@ protocol_block_in::protocol_block_in(full_node& node, channel::ptr channel, safe
 void protocol_block_in::start() {
     // Use timer to drop slow peers.
     protocol_timer::start(block_latency_, BIND1(handle_timeout, _1));
-
-
-#if ! defined(KTH_CURRENCY_BCH)
-    // Do not process incoming blocks if required witness is unavailable.
-    // The channel will remain active outbound unless node becomes stale.
-    if (require_witness_ && !peer_witness_) {
-        return;
-    }
-#endif
 
     // TODO: move headers to a derived class protocol_block_in_31800.
     SUBSCRIBE2(headers, handle_receive_headers, _1, _2);
@@ -282,13 +258,6 @@ void protocol_block_in::send_get_data(code const& ec, get_data_ptr message) {
     mutex.unlock();
     ///////////////////////////////////////////////////////////////////////////
 
-#if ! defined(KTH_CURRENCY_BCH)
-    // Convert requested message types to corresponding witness types.
-    if (require_witness_) {
-        message->to_witness();
-    }
-#endif
-
     // There was no backlog so the timer must be started now.
     if (fresh) {
         reset_timer();
@@ -378,16 +347,6 @@ bool protocol_block_in::handle_receive_block(code const& ec, block_const_ptr mes
         stop(error::channel_stopped);
         return false;
     }
-
-#if ! defined(KTH_CURRENCY_BCH)
-    if ( ! require_witness_ && message->is_segregated()) {
-        LOG_DEBUG(LOG_NODE
-           , "Block [", encode_hash(message->hash())
-           , "] contains unrequested witness from [", authority(), "]");
-        stop(error::channel_stopped);
-        return false;
-    }
-#endif
 
     // message->validation.originator = nonce();
     // chain_.organize(message, BIND2(handle_store_block, _1, message));
