@@ -42,11 +42,6 @@ private:
     const uint64_t minimum_relay_fee_;
     bool const relay_from_peer_;
     bool const refresh_pool_;
-
-#if defined(KTH_SEGWIT_ENABLED)
-    bool const require_witness_;
-    bool const peer_witness_;
-#endif
 };
 
 } // namespace kth::node

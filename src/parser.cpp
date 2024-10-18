@@ -79,13 +79,9 @@ void parser::set_default_configuration() {
 
     // A node allows 1000 host names by default.
     configured.network.host_pool_capacity = 1000;
-#if defined(KTH_CURRENCY_BCH)
+
     // Expose full node (1) services by default.
     configured.network.services = serve::node_network;
-#else
-    // Expose full node (1) and witness (8) network services by default.
-    configured.network.services = serve::node_network | serve::node_witness;
-#endif
 #endif
 }
 
@@ -226,7 +222,7 @@ options_metadata parser::load_settings() {
     )(
         "network.services",
         value<uint64_t>(&configured.network.services),
-        "The services exposed by network connections, defaults to 9 BTC (full node, witness). and 1 (full node BCH)"
+        "The services exposed by network connections, defaults to 1 (full node BCH)"
     )(
         "network.invalid_services",
         value<uint64_t>(&configured.network.invalid_services),
@@ -423,22 +419,6 @@ options_metadata parser::load_settings() {
         "Use median time past for locktime, defaults to true (soft fork)."
     )
 
-#if ! defined(KTH_CURRENCY_BCH)
-    // BTC only things
-    (
-        "fork.bip141",
-        value<bool>(&configured.chain.bip141),
-        "Segregated witness consensus layer, defaults to true (soft fork)."
-    )(
-        "fork.bip143",
-        value<bool>(&configured.chain.bip143),
-        "Version 0 transaction digest, defaults to true (soft fork)."
-    )(
-        "fork.bip147",
-        value<bool>(&configured.chain.bip147),
-        "Prevent dummy value malleability, defaults to true (soft fork)."
-    )
-#else
     // BCH only things
 
     // (
@@ -519,9 +499,6 @@ options_metadata parser::load_settings() {
         value<uint64_t>(&configured.chain.asert_half_life),
         "The half life for the ASERTi3-2d DAA. For every (asert_half_life) seconds behind schedule the blockchain gets, difficulty is cut in half. Doubled if blocks are ahead of schedule. Defaults to: 2 * 24 * 60 * 60 = 172800 (two days)."
     )
-
-#endif //KTH_CURRENCY_BCH
-
 
 
 
