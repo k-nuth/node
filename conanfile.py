@@ -17,6 +17,7 @@ class KnuthNodeConan(KnuthConanFileV2):
     url = "https://github.com/k-nuth/node"
     description = "Crypto full node"
     settings = "os", "compiler", "build_type", "arch"
+    package_type = "library"
 
     options = {
         "shared": [True, False],
