@@ -58,7 +58,6 @@ private:
     kth::atomic<hash_digest> last_locator_top_;
     std::atomic<bool> compact_to_peer_;
     std::atomic<bool> headers_to_peer_;
-    bool const enable_witness_;
     std::atomic<bool> compact_high_bandwidth_;
     std::atomic<uint64_t> compact_version_;
 };
