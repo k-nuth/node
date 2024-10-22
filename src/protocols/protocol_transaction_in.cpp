@@ -28,15 +28,6 @@ using namespace kth::network;
 using namespace std::placeholders;
 
 inline
-bool is_witness(uint64_t services) {
-#if defined(KTH_CURRENCY_BCH)
-    return false;
-#else
-    return (services & version::service::node_witness) != 0;
-#endif
-}
-
-inline
 uint64_t to_relay_fee(float minimum_byte_fee) {
     // Spending one standard prevout with one output is nominally 189 bytes.
     static size_t const small_transaction_size = 189;
@@ -62,12 +53,6 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
     , refresh_pool_(negotiated_version() >= version::level::bip35 &&
         node.node_settings().refresh_transactions)
 
-#if ! defined(KTH_CURRENCY_BCH)
-    // Witness must be requested if possibly enforced.
-    , require_witness_(is_witness(node.network_settings().services))
-    , peer_witness_(is_witness(channel->peer_version()->services()))
-#endif
-
     , CONSTRUCT_TRACK(protocol_transaction_in)
 {}
 
@@ -75,14 +60,6 @@ protocol_transaction_in::protocol_transaction_in(full_node& node, channel::ptr c
 //-----------------------------------------------------------------------------
 
 void protocol_transaction_in::start() {
-
-#if ! defined(KTH_CURRENCY_BCH)
-    // Do not process incoming transactions if required witness is unavailable.
-    // The channel will remain active outbound unless node becomes stale.
-    if (require_witness_ && ! peer_witness_) {
-        return;
-    }
-#endif
 
     protocol_events::start(BIND1(handle_stop, _1));
 
@@ -148,13 +125,6 @@ void protocol_transaction_in::send_get_data(code const& ec, get_data_ptr message
         return;
     }
 
-#if ! defined(KTH_CURRENCY_BCH)
-    // Convert requested message types to corresponding witness types.
-    if (require_witness_) {
-        message->to_witness();
-    }
-#endif
-
     // inventory->get_data[transaction]
     SEND2(*message, handle_send, _1, message->command);
 }
@@ -176,16 +146,6 @@ bool protocol_transaction_in::handle_receive_transaction(code const& ec, transac
         stop(error::channel_stopped);
         return false;
     }
-
-#if ! defined(KTH_CURRENCY_BCH)
-    if ( ! require_witness_ && message->is_segregated()) {
-        LOG_DEBUG(LOG_NODE
-           , "Transaction [", encode_hash(message->hash())
-           , "] contains unrequested witness from [", authority(), "]");
-        stop(error::channel_stopped);
-        return false;
-    }
-#endif
 
     // TODO: manage channel relay at the service layer.
     // Do not process transactions while chain is stale.
