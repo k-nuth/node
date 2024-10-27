@@ -44,6 +44,9 @@ if (STATISTICS)
   add_definitions(-DKTH_STATISTICS_ENABLED)
 endif()
 
+# is it possible to get the current timestamp in cmake?
+add_definitions(-DKTH_BUILD_TIME="xxxxxxxxxxxx")
+
 add_definitions(-DKTH_MICROARCHITECTURE_STR="${MARCH_ID}")
 set(MARCH_ID "" CACHE STRING "Specify the Microarchitecture ID (x86_64|...).")
 message( STATUS "Knuth: Compiling for Microarchitecture ID ${MARCH_ID}")
