@@ -62,7 +62,7 @@ class KnuthNodeConan(KnuthConanFileV2):
     def validate(self):
         KnuthConanFileV2.validate(self)
         if self.info.settings.compiler.cppstd:
-            check_min_cppstd(self, "20")
+            check_min_cppstd(self, "23")
 
     def build_requirements(self):
         if self.options.tests:
