@@ -89,6 +89,12 @@ endif()
 
 message(STATUS "Knuth: Cryptocurrency: ${CURRENCY}")
 
+# --------------------------------------------------------------------------------
+string(TIMESTAMP KTK_NODE_BUILD_TIMESTAMP "%s" UTC)
+message(STATUS "KTK_NODE_BUILD_TIMESTAMP: ${KTK_NODE_BUILD_TIMESTAMP}")
+add_definitions(-DKTK_NODE_BUILD_TIMESTAMP=${KTK_NODE_BUILD_TIMESTAMP})
+# --------------------------------------------------------------------------------
+
 
 
 if (NOT GLOBAL_BUILD)
@@ -141,6 +147,7 @@ endif()
 
 set(kth_sources_just_legacy
   src/configuration.cpp
+  src/executor/executor_info.cpp
   src/parser.cpp
   src/settings.cpp
   src/version.cpp
@@ -194,6 +201,7 @@ set(kth_headers
   include/kth/node/configuration.hpp
   include/kth/node/user_agent.hpp
   include/kth/node/executor/executor.hpp
+  include/kth/node/executor/executor_info.hpp
   include/kth/node/define.hpp
 
   include/kth/node/utility/reservation.hpp

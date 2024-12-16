@@ -13,14 +13,9 @@
 
 #include <kth/infrastructure/handlers.hpp>
 #include <kth/node.hpp>
+#include <kth/node/executor/executor_info.hpp>
 
 namespace kth::node {
-
-std::string_view microarchitecture();
-std::string_view march_names();
-std::string_view currency_symbol();
-std::string_view currency();
-std::string_view db_type(kth::database::db_mode_type db_mode);
 
 class executor {
 public:
@@ -127,10 +122,6 @@ private:
 #define KTH_NETWORK_INIT "Network: {0} ({1} - {1:#x})."
 #define KTH_BLOCKCHAIN_CORES_INIT "Blockchain configured to use {} threads."
 #define KTH_NETWORK_CORES_INIT "Networking configured to use {} threads."
-
-#define KTH_DB_TYPE_FULL "full-indexed"
-#define KTH_DB_TYPE_BLOCKS "blocks-indexed"
-#define KTH_DB_TYPE_PRUNED "pruned"
 
 } // namespace kth::node
 
