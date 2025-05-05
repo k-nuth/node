@@ -819,7 +819,7 @@ void protocol_block_in::report(domain::chain::block const& block) {
 
         auto formatted = fmt::format("[{:6}] {:>5} txs {:>5} ins "
             "{:>4} wms {:>5} vms {:>4} vus {:>4} rus {:>4} cus {:>4} pus "
-            "{:>4} aus {:>4} sus {:>4} dus {:f}", transactions, inputs,
+            "{:>4} aus {:>4} sus {:>4} dus {:f}", height, transactions, inputs,
 
             // wms: wait total (ms)
             total_cost_ms(times.end_deserialize, times.start_check),
