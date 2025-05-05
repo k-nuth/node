@@ -109,7 +109,7 @@ bool protocol_transaction_in::handle_receive_inventory(code const& ec, inventory
     // Remove hashes of (unspent) transactions that we already have.
     // BUGBUG: this removes spent transactions which it should not (see BIP30).
 
-    LOG_INFO(LOG_NODE, "send_get_transactions() - before filter_transactions - 1");
+    // LOG_INFO(LOG_NODE, "send_get_transactions() - before filter_transactions - 1");
     chain_.filter_transactions(response, BIND2(send_get_data, _1, response));
     return true;
 }
@@ -220,7 +220,7 @@ void protocol_transaction_in::send_get_transactions(transaction_const_ptr messag
     // treatment of duplicate hashes by other nodes and the fact that this is
     // a set of pool transactions only, this is okay.
 
-    LOG_INFO(LOG_NODE, "send_get_transactions() - before filter_transactions - 2");
+    // LOG_INFO(LOG_NODE, "send_get_transactions() - before filter_transactions - 2");
     chain_.filter_transactions(request, BIND2(send_get_data, _1, request));
 }
 
