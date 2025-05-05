@@ -58,6 +58,7 @@ public:
 
 private:
     bool wait_for_signal_and_close();
+    void print_ascii_art();
 
     static
     void stop(kth::code const& ec);
@@ -73,6 +74,7 @@ private:
     static
     std::promise<kth::code> stopping_;
 
+    bool stdout_enabled_;
     kth::node::configuration config_;
     kth::node::full_node::ptr node_;
     kth::handle0 run_handler_;

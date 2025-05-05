@@ -55,7 +55,8 @@ static auto const mode = std::ofstream::out | std::ofstream::app;
 std::promise<kth::code> executor::stopping_; //NOLINT
 
 executor::executor(kth::node::configuration const& config, bool stdout_enabled /*= true*/)
-    : config_(config)
+    : stdout_enabled_(stdout_enabled)
+    , config_(config)
 {
 #if ! defined(__EMSCRIPTEN__)
     auto& network = config_.network;
@@ -367,9 +368,35 @@ void executor::stop(kth::code const& ec) {
 // Utilities.
 // ----------------------------------------------------------------------------
 
+void executor::print_ascii_art() {
+    std::cout << "    ...\n";
+    std::cout << "    .-=*#%%=                            :-=+++*#:\n";
+    std::cout << "    :+*%%%@=                            .:--#@@#.\n";
+    std::cout << "       :%%@=                      .:.      :%@#.\n";
+    std::cout << "       .%%@=                    .*%%-     :#@%:\n";
+    std::cout << "       :%%@=       ..          .#@%=     .#@%-\n";
+    std::cout << "       :%%@= .=###**+.     -+++#%%%***.  +@%=  :=+*+-\n";
+    std::cout << "       :%%%-  :%%=:.       :--%@%*-::.  =%%= -+*=-%@@=\n";
+    std::cout << "       :%%%: :*+.   .::.     =%@*.     :%@#:++:   +@@+\n";
+    std::cout << "       :%%%*+#:    .#%%%=   -%@#.     .*%%%*:     *%@-\n";
+    std::cout << "       -%%%@@%*-   :#@@%=  :#@#.      +@%%+      :%%%.\n";
+    std::cout << "       =@%%-+%@%+.  .-=-  .#@%:.=*.  -%%%-      .#@%-\n";
+    std::cout << "       -@%%. :*%@#-      .*@%+=#%-  :%@#: .--  .*@%-\n";
+    std::cout << "     .:*@%%:   =%@@*-.   +@%%@%+.  .*@#.  *@@*=#@#:\n";
+    std::cout << "    .*#####*: -*#####*.  *%%*=.    .**:   :*#%#+-.\n";
+    std::cout << "    ........  ..  ....   ...                ..\n";
+    std::cout << "\n";
+    std::cout << "          High Performance Bitcoin Cash Node\n";
+    std::cout << "\n";
+}
+
 // Set up logging.
 void executor::initialize_output(std::string_view extra, db_mode_type db_mode) {
     auto const& file = config_.file;
+
+    if (stdout_enabled_) {
+        print_ascii_art();
+    }
 
     if (file.empty()) {
         LOG_INFO(LOG_NODE, KTH_USING_DEFAULT_CONFIG);
