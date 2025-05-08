@@ -339,6 +339,10 @@ options_metadata parser::load_settings() {
         "database.cache_capacity",
         value<uint32_t>(&configured.database.cache_capacity),
         "The maximum number of entries in the unspent outputs cache, defaults to 10000."
+    )(
+        "database.block_cache_capacity",
+        value<uint32_t>(&configured.database.block_cache_capacity),
+        "The maximum number of blocks in the block cache, defaults to 100."
     )
     /* [blockchain] */
     (
